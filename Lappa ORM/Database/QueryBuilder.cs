@@ -61,8 +61,8 @@ namespace Lappa_ORM
         {
             var pluralized = typeof(T).Name.Pluralize();
 
-            sqlQuery.Append("DROP TABLE IF EXISTS `\{pluralized}`;");
-            sqlQuery.Append("CREATE TABLE `\{pluralized}` (");
+            sqlQuery.Append($"DROP TABLE IF EXISTS `{pluralized}`;");
+            sqlQuery.Append($"CREATE TABLE `{pluralized}` (");
 
             var primaryKeys = fields.Values.Where(p => p.HasAttribute<PrimaryKeyAttribute>()).ToArray();
 
@@ -79,43 +79,43 @@ namespace Lappa_ORM
                 switch (fieldType.Name)
                 {
                     case "Boolean":
-                        typeDefinition = "tinyint(\{fieldSize})";
+                        typeDefinition = $"tinyint({fieldSize})";
                         break;
                     case "SByte":
-                        typeDefinition = "tinyint(\{fieldSize})";
+                        typeDefinition = $"tinyint({fieldSize})";
                         break;
                     case "Byte":
-                        typeDefinition = "tinyint(\{fieldSize}) unsigned";
+                        typeDefinition = $"tinyint({fieldSize}) unsigned";
                         break;
                     case "Int16":
-                        typeDefinition = "smallint(\{fieldSize})";
+                        typeDefinition = $"smallint({fieldSize})";
                         break;
                     case "UInt16":
-                        typeDefinition = "smallint(\{fieldSize}) unsigned";
+                        typeDefinition = $"smallint({fieldSize}) unsigned";
                         break;
                     case "Int32":
-                        typeDefinition = "int(\{fieldSize})";
+                        typeDefinition = $"int({fieldSize})";
                         break;
                     case "UInt32":
-                        typeDefinition = "int(\{fieldSize}) unsigned";
+                        typeDefinition = $"int({fieldSize}) unsigned";
                         break;
                     case "Int64":
-                        typeDefinition = "bigint(\{fieldSize})";
+                        typeDefinition = $"bigint({fieldSize})";
                         break;
                     case "UInt64":
-                        typeDefinition = "bigint(\{fieldSize}) unsigned";
+                        typeDefinition = $"bigint({fieldSize}) unsigned";
                         break;
                     case "Single":
-                        typeDefinition = "float(\{fieldSize})";
+                        typeDefinition = $"float({fieldSize})";
                         break;
                     case "Double":
-                        typeDefinition = "double(\{fieldSize})";
+                        typeDefinition = $"double({fieldSize})";
                         break;
                     case "String":
                         nullAllowed = true;
 
                         if (fieldSize <= 255)
-                            typeDefinition = "varchar(\{fieldSize})";
+                            typeDefinition = $"varchar({fieldSize})";
                         else
                             typeDefinition = "text(0)";
                         break;
@@ -126,12 +126,12 @@ namespace Lappa_ORM
                 if (!nullAllowed)
                     typeDefinition += " NOT NULL";
 
-                typeDefinition += " DEFAULT '\{defaultValue}'";
+                typeDefinition += $" DEFAULT '{defaultValue}'";
 
                 if (isAutoIncrement)
                     typeDefinition += " AUTO_INCREMENT";
 
-                sqlQuery.Append("  `\{f.Key}` \{typeDefinition},");
+                sqlQuery.Append($"  `{f.Key}` {typeDefinition},");
             }
 
             if (primaryKeys.Length > 0)
@@ -140,12 +140,12 @@ namespace Lappa_ORM
             for (var i = 0; i < primaryKeys.Length; i++)
             {
                 if (i == primaryKeys.Length - 1)
-                    sqlQuery.Append("`\{primaryKeys[i].Name}`)");
+                    sqlQuery.Append($"`{primaryKeys[i].Name}`)");
                 else
-                    sqlQuery.Append("`\{primaryKeys[i].Name}`,");
+                    sqlQuery.Append($"`{primaryKeys[i].Name}`,");
             }
 
-            sqlQuery.Append(") ENGINE=\{Enum.GetName(typeof(MySqlEngine), dbEngine)} DEFAULT CHARSET=utf8;");
+            sqlQuery.Append($") ENGINE={Enum.GetName(typeof(MySqlEngine), dbEngine)} DEFAULT CHARSET=utf8;");
             sqlQuery.Replace("', ),", "'),");
             sqlQuery.Replace("', );", "');");
             sqlQuery.Replace("',)", "')");

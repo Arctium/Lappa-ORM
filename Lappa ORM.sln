@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22310.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lappa ORM", "Lappa ORM\Lappa ORM.csproj", "{C6E26FB4-A5CA-49A0-82C8-8FEF3CAA8613}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ArchitectureIndependent = Debug|ArchitectureIndependent
+		Release|ArchitectureIndependent = Release|ArchitectureIndependent
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C6E26FB4-A5CA-49A0-82C8-8FEF3CAA8613}.Debug|ArchitectureIndependent.ActiveCfg = Debug|Any CPU
+		{C6E26FB4-A5CA-49A0-82C8-8FEF3CAA8613}.Debug|ArchitectureIndependent.Build.0 = Debug|Any CPU
+		{C6E26FB4-A5CA-49A0-82C8-8FEF3CAA8613}.Release|ArchitectureIndependent.ActiveCfg = Release|Any CPU
+		{C6E26FB4-A5CA-49A0-82C8-8FEF3CAA8613}.Release|ArchitectureIndependent.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

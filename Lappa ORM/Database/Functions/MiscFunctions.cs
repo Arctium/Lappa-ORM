@@ -21,7 +21,7 @@ namespace Lappa_ORM
         public bool Exists<TEntity>()
         {
             var tableName = typeof(TEntity).Name.Pluralize();
-            var data = Select($"SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = '{connection.Database}' AND table_name = '{tableName}'", tableName);
+            var data = Select(string.Format("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = '{0}' AND table_name = '{1}'"), connection.Database, tableName, tableName);
 
             return (int)data?.Rows[0]["ct"] == 1 ? true : false;
         }

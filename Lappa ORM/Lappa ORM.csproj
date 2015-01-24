@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lappa_ORM</RootNamespace>
     <AssemblyName>LappaORM</AssemblyName>
-    <TargetFrameworkVersion>v4.5.3</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
@@ -31,7 +31,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>experimental</LangVersion>
+    <LangVersion>6</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>

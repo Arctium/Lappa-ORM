@@ -35,7 +35,7 @@ namespace Lappa_ORM
             {
                 if (builder.Properties[i].PropertyType.IsArray)
                 {
-                    var arr = builder.Properties[i].GetValue(Activator.CreateInstance(typeof(T))) as Array;
+                    var arr = builder.Properties[i].GetValue(new T()) as Array;
 
                     arrayFieldCount += arr.Length - 1;
                 }
@@ -112,7 +112,7 @@ namespace Lappa_ORM
                 // TODO: Optimize foreign key assignment (slow atm...)
                 Parallel.ForEach(datapPartitioner, (dataRange, loopState) =>
                 {
-                    for (int i = dataRange.Item1; i < dataRange.Item2; i++)
+                    for (var i = dataRange.Item1; i < dataRange.Item2; i++)
                     {
                         entities[i] = new T();
 
@@ -128,7 +128,7 @@ namespace Lappa_ORM
                                 {
                                     for (var c = 0; c < groupCount; c++, j++)
                                     {
-                                        var arr = builder.Properties[j].GetValue(Activator.CreateInstance(typeof(T))) as Array;
+                                        var arr = builder.Properties[j].GetValue(new T()) as Array;
 
                                         for (var k = 0; k < arr.Length; k++)
                                             arr.SetValue(data.Rows[i][j + (k * groupCount)], k);
@@ -138,7 +138,7 @@ namespace Lappa_ORM
                                 }
                                 else
                                 {
-                                    var arr = builder.Properties[j].GetValue(Activator.CreateInstance(typeof(T))) as Array;
+                                    var arr = builder.Properties[j].GetValue(new T()) as Array;
 
                                     for (var k = 0; k < arr.Length; k++)
                                         arr.SetValue(data.Rows[i][j + k], k);
@@ -155,8 +155,6 @@ namespace Lappa_ORM
                         entities[i].InitializeNonTableProperties();
                     }
                 });
-
-                //parentDb.AssignForeignKeyDataNew(entities, foreignKeys, groups);
             }
             else
             {

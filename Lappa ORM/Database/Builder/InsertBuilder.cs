@@ -50,12 +50,13 @@ namespace Lappa_ORM
         {
             var queries = new List<string>();
             var values = new Dictionary<string, object>(properties.Length);
+            var typeName = typeof(T).Name.Pluralize();
 
             for (var i = 0; i < properties.Length; i++)
             {
                 if (properties[i].PropertyType.IsArray)
                 {
-                    var arr = (PropertyGetter[i].GetValue(Activator.CreateInstance<T>()) as Array);
+                    var arr = (PropertyGetter[i].GetValue(new T()) as Array);
 
                     for (var j = 1; j <= arr.Length; j++)
                         values.Add(properties[i].Name + j, new object());
@@ -64,7 +65,7 @@ namespace Lappa_ORM
                     values.Add(properties[i].Name, new object());
             }
 
-            sqlQuery.AppendFormat("INSERT INTO " + QuerySettings.Part0 + " (", typeof(T).Name.Pluralize());
+            sqlQuery.AppendFormat("INSERT INTO " + QuerySettings.Part0 + " (", typeName);
 
             foreach (var name in values.Keys)
                 sqlQuery.AppendFormat(QuerySettings.Part0 + ",", name);
@@ -85,7 +86,7 @@ namespace Lappa_ORM
 
                     sqlQuery = new StringBuilder();
 
-                    sqlQuery.AppendFormat("INSERT INTO " + QuerySettings.Part0 + " (", typeof(T).Name.Pluralize());
+                    sqlQuery.AppendFormat("INSERT INTO " + QuerySettings.Part0 + " (", typeName);
 
                     foreach (var name in values.Keys)
                         sqlQuery.AppendFormat(QuerySettings.Part0 + ",", name);

@@ -77,7 +77,7 @@ namespace Lappa_ORM
             query.AppendFormat(querySettings.Equal, fkName, value);
 
             var entities = entityType.CreateList();
-            var data = Task.Run(() => Select(query.ToString(), name.Pluralize())).Result;
+            var data = Select(query.ToString(), name.Pluralize());
 
             if (data != null)
             {

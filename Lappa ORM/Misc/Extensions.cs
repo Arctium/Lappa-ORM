@@ -100,7 +100,9 @@ namespace Lappa_ORM.Misc
 
         internal static object GetValue<T>(this Func<T, object> action, T entity)
         {
-            return action.Invoke(entity);
+            var ret = action.Invoke(entity);
+
+            return ret is bool ? Convert.ToByte(ret) : ret;
         }
 
         internal static void SetValue<T>(this Action<T, object> action, T entity, object value)

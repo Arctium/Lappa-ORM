@@ -30,7 +30,7 @@ namespace Lappa_ORM
                 }
                 else if (!properties[i].HasAttribute<AutoIncrementAttribute>())
                 {
-                    values.Add(properties[i].Name, properties[i].PropertyType.IsEquivalentTo(typeof(bool)) ? Convert.ToByte(query.PropertyGetter[i].GetValue(entity)) : query.PropertyGetter[i].GetValue(entity));
+                    values.Add(properties[i].Name, query.PropertyGetter[i].GetValue(entity));
                 }
             }
 

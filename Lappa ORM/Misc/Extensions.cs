@@ -40,13 +40,9 @@ namespace Lappa_ORM.Misc
             if (value is bool)
                 return Convert.ToByte(value);
             else if (destType.IsEnum)
-            {
-                var type = destType.IsEnum ? destType.GetEnumUnderlyingType() : destType;
+                return Convert.ChangeType(value, destType.GetEnumUnderlyingType());
 
-                return Convert.ChangeType(value, type);
-            }
-
-            return value;
+            return Convert.ChangeType(value, destType);
         }
 
         internal static Task<int> FillAsync(this DbDataAdapter adapter, DataTable dt)

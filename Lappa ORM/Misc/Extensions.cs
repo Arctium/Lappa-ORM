@@ -105,7 +105,7 @@ namespace Lappa_ORM.Misc
         {
             var ret = action.Invoke(entity);
 
-            return ChangeType(ret, ret.GetType());
+            return ret?.ChangeType(ret.GetType());
         }
 
         internal static void SetValue<T>(this Action<T, object> action, T entity, object value)

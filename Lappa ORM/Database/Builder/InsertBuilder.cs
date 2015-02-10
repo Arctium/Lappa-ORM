@@ -22,22 +22,31 @@ namespace Lappa_ORM
 
             foreach (var val in values.Values)
             {
-                if (val != null && val.GetType().IsArray)
+                if (val != null)
                 {
-                    var arr = val as Array;
+                    Type valType;
 
-                    for (var i = 0; i < arr.Length; i++)
-                        sqlQuery.AppendFormat("'{0}',", arr.GetValue(i));
+                    if ((valType = val.GetType()).IsArray)
+                    {
+                        valType = valType.GetElementType();
+
+                        var arr = val as Array;
+
+                        for (var i = 0; i < arr.Length; i++)
+                            sqlQuery.AppendFormat("'{0}',", arr.GetValue(i).ChangeType(valType));
+                    }
+                    else
+                    {
+                        var value = val.ChangeType(valType);
+
+                        if (value is string)
+                            value = ((string)value).Replace("\"", "\"\"").Replace("'", @"\'");
+
+                        sqlQuery.AppendFormat("'{0}',", value);
+                    }
                 }
                 else
-                {
-                    var value = val?.ChangeType(val.GetType());
-
-                    if (value is string)
-                        value = ((string)value).Replace("\"", "\"\"").Replace("'", @"\'");
-
-                    sqlQuery.AppendFormat("'{0}',", value);
-                }
+                    sqlQuery.AppendFormat("'',");
             }
 
             sqlQuery.Append(")");
@@ -59,10 +68,10 @@ namespace Lappa_ORM
                     var arr = (PropertyGetter[i].GetValue(new T()) as Array);
 
                     for (var j = 1; j <= arr.Length; j++)
-                        values.Add(properties[i].Name + j, new object());
+                        values.Add(properties[i].Name + j, null);
                 }
                 else
-                    values.Add(properties[i].Name, new object());
+                    values.Add(properties[i].Name, null);
             }
 
             sqlQuery.AppendFormat("INSERT INTO " + QuerySettings.Part0 + " (", typeName);
@@ -101,9 +110,10 @@ namespace Lappa_ORM
                     if (properties[i].PropertyType.IsArray)
                     {
                         var arr = (PropertyGetter[i].GetValue(entity) as Array);
+                        var arrElementType = arr.GetType().GetElementType();
 
                         for (var j = 1; j <= arr.Length; j++)
-                            values[properties[i].Name + j] = arr.GetValue(j - 1);
+                            values[properties[i].Name + j] = arr.GetValue(j - 1).ChangeType(arrElementType);
                     }
                     else if (!properties[i].HasAttribute<AutoIncrementAttribute>())
                     {
@@ -118,15 +128,22 @@ namespace Lappa_ORM
 
                 foreach (var val in values.Values)
                 {
-                    if (val.GetType().IsArray)
+                    if (val != null)
                     {
-                        var arr = val as Array;
+                        var valType = val.GetType();
 
-                        for (var i = 0; i < arr.Length; i++)
-                            sqlQuery.AppendFormat("'{0}',", arr.GetValue(i));
+                        if (valType.IsArray)
+                        {
+                            valType = valType.GetElementType();
+
+                            var arr = val as Array;
+
+                            for (var i = 0; i < arr.Length; i++)
+                                sqlQuery.AppendFormat("'{0}',", arr.GetValue(i).ChangeType(valType));
+                        }
+                        else
+                            sqlQuery.AppendFormat("'{0}',", val.ChangeType(valType));
                     }
-                    else if (val != null)
-                        sqlQuery.AppendFormat("'{0}',", val is bool ? Convert.ToByte(val) : val.ChangeType(val.GetType()));
                     else
                         sqlQuery.AppendFormat("'',");
                 }

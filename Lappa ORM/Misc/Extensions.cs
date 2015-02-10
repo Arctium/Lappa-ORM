@@ -37,9 +37,16 @@ namespace Lappa_ORM.Misc
 
         internal static object ChangeType(this object value, Type destType)
         {
-            var type = destType.IsEnum ? destType.GetEnumUnderlyingType() : destType;
+            if (value is bool)
+                return Convert.ToByte(value);
+            else if (destType.IsEnum)
+            {
+                var type = destType.IsEnum ? destType.GetEnumUnderlyingType() : destType;
 
-            return Convert.ChangeType(value, type);
+                return Convert.ChangeType(value, type);
+            }
+
+            return value;
         }
 
         internal static Task<int> FillAsync(this DbDataAdapter adapter, DataTable dt)
@@ -102,7 +109,7 @@ namespace Lappa_ORM.Misc
         {
             var ret = action.Invoke(entity);
 
-            return ret is bool ? Convert.ToByte(ret) : ret;
+            return ChangeType(ret, ret.GetType());
         }
 
         internal static void SetValue<T>(this Action<T, object> action, T entity, object value)

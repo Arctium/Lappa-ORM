@@ -92,7 +92,7 @@ namespace Lappa_ORM
 
                 value = value ?? GetExpressionValue(memberExp);
 
-                sqlQuery.AppendFormat(querySettings.Equal + ", ", member, value is bool ? Convert.ToByte(value) : value);
+                sqlQuery.AppendFormat(querySettings.Equal + ", ", member, value);
             }
 
             if (!preSql)

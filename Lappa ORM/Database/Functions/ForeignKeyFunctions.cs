@@ -98,7 +98,7 @@ namespace Lappa_ORM
                         var entity = Activator.CreateInstance(entityType) as Entity;
 
                         for (var j = 0; j < properties.Length; j++)
-                            properties[j].SetValue(entity, data.Rows[i][properties[j].Name].ChangeType(properties[j].PropertyType));
+                            properties[j].SetValue(entity, data.Rows[i][properties[j].Name].ChangeTypeGet(properties[j].PropertyType));
 
                         entity.InitializeNonTableProperties();
 

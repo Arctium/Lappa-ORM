@@ -27,7 +27,7 @@ namespace Lappa_ORM
                     var arrElementType = arr.GetType().GetElementType();
 
                     for (var j = 0; j <= arr.Length; j++)
-                        values.Add(properties[i].Name + j, arr.GetValue(j).ChangeType(arrElementType));
+                        values.Add(properties[i].Name + j, arr.GetValue(j).ChangeTypeGet(arrElementType));
                 }
                 else if (!properties[i].HasAttribute<AutoIncrementAttribute>())
                 {

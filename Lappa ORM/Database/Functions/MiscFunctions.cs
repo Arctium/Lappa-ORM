@@ -13,7 +13,7 @@ namespace Lappa_ORM
             var data = Select($"SHOW TABLE STATUS LIKE '{tableName}';", tableName);
 
             if (data?.Rows.Count == 1)
-                return data.Rows[0]["Auto_increment"].ChangeType<TReturn>();
+                return data.Rows[0]["Auto_increment"].ChangeTypeGet<TReturn>();
 
             return default(TReturn);
         }

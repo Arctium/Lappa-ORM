@@ -169,9 +169,9 @@ namespace Lappa_ORM
                             var propertyInfo = memberInfo.Member as PropertyInfo;
 
                             if (fieldInfo != null)
-                                val = fieldInfo.GetValue(objReference).ChangeType(fieldInfo.FieldType);
+                                val = fieldInfo.GetValue(objReference).ChangeTypeSet(fieldInfo.FieldType);
                             else if (propertyInfo != null)
-                                val = propertyInfo.GetValue(objReference).ChangeType(propertyInfo.PropertyType);
+                                val = propertyInfo.GetValue(objReference).ChangeTypeSet(propertyInfo.PropertyType);
                         }
 
                         if (bExpression != null && val == null)
@@ -184,9 +184,9 @@ namespace Lappa_ORM
                                 var propertyInfo = memberInfo.Member as PropertyInfo;
 
                                 if (fieldInfo != null)
-                                    val = fieldInfo.GetValue(objReference).ChangeType(fieldInfo.FieldType);
+                                    val = fieldInfo.GetValue(objReference).ChangeTypeSet(fieldInfo.FieldType);
                                 else if (propertyInfo != null)
-                                    val = propertyInfo.GetValue(objReference).ChangeType(propertyInfo.PropertyType);
+                                    val = propertyInfo.GetValue(objReference).ChangeTypeSet(propertyInfo.PropertyType);
                             }
                         }
 

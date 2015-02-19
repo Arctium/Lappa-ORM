@@ -33,11 +33,11 @@ namespace Lappa_ORM
                         var arr = val as Array;
 
                         for (var i = 0; i < arr.Length; i++)
-                            sqlQuery.AppendFormat("'{0}',", arr.GetValue(i).ChangeType(valType));
+                            sqlQuery.AppendFormat("'{0}',", arr.GetValue(i).ChangeTypeSet(valType));
                     }
                     else
                     {
-                        var value = val.ChangeType(valType);
+                        var value = val.ChangeTypeSet(valType);
 
                         if (value is string)
                             value = ((string)value).Replace("\"", "\"\"").Replace("'", @"\'");
@@ -113,7 +113,7 @@ namespace Lappa_ORM
                         var arrElementType = arr.GetType().GetElementType();
 
                         for (var j = 1; j <= arr.Length; j++)
-                            values[properties[i].Name + j] = arr.GetValue(j - 1).ChangeType(arrElementType);
+                            values[properties[i].Name + j] = arr.GetValue(j - 1).ChangeTypeGet(arrElementType);
                     }
                     else if (!properties[i].HasAttribute<AutoIncrementAttribute>())
                     {
@@ -139,10 +139,10 @@ namespace Lappa_ORM
                             var arr = val as Array;
 
                             for (var i = 0; i < arr.Length; i++)
-                                sqlQuery.AppendFormat("'{0}',", arr.GetValue(i).ChangeType(valType));
+                                sqlQuery.AppendFormat("'{0}',", arr.GetValue(i).ChangeTypeSet(valType));
                         }
                         else
-                            sqlQuery.AppendFormat("'{0}',", val.ChangeType(valType));
+                            sqlQuery.AppendFormat("'{0}',", val.ChangeTypeSet(valType));
                     }
                     else
                         sqlQuery.AppendFormat("'',");

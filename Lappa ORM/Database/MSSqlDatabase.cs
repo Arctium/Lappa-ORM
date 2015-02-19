@@ -71,14 +71,14 @@ namespace Lappa_ORM
                         for (var j = 0; j < fieldCount; j++)
                         {
                             if (!builder.Properties[j].PropertyType.IsArray)
-                                builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j].ChangeType(builder.Properties[j].PropertyType));
+                                builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j].ChangeTypeGet(builder.Properties[j].PropertyType));
                             else
                             {
                                 var arr = builder.Properties[j].GetValue(new T()) as Array;
                                 var elementType = arr.GetType().GetElementType();
 
                                 for (var k = 0; k < arrayFieldCount + 1; k++)
-                                    arr.SetValue(data.Rows[i][j + k].ChangeType(elementType), k);
+                                    arr.SetValue(data.Rows[i][j + k].ChangeTypeGet(elementType), k);
 
                                 builder.PropertySetter[j].SetValue(entities[i], arr);
                             }
@@ -101,14 +101,14 @@ namespace Lappa_ORM
                         for (var j = 0; j < fieldCount; j++)
                         {
                             if (!builder.Properties[j].PropertyType.IsArray)
-                                builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j].ChangeType(builder.Properties[j].PropertyType));
+                                builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j].ChangeTypeGet(builder.Properties[j].PropertyType));
                             else
                             {
                                 var arr = builder.Properties[j].GetValue(new T()) as Array;
                                 var elementType = arr.GetType().GetElementType();
 
                                 for (var k = 0; k < arrayFieldCount + 1; k++)
-                                    arr.SetValue(data.Rows[i][j + k].ChangeType(elementType), k);
+                                    arr.SetValue(data.Rows[i][j + k].ChangeTypeGet(elementType), k);
 
                                 builder.PropertySetter[j].SetValue(entities[i], arr);
                             }

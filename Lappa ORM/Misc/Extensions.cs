@@ -30,12 +30,25 @@ namespace Lappa_ORM.Misc
             return Activator.CreateInstance(genericType) as IList;
         }
 
-        internal static T ChangeType<T>(this object value)
+        internal static T ChangeTypeGet<T>(this object value)
         {
-            return (T)ChangeType(value, typeof(T));
+            return (T)ChangeTypeGet(value, typeof(T));
         }
 
-        internal static object ChangeType(this object value, Type destType)
+        internal static object ChangeTypeGet(this object value, Type destType)
+        {
+            if (destType.IsEnum)
+                return Convert.ChangeType(value, destType.GetEnumUnderlyingType());
+
+            return Convert.ChangeType(value, destType);
+        }
+
+        internal static T ChangeTypeSet<T>(this object value)
+        {
+            return (T)ChangeTypeSet(value, typeof(T));
+        }
+
+        internal static object ChangeTypeSet(this object value, Type destType)
         {
             if (value is bool)
                 return Convert.ToByte(value);
@@ -105,7 +118,7 @@ namespace Lappa_ORM.Misc
         {
             var ret = action.Invoke(entity);
 
-            return ret?.ChangeType(ret.GetType());
+            return ret?.ChangeTypeGet(ret.GetType());
         }
 
         internal static void SetValue<T>(this Action<T, object> action, T entity, object value)

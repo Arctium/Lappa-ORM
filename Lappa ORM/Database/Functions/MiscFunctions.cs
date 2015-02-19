@@ -1,6 +1,7 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Data;
 using Lappa_ORM.Misc;
 
 namespace Lappa_ORM
@@ -21,9 +22,13 @@ namespace Lappa_ORM
         public bool Exists<TEntity>()
         {
             var tableName = typeof(TEntity).Name.Pluralize();
-            var data = Select(string.Format("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = '{0}' AND table_name = '{1}'"), connection.Database, tableName, tableName);
 
-            return (int)data?.Rows[0]["ct"] == 1 ? true : false;
+            DataTable result;
+
+            using (var connection = CreateConnection())
+                result = Select(string.Format("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = '{0}' AND table_name = '{1}'"), connection.Database, tableName, tableName);
+
+            return (int)result?.Rows[0]["ct"] == 1 ? true : false;
         }
     }
 }

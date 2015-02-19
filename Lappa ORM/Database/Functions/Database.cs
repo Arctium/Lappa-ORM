@@ -11,15 +11,27 @@ using Lappa_ORM.Misc;
 
 namespace Lappa_ORM
 {
-    public partial class Database : IDisposable
+    public partial class Database
     {
+        string connectionString;
         ConnectorSettings connSettings;
         QuerySettings querySettings;
-        DbConnection connection;
         IDatabase db;
 
-        public bool CreateConnection(string connString, ConnectionType type = ConnectionType.MYSQL)
+        DbConnection CreateConnection()
         {
+            var connection = connSettings.CreateObject("Connection") as DbConnection;
+
+            connection.ConnectionString = connectionString;
+
+            connection.Open();
+
+            return connection;
+        }
+
+        public bool Initialize(string connString, ConnectionType type = ConnectionType.MYSQL)
+        {
+            connectionString = connString;
             connSettings = new ConnectorSettings(type);
             querySettings = new QuerySettings(type);
 
@@ -28,23 +40,23 @@ namespace Lappa_ORM
             else if (type == ConnectionType.MSSQL)
                 db = new MSSqlDatabase(this);
 
+            var isOpen = false;
+
             try
             {
-                connection = connSettings.CreateObject("Connection") as DbConnection;
-                connection.ConnectionString = connString;
-
-                connection.Open();
+                using (var connection = CreateConnection())
+                    isOpen = connection.State == ConnectionState.Open;
             }
             catch
             {
                 return false;
             }
 
-            return connection.State == ConnectionState.Open;
+            return isOpen;
         }
 
         [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
-        internal DbCommand CreateSqlCommand(string sql, params object[] args)
+        internal DbCommand CreateSqlCommand(DbConnection connection, string sql, params object[] args)
         {
             var sqlCommand = connSettings.CreateObject("Command") as DbCommand;
 
@@ -69,9 +81,15 @@ namespace Lappa_ORM
         {
             try
             {
-                var cmd = CreateSqlCommand(sql, args);
+                var ret = false;
 
-                return await cmd.ExecuteNonQueryAsync() > 0;
+                using (var connection = CreateConnection())
+                {
+                    using (var cmd = CreateSqlCommand(connection, sql, args))
+                        ret = await cmd.ExecuteNonQueryAsync() > 0;
+                }
+
+                return ret;
             }
             catch
             {
@@ -83,9 +101,15 @@ namespace Lappa_ORM
         {
             try
             {
-                var cmd = CreateSqlCommand(sql, args);
+                var ret = false;
 
-                return cmd.ExecuteNonQuery() > 0;
+                using (var connection = CreateConnection())
+                {
+                    using (var cmd = CreateSqlCommand(connection, sql, args))
+                        ret = cmd.ExecuteNonQuery() > 0;
+                }
+
+                return ret;
             }
             catch
             {
@@ -97,22 +121,25 @@ namespace Lappa_ORM
         {
             try
             {
-                var result = new DataTable();
-                var adapter = connSettings.CreateObject("DataAdapter") as DbDataAdapter;
+                Task<int> fillTask = null;
 
-                adapter.SelectCommand = CreateSqlCommand(sql, args);
-                adapter.SelectCommand.CommandTimeout = 2147483;
+                var result = new DataTable { TableName = tableName };
 
-                result.TableName = tableName;
-
-                var fillTask = adapter.FillAsync(result);
-
-                return await fillTask.ContinueWith(res =>
+                using (var connection = CreateConnection())
                 {
-                    adapter.Dispose();
+                    using (var cmd = CreateSqlCommand(connection, sql, args))
+                    {
+                        using (var adapter = connSettings.CreateObject("DataAdapter") as DbDataAdapter)
+                        {
+                            adapter.SelectCommand = cmd;
+                            adapter.SelectCommand.CommandTimeout = 2147483;
 
-                    return result;
-                });
+                            fillTask = adapter.FillAsync(result);
+                        }
+                    }
+                }
+
+                return await fillTask?.ContinueWith(res => { return result; });
             }
             catch
             {
@@ -124,15 +151,21 @@ namespace Lappa_ORM
         {
             try
             {
-                var result = new DataTable();
-                var adapter = connSettings.CreateObject("DataAdapter") as DbDataAdapter;
+                var result = new DataTable { TableName = tableName };
 
-                adapter.SelectCommand = CreateSqlCommand(sql, args);
-                adapter.SelectCommand.CommandTimeout = 2147483;
+                using (var connection = CreateConnection())
+                {
+                    using (var cmd = CreateSqlCommand(connection, sql, args))
+                    {
+                        using (var adapter = connSettings.CreateObject("DataAdapter") as DbDataAdapter)
+                        {
+                            adapter.SelectCommand = cmd;
+                            adapter.SelectCommand.CommandTimeout = 2147483;
 
-                result.TableName = tableName;
-
-                adapter.Fill(result);
+                            adapter.Fill(result);
+                        }
+                    }
+                }
 
                 return result;
             }
@@ -141,27 +174,5 @@ namespace Lappa_ORM
                 return null;
             }
         }
-
-        #region IDisposable Support
-        bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    connection.Dispose();
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-        #endregion
     }
 }

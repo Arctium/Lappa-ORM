@@ -53,8 +53,8 @@ namespace Lappa_ORM
             if (data.Columns.Count != (fieldCount + arrayFieldCount + classFieldCount + structFieldCount))
             {
                 Trace.TraceError(string.Format("Table '{0}' (Column/Property count mismatch)", typeof(T).Name.Pluralize()));
-                Trace.TraceError(string.Format("Columns '{0}'", data.Columns.Count)); +structFieldCount
-                Trace.TraceError(string.Format("Properties '{0}'", fieldCount + arrayFieldCount + classFieldCount));
+                Trace.TraceError(string.Format("Columns '{0}'", data.Columns.Count));
+                Trace.TraceError(string.Format("Properties '{0}'", fieldCount + arrayFieldCount + classFieldCount + structFieldCount));
                 Trace.WriteLine("Press a key to continue loading.");
 
                 Console.ReadKey(true);

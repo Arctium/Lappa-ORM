@@ -143,6 +143,11 @@ namespace Lappa_ORM.Misc
             return property.GetCustomAttribute<T>();
         }
 
+        internal static bool IsStruct(this Type type)
+        {
+            return type.IsValueType && !type.IsEnum && !type.IsPrimitive;
+        }
+
         internal static Dictionary<TKey, TValue> AsDictionary<TKey, TValue>(this TValue[] data, Func<TValue, TKey> selector)
         {
             var dic = new Dictionary<TKey, TValue>(data.Length);

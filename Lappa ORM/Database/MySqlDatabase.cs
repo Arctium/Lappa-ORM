@@ -44,16 +44,16 @@ namespace Lappa_ORM
                 }
 
                 if (builder.Properties[i].PropertyType.IsClass)
-                    classFieldCount = builder.Properties[i].PropertyType.GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).Count() - 1;
+                    classFieldCount += builder.Properties[i].PropertyType.GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).Count() - 1;
 
-                if (builder.Properties[i].PropertyType.IsValueType && !builder.Properties[i].PropertyType.IsEnum && !builder.Properties[i].PropertyType.IsPrimitive)
-                    structFieldCount = builder.Properties[i].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length - 1;
+                if (builder.Properties[i].PropertyType.IsStruct())
+                    structFieldCount += builder.Properties[i].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length - 1;
             }
 
             if (data.Columns.Count != (fieldCount + arrayFieldCount + classFieldCount + structFieldCount))
             {
                 Trace.TraceError(string.Format("Table '{0}' (Column/Property count mismatch)", typeof(T).Name.Pluralize()));
-                Trace.TraceError(string.Format("Columns '{0}'", data.Columns.Count));
+                Trace.TraceError(string.Format("Columns '{0}'", data.Columns.Count)); +structFieldCount
                 Trace.TraceError(string.Format("Properties '{0}'", fieldCount + arrayFieldCount + classFieldCount));
                 Trace.WriteLine("Press a key to continue loading.");
 
@@ -64,8 +64,7 @@ namespace Lappa_ORM
 
             for (var i = 0; i < fieldCount; i++)
             {
-                if (builder.Properties[i].PropertyType.IsArray || builder.Properties[i].PropertyType.IsClass ||
-                    builder.Properties[i].PropertyType.IsValueType && !builder.Properties[i].PropertyType.IsEnum && !builder.Properties[i].PropertyType.IsPrimitive)
+                if (builder.Properties[i].PropertyType.IsArray || builder.Properties[i].PropertyType.IsClass || builder.Properties[i].PropertyType.IsStruct())
                     continue;
 
                 // Return an empty list if any column/property type mismatches
@@ -140,7 +139,7 @@ namespace Lappa_ORM
 
                                     builder.PropertySetter[j].SetValue(entities[i], instance);
                                 }
-                                else if (builder.Properties[j].PropertyType.IsValueType && !builder.Properties[j].PropertyType.IsEnum && !builder.Properties[j].PropertyType.IsPrimitive)
+                                else if (builder.Properties[j].PropertyType.IsStruct())
                                 {
                                     var instanceFields = builder.Properties[j].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
@@ -211,7 +210,7 @@ namespace Lappa_ORM
 
                                     builder.PropertySetter[j].SetValue(entities[i], instance);
                                 }
-                                else if (builder.Properties[j].PropertyType.IsValueType && !builder.Properties[j].PropertyType.IsEnum && !builder.Properties[j].PropertyType.IsPrimitive)
+                                else if (builder.Properties[j].PropertyType.IsStruct())
                                 {
                                     var instanceFields = builder.Properties[j].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);

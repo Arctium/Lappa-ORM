@@ -84,7 +84,7 @@ namespace Lappa_ORM
                 if (data.Rows.Count == 0)
                     return entities;
 
-                var properties = entityType.GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+                var properties = entityType.GetReadWriteProperties();
 
                 if (data.Columns.Count != properties.Length)
                     throw new NotSupportedException("Columns doesn't match the entity fields.");

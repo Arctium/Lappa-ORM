@@ -44,7 +44,7 @@ namespace Lappa_ORM
                 }
 
                 if (builder.Properties[i].PropertyType.IsClass)
-                    classFieldCount += builder.Properties[i].PropertyType.GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).Count() - 1;
+                    classFieldCount += builder.Properties[i].PropertyType.GetReadWriteProperties().Length - 1;
 
                 if (builder.Properties[i].PropertyType.IsStruct())
                     structFieldCount += builder.Properties[i].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length - 1;
@@ -131,7 +131,7 @@ namespace Lappa_ORM
                             {
                                 if (builder.Properties[j].PropertyType.IsClass)
                                 {
-                                    var instanceFields = builder.Properties[j].PropertyType.GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+                                    var instanceFields = builder.Properties[j].PropertyType.GetReadWriteProperties();
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
                                     for (var f = 0; f < instanceFields.Length; f++)
@@ -202,7 +202,7 @@ namespace Lappa_ORM
                             {
                                 if (builder.Properties[j].PropertyType.IsClass)
                                 {
-                                    var instanceFields = builder.Properties[j].PropertyType.GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+                                    var instanceFields = builder.Properties[j].PropertyType.GetReadWriteProperties();
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
                                     for (var f = 0; f < instanceFields.Length; f++)
@@ -264,7 +264,6 @@ namespace Lappa_ORM
             return CreateEntities(data, builder).ToList();
         }
 
-        // Code duplication needed!
         public Dictionary<TKey, TValue> GetEntityDictionary<TKey, TValue>(DataTable data, QueryBuilder<TValue> builder, Func<TValue, TKey> func) where TValue : Entity, new()
         {
             return CreateEntities(data, builder).AsDictionary(func);

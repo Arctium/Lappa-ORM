@@ -15,7 +15,7 @@ namespace Lappa_ORM
         #region Add
         public bool Add<TEntity>(TEntity entity) where TEntity : Entity, new()
         {
-            var properties = typeof(TEntity).GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+            var properties = typeof(TEntity).GetReadWriteProperties();
             var values = new Dictionary<string, object>(properties.Length);
             var query = new QueryBuilder<TEntity>(properties);
 
@@ -40,7 +40,7 @@ namespace Lappa_ORM
 
         public void Add<TEntity>(IEnumerable<TEntity> entities) where TEntity : Entity, new()
         {
-            var properties = typeof(TEntity).GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+            var properties = typeof(TEntity).GetReadWriteProperties();
             var query = new QueryBuilder<TEntity>(properties);
             var queries = query.BuildBulkInsert(properties, entities);
 
@@ -51,7 +51,7 @@ namespace Lappa_ORM
         // Code duplication of Add<TEntity>(IEnumerable<TEntity> entities)
         public void Add<TEntity>(List<TEntity> entities) where TEntity : Entity, new()
         {
-            var properties = typeof(TEntity).GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+            var properties = typeof(TEntity).GetReadWriteProperties();
             var query = new QueryBuilder<TEntity>(properties);
             var queries = query.BuildBulkInsert(properties, entities);
 
@@ -63,7 +63,7 @@ namespace Lappa_ORM
         public bool Update<TEntity>(TEntity entity) where TEntity : Entity, new()
         {
             var type = typeof(TEntity);
-            var properties = type.GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+            var properties = type.GetReadWriteProperties();
             var primaryKeys = type.GetProperties().Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.Name == "Id" || p.Name == type.Name + "Id").ToArray();
             var builder = new QueryBuilder<TEntity>();
             var query = builder.BuildUpdate(querySettings, entity, properties, primaryKeys);

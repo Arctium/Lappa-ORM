@@ -23,7 +23,7 @@ namespace Lappa_ORM
             if (!Exists<TEntity>() || replaceTable)
             {
                 // Exclude foreign key and non db related properties.
-                var properties = typeof(TEntity).GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+                var properties = typeof(TEntity).GetReadWriteProperties();
                 var fields = new Dictionary<string, PropertyInfo>();
                 var query = new QueryBuilder<TEntity>(properties);
                 var entity = new TEntity();

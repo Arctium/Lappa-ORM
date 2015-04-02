@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Lappa_ORM.Misc;
 
@@ -23,8 +24,10 @@ namespace Lappa_ORM
 
         public T[] CreateEntities<T>(DataTable data, QueryBuilder<T> builder) where T : Entity, new()
         {
-            var arrayFieldCount = 0;
             var fieldCount = builder.PropertySetter.Length;
+            var arrayFieldCount = 0;
+            var classFieldCount = 0;
+            var structFieldCount = 0;
 
             if (data == null || data.Rows.Count == 0)
                 return new T[0];
@@ -39,13 +42,19 @@ namespace Lappa_ORM
 
                     arrayFieldCount = arr.Length - 1;
                 }
+
+                if (builder.Properties[i].PropertyType.IsClass)
+                    classFieldCount += builder.Properties[i].PropertyType.GetReadWriteProperties().Length - 1;
+
+                if (builder.Properties[i].PropertyType.IsStruct())
+                    structFieldCount += builder.Properties[i].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length - 1;
             }
 
-            if (data.Columns.Count != (fieldCount + arrayFieldCount))
+            if (data.Columns.Count != (fieldCount + arrayFieldCount + classFieldCount + structFieldCount))
             {
                 Trace.TraceError(string.Format("Table '{0}' (Column/Property count mismatch)", typeof(T).Name.Pluralize()));
                 Trace.TraceError(string.Format("Columns '{0}'", data.Columns.Count));
-                Trace.TraceError(string.Format("Properties '{0}'", fieldCount + arrayFieldCount));
+                Trace.TraceError(string.Format("Properties '{0}'", fieldCount + arrayFieldCount + classFieldCount + structFieldCount));
                 Trace.WriteLine("Press a key to continue loading.");
 
                 Console.ReadKey(true);
@@ -71,7 +80,30 @@ namespace Lappa_ORM
                         for (var j = 0; j < fieldCount; j++)
                         {
                             if (!builder.Properties[j].PropertyType.IsArray)
-                                builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j].ChangeTypeGet(builder.Properties[j].PropertyType));
+                            {
+                                if (builder.Properties[j].PropertyType.IsClass)
+                                {
+                                    var instanceFields = builder.Properties[j].PropertyType.GetReadWriteProperties();
+                                    var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
+
+                                    for (var f = 0; f < instanceFields.Length; f++)
+                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
+
+                                    builder.PropertySetter[j].SetValue(entities[i], instance);
+                                }
+                                else if (builder.Properties[j].PropertyType.IsStruct())
+                                {
+                                    var instanceFields = builder.Properties[j].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
+                                    var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
+
+                                    for (var f = 0; f < instanceFields.Length; f++)
+                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
+
+                                    builder.PropertySetter[j].SetValue(entities[i], instance);
+                                }
+                                else
+                                    builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j].ChangeTypeGet(builder.Properties[j].PropertyType));
+                            }
                             else
                             {
                                 var arr = builder.Properties[j].GetValue(new T()) as Array;
@@ -101,7 +133,30 @@ namespace Lappa_ORM
                         for (var j = 0; j < fieldCount; j++)
                         {
                             if (!builder.Properties[j].PropertyType.IsArray)
-                                builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j].ChangeTypeGet(builder.Properties[j].PropertyType));
+                            {
+                                if (builder.Properties[j].PropertyType.IsClass)
+                                {
+                                    var instanceFields = builder.Properties[j].PropertyType.GetReadWriteProperties();
+                                    var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
+
+                                    for (var f = 0; f < instanceFields.Length; f++)
+                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f]);
+
+                                    builder.PropertySetter[j].SetValue(entities[i], instance);
+                                }
+                                else if (builder.Properties[j].PropertyType.IsStruct())
+                                {
+                                    var instanceFields = builder.Properties[j].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
+                                    var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
+
+                                    for (var f = 0; f < instanceFields.Length; f++)
+                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f]);
+
+                                    builder.PropertySetter[j].SetValue(entities[i], instance);
+                                }
+                                else
+                                    builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j].ChangeTypeGet(builder.Properties[j].PropertyType));
+                            }
                             else
                             {
                                 var arr = builder.Properties[j].GetValue(new T()) as Array;

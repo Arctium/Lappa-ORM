@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -146,6 +147,11 @@ namespace Lappa_ORM.Misc
         internal static bool IsStruct(this Type type)
         {
             return type.IsValueType && !type.IsEnum && !type.IsPrimitive;
+        }
+
+        internal static PropertyInfo[] GetReadWriteProperties(this Type t)
+        {
+            return t.GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
         }
 
         internal static Dictionary<TKey, TValue> AsDictionary<TKey, TValue>(this TValue[] data, Func<TValue, TKey> selector)

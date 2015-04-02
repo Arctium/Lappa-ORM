@@ -18,7 +18,7 @@ namespace Lappa_ORM
         // TODO Re-add member selection
         public List<TEntity> Select<TEntity>() where TEntity : Entity, new()
         {
-            var properties = typeof(TEntity).GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+            var properties = typeof(TEntity).GetReadWriteProperties();
             /*var members = (newExpression?.Body as NewExpression)?.Members;
             var builder = new QueryBuilder<T>(properties, members);
             var data = await Select(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll());*/
@@ -31,7 +31,7 @@ namespace Lappa_ORM
         // TODO Re-add member selection
         public async Task<List<TEntity>> SelectAsync<TEntity>() where TEntity : Entity, new()
         {
-            var properties = typeof(TEntity).GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+            var properties = typeof(TEntity).GetReadWriteProperties();
             /*var members = (newExpression?.Body as NewExpression)?.Members;
             var builder = new QueryBuilder<T>(properties, members);
             var data = await Select(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll());*/
@@ -49,7 +49,7 @@ namespace Lappa_ORM
         // Code duplication of Task<List<T>> SelectAsync
         public async Task<Dictionary<TKey, TEntity>> SelectAsync<TKey, TEntity>(Func<TEntity, TKey> func) where TEntity : Entity, new()
         {
-            var properties = typeof(TEntity).GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+            var properties = typeof(TEntity).GetReadWriteProperties();
             var builder = new QueryBuilder<TEntity>(properties, null);
             var data = await SelectAsync(builder.BuildSelectAll(), typeof(TEntity).Name.Pluralize());
 
@@ -65,7 +65,7 @@ namespace Lappa_ORM
         public async Task<List<TEntity>> WhereAsync<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             var query = "";
-            var properties = typeof(TEntity).GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+            var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
             var builder = new QueryBuilder<TEntity>(properties, members);
 
@@ -88,7 +88,7 @@ namespace Lappa_ORM
         public async Task<TEntity> SingleAsync<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             var query = "";
-            var properties = typeof(TEntity).GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+            var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
             var builder = new QueryBuilder<TEntity>(properties, members);
 

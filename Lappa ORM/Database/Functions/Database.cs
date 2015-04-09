@@ -139,7 +139,10 @@ namespace Lappa_ORM
                     }
                 }
 
-                return await fillTask?.ContinueWith(res => { return result; });
+                if (fillTask == null)
+                    return null;
+
+                return await fillTask.ContinueWith(res => { return result; });
             }
             catch
             {

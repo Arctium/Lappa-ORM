@@ -144,6 +144,11 @@ namespace Lappa_ORM.Misc
             return property.GetCustomAttribute<T>();
         }
 
+        internal static bool IsClass(this Type type)
+        {
+            return type.IsClass && type != typeof(string);
+        }
+
         internal static bool IsStruct(this Type type)
         {
             return type.IsValueType && !type.IsEnum && !type.IsPrimitive;

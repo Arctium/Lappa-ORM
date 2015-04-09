@@ -43,7 +43,7 @@ namespace Lappa_ORM
                     arrayFieldCount += arr.Length - 1;
                 }
 
-                if (builder.Properties[i].PropertyType.IsClass)
+                if (builder.Properties[i].PropertyType.IsClass())
                     classFieldCount += builder.Properties[i].PropertyType.GetReadWriteProperties().Length - 1;
 
                 if (builder.Properties[i].PropertyType.IsStruct())
@@ -64,7 +64,7 @@ namespace Lappa_ORM
 
             for (var i = 0; i < fieldCount; i++)
             {
-                if (builder.Properties[i].PropertyType.IsArray || builder.Properties[i].PropertyType.IsClass || builder.Properties[i].PropertyType.IsStruct())
+                if (builder.Properties[i].PropertyType.IsArray || builder.Properties[i].PropertyType.IsClass() || builder.Properties[i].PropertyType.IsStruct())
                     continue;
 
                 // Return an empty list if any column/property type mismatches
@@ -129,7 +129,7 @@ namespace Lappa_ORM
                         {
                             if (!builder.Properties[j].PropertyType.IsArray)
                             {
-                                if (builder.Properties[j].PropertyType.IsClass)
+                                if (builder.Properties[j].PropertyType.IsClass())
                                 {
                                     var instanceFields = builder.Properties[j].PropertyType.GetReadWriteProperties();
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
@@ -200,7 +200,7 @@ namespace Lappa_ORM
                         {
                             if (!builder.Properties[j].PropertyType.IsArray)
                             {
-                                if (builder.Properties[j].PropertyType.IsClass)
+                                if (builder.Properties[j].PropertyType.IsClass())
                                 {
                                     var instanceFields = builder.Properties[j].PropertyType.GetReadWriteProperties();
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);

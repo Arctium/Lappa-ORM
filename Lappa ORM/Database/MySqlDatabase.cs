@@ -42,11 +42,9 @@ namespace Lappa_ORM
 
                     arrayFieldCount += arr.Length - 1;
                 }
-
-                if (builder.Properties[i].PropertyType.IsClass())
+                else if (builder.Properties[i].PropertyType.IsClass())
                     classFieldCount += builder.Properties[i].PropertyType.GetReadWriteProperties().Length - 1;
-
-                if (builder.Properties[i].PropertyType.IsStruct())
+                else if (builder.Properties[i].PropertyType.IsStruct())
                     structFieldCount += builder.Properties[i].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length - 1;
             }
 

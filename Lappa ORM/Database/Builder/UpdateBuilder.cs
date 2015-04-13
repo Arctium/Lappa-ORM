@@ -23,7 +23,7 @@ namespace Lappa_ORM
             sqlQuery.AppendFormat(querySettings.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
-                sqlQuery.AppendFormat(querySettings.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
+                sqlQuery.AppendFormat(numberFormat, querySettings.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
 
             sqlQuery.Replace(", WHERE", " WHERE");
             sqlQuery.Replace(", FROM", " FROM");
@@ -39,13 +39,13 @@ namespace Lappa_ORM
             sqlQuery.AppendFormat(querySettings.UpdateQuery, typeName.Pluralize(), typeName[0]);
 
             for (var i = 0; i < fields.Length; i++)
-                sqlQuery.AppendFormat(querySettings.Equal + ", ", fields[i], type.GetProperty(fields[i]).GetGetter<T>().GetValue(entity));
+                sqlQuery.AppendFormat(numberFormat, querySettings.Equal + ", ", fields[i], type.GetProperty(fields[i]).GetGetter<T>().GetValue(entity));
 
             sqlQuery.AppendFormat(querySettings.UpdateQueryEnd, typeName.Pluralize(), typeName[0]);
             sqlQuery.AppendFormat(querySettings.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
-                sqlQuery.AppendFormat(querySettings.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
+                sqlQuery.AppendFormat(numberFormat, querySettings.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
 
             sqlQuery.Replace(", WHERE", " WHERE");
             sqlQuery.Replace(", FROM", " FROM");
@@ -63,7 +63,7 @@ namespace Lappa_ORM
             for (var i = 0; i < fields.Length; i++)
                 sqlQuery.AppendFormat(querySettings.Equal + ", ", fields[i], type.GetProperty(fields[i]).GetGetter<T>().GetValue(entity));
 
-            sqlQuery.AppendFormat(querySettings.UpdateQueryEnd, typeName.Pluralize(), param);
+            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQueryEnd, typeName.Pluralize(), param);
 
             Visit(expression);
 
@@ -92,7 +92,7 @@ namespace Lappa_ORM
 
                 value = value ?? GetExpressionValue(memberExp);
 
-                sqlQuery.AppendFormat(querySettings.Equal + ", ", member, value);
+                sqlQuery.AppendFormat(numberFormat, querySettings.Equal + ", ", member, value);
             }
 
             if (!preSql)

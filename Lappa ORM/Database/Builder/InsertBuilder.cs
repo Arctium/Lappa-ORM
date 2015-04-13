@@ -33,7 +33,7 @@ namespace Lappa_ORM
                         var arr = val as Array;
 
                         for (var i = 0; i < arr.Length; i++)
-                            sqlQuery.AppendFormat("'{0}',", arr.GetValue(i).ChangeTypeSet(valType));
+                            sqlQuery.AppendFormat(numberFormat, "'{0}',", arr.GetValue(i).ChangeTypeSet(valType));
                     }
                     else
                     {
@@ -42,7 +42,7 @@ namespace Lappa_ORM
                         if (value is string)
                             value = ((string)value).Replace("\"", "\"\"").Replace("'", @"\'");
 
-                        sqlQuery.AppendFormat("'{0}',", value);
+                        sqlQuery.AppendFormat(numberFormat, "'{0}',", value);
                     }
                 }
                 else
@@ -139,10 +139,10 @@ namespace Lappa_ORM
                             var arr = val as Array;
 
                             for (var i = 0; i < arr.Length; i++)
-                                sqlQuery.AppendFormat("'{0}',", arr.GetValue(i).ChangeTypeSet(valType));
+                                sqlQuery.AppendFormat(numberFormat, "'{0}',", arr.GetValue(i).ChangeTypeSet(valType));
                         }
                         else
-                            sqlQuery.AppendFormat("'{0}',", val.ChangeTypeSet(valType));
+                            sqlQuery.AppendFormat(numberFormat, "'{0}',", val.ChangeTypeSet(valType));
                     }
                     else
                         sqlQuery.AppendFormat("'',");

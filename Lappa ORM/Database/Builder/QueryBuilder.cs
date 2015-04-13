@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -19,6 +20,8 @@ namespace Lappa_ORM
         public Action<T, object>[] PropertySetter { get; }
 
         StringBuilder sqlQuery = new StringBuilder();
+        // Use en-US as number format for all languages.
+        IFormatProvider numberFormat = CultureInfo.GetCultureInfo("en-US").NumberFormat;
 
         internal QueryBuilder() { }
 
@@ -113,9 +116,9 @@ namespace Lappa_ORM
                 var finalVal = exVal ?? Regex.Replace(Regex.Replace(bExpression.Right.ToString(), "^\"|\"$", ""), @"^Convert\(|\)$", "");
 
                 if (bExpression.Right.Type == typeof(string))
-                    sqlQuery.AppendFormat("{0}{1}'{2}'", Regex.Replace(bExpression.Left.ToString(), @"^Convert\(|\)$", ""), condition, finalVal);
+                    sqlQuery.AppendFormat(numberFormat, "{0}{1}'{2}'", Regex.Replace(bExpression.Left.ToString(), @"^Convert\(|\)$", ""), condition, finalVal);
                 else
-                    sqlQuery.AppendFormat("{0}{1}{2}", Regex.Replace(bExpression.Left.ToString(), @"^Convert\(|\)$", ""), condition, finalVal);
+                    sqlQuery.AppendFormat(numberFormat, "{0}{1}{2}", Regex.Replace(bExpression.Left.ToString(), @"^Convert\(|\)$", ""), condition, finalVal);
             }
 
             Visit(bExpression.Right);

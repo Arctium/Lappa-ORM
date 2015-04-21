@@ -13,10 +13,10 @@ namespace Lappa_ORM
     {
         internal string BuildInsert(Dictionary<string, object> values)
         {
-            sqlQuery.AppendFormat("INSERT INTO " + QuerySettings.Part0 + " (", typeof(T).Name.Pluralize());
+            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + QuerySettings.Part0 + " (", typeof(T).Name.Pluralize());
 
             foreach (var name in values.Keys)
-                sqlQuery.AppendFormat(QuerySettings.Part0 + ",", name);
+                sqlQuery.AppendFormat(numberFormat, QuerySettings.Part0 + ",", name);
 
             sqlQuery.Append(") VALUES (");
 
@@ -74,10 +74,10 @@ namespace Lappa_ORM
                     values.Add(properties[i].Name, null);
             }
 
-            sqlQuery.AppendFormat("INSERT INTO " + QuerySettings.Part0 + " (", typeName);
+            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + QuerySettings.Part0 + " (", typeName);
 
             foreach (var name in values.Keys)
-                sqlQuery.AppendFormat(QuerySettings.Part0 + ",", name);
+                sqlQuery.AppendFormat(numberFormat, QuerySettings.Part0 + ",", name);
 
             sqlQuery.Append(") VALUES ");
 
@@ -95,10 +95,10 @@ namespace Lappa_ORM
 
                     sqlQuery = new StringBuilder();
 
-                    sqlQuery.AppendFormat("INSERT INTO " + QuerySettings.Part0 + " (", typeName);
+                    sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + QuerySettings.Part0 + " (", typeName);
 
                     foreach (var name in values.Keys)
-                        sqlQuery.AppendFormat(QuerySettings.Part0 + ",", name);
+                        sqlQuery.AppendFormat(numberFormat, QuerySettings.Part0 + ",", name);
 
                     sqlQuery.Append(") VALUES ");
                 }

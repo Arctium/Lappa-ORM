@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -15,6 +16,9 @@ namespace Lappa_ORM
 {
     public partial class Database
     {
+        // Use en-US as number format for all languages.
+        IFormatProvider numberFormat = CultureInfo.GetCultureInfo("en-US").NumberFormat;
+
         // TODO Rewrite...
         internal bool AssignForeignKeyData<TEntity>(TEntity entity, PropertyInfo[] foreignKeys, ConcurrentDictionary<int, int> groups) where TEntity : Entity, new()
         {
@@ -73,8 +77,8 @@ namespace Lappa_ORM
             var entityLock = new object();
             var query = new StringBuilder();
 
-            query.AppendFormat("SELECT * FROM " + QuerySettings.Part0 + " WHERE ", name.Pluralize());
-            query.AppendFormat(querySettings.Equal, fkName, value);
+            query.AppendFormat(numberFormat, "SELECT * FROM " + QuerySettings.Part0 + " WHERE ", name.Pluralize());
+            query.AppendFormat(numberFormat, querySettings.Equal, fkName, value);
 
             var entities = entityType.CreateList();
             var data = Select(query.ToString(), name.Pluralize());

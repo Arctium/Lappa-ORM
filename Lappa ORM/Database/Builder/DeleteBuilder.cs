@@ -11,18 +11,18 @@ namespace Lappa_ORM
     {
         internal string BuildDelete(QuerySettings querySettings, T entity, PropertyInfo[] primaryKeys)
         {
-            sqlQuery.AppendFormat(querySettings.DeleteQuery, typeof(T).Name.Pluralize(), typeof(T).Name[0]);
-            sqlQuery.AppendFormat(querySettings.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
+            sqlQuery.AppendFormat(numberFormat, querySettings.DeleteQuery, typeof(T).Name.Pluralize(), typeof(T).Name[0]);
+            sqlQuery.AppendFormat(numberFormat, querySettings.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
-                sqlQuery.AppendFormat(querySettings.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
+                sqlQuery.AppendFormat(numberFormat, querySettings.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
 
             return sqlQuery.ToString();
         }
 
         internal string BuildDelete(Expression expression, QuerySettings querySetting, string param)
         {
-            sqlQuery.AppendFormat(querySetting.DeleteQuery, typeof(T).Name.Pluralize(), param);
+            sqlQuery.AppendFormat(numberFormat, querySetting.DeleteQuery, typeof(T).Name.Pluralize(), param);
 
             Visit(expression);
 

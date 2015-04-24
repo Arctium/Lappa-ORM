@@ -13,7 +13,7 @@ namespace Lappa_ORM
     {
         internal string BuildTableCreate(Dictionary<string, PropertyInfo> fields, MySqlEngine dbEngine)
         {
-            var pluralized = typeof(T).Name.Pluralize();
+            var pluralized = Helper.Pluralize<T>();
 
             sqlQuery.Append($"DROP TABLE IF EXISTS `{pluralized}`;");
             sqlQuery.Append($"CREATE TABLE `{pluralized}` (");

@@ -2,11 +2,27 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Lappa_ORM.Attributes;
 
 namespace Lappa_ORM.Misc
 {
     internal class Helper
     {
+        // Create only one service. Only enUS supported.
+        internal static PluralizationService pluralService = new PluralizationService();
+
+        internal static string Pluralize<T>()
+        {
+            var type = typeof(T);
+
+            return Pluralize(type);
+        }
+
+        internal static string Pluralize(Type t)
+        {
+           return t.IsDefined(typeof(NoPluralizationAttribute), false) ? t.Name : pluralService.Pluralize(t.Name);
+        }
+
         internal static int GetDefaultFieldSize(Type type)
         {
             switch (type.Name)

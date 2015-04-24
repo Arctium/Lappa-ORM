@@ -31,7 +31,7 @@ namespace Lappa_ORM
                 {
                     var value = typeof(TEntity).GetProperty(fkName.Item1).GetValue(entity);
                     var pType = fk.PropertyType.IsGenericType ? fk.PropertyType.GetGenericArguments()[0] : fk.PropertyType;
-                    var data = WhereForeignKey(pType, pType.Name, fkName.Item2, value, groups);
+                    var data = WhereForeignKey(pType, Helper.Pluralize(pType), fkName.Item2, value, groups);
 
                     if (data == null || data.Count == 0)
                         continue;
@@ -77,11 +77,11 @@ namespace Lappa_ORM
             var entityLock = new object();
             var query = new StringBuilder();
 
-            query.AppendFormat(numberFormat, "SELECT * FROM " + QuerySettings.Part0 + " WHERE ", name.Pluralize());
+            query.AppendFormat(numberFormat, "SELECT * FROM " + QuerySettings.Part0 + " WHERE ", name);
             query.AppendFormat(numberFormat, querySettings.Equal, fkName, value);
 
             var entities = entityType.CreateList();
-            var data = Select(query.ToString(), name.Pluralize());
+            var data = Select(query.ToString(), name);
 
             if (data != null)
             {

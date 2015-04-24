@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Lappa_ORM.Misc;
+using static Lappa_ORM.Misc.Helper;
 
 namespace Lappa_ORM
 {
@@ -22,7 +23,7 @@ namespace Lappa_ORM
             parentDb = parent;
         }
 
-        public T[] CreateEntities<T>(DataTable data, QueryBuilder<T> builder) where T : Entity, new()
+        public TEntity[] CreateEntities<TEntity>(DataTable data, QueryBuilder<TEntity> builder) where TEntity : Entity, new()
         {
             var fieldCount = builder.PropertySetter.Length;
             var arrayFieldCount = 0;
@@ -30,15 +31,15 @@ namespace Lappa_ORM
             var structFieldCount = 0;
 
             if (data == null || data.Rows.Count == 0)
-                return new T[0];
+                return new TEntity[0];
 
-            var entity = new T();
+            var entity = new TEntity();
 
             for (var i = 0; i < builder.Properties.Length; i++)
             {
                 if (builder.Properties[i].PropertyType.IsArray)
                 {
-                    var arr = builder.Properties[i].GetValue(new T()) as Array;
+                    var arr = builder.Properties[i].GetValue(new TEntity()) as Array;
 
                     arrayFieldCount += arr.Length - 1;
                 }
@@ -50,14 +51,14 @@ namespace Lappa_ORM
 
             if (data.Columns.Count != (fieldCount + arrayFieldCount + classFieldCount + structFieldCount))
             {
-                Trace.TraceError(string.Format("Table '{0}' (Column/Property count mismatch)", typeof(T).Name.Pluralize()));
+                Trace.TraceError(string.Format("Table '{0}' (Column/Property count mismatch)", Pluralize<TEntity>()));
                 Trace.TraceError(string.Format("Columns '{0}'", data.Columns.Count));
                 Trace.TraceError(string.Format("Properties '{0}'", fieldCount + arrayFieldCount + classFieldCount + structFieldCount));
                 Trace.WriteLine("Press a key to continue loading.");
 
                 Console.ReadKey(true);
 
-                return new T[0];
+                return new TEntity[0];
             }
 
             for (var i = 0; i < fieldCount; i++)
@@ -69,7 +70,7 @@ namespace Lappa_ORM
                 if (!data.Columns[i].DataType.IsEquivalentTo(builder.Properties[i].PropertyType.IsEnum ?
                     builder.Properties[i].PropertyType.GetEnumUnderlyingType() : builder.Properties[i].PropertyType))
                 {
-                    Trace.TraceError(string.Format("Table '{0}' (Column/Property type mismatch)", typeof(T).Name.Pluralize()));
+                    Trace.TraceError(string.Format("Table '{0}' (Column/Property type mismatch)", Pluralize<TEntity>()));
                     Trace.TraceError(string.Format("Column '{0}' ({1})", data.Columns[i].ColumnName, data.Columns[i].DataType));
                     Trace.TraceError(string.Format("Property '{0}' ({1})", builder.Properties[i].Name, builder.Properties[i].PropertyType.IsEnum ?
                                     builder.Properties[i].PropertyType.GetEnumUnderlyingType() : builder.Properties[i].PropertyType));
@@ -78,15 +79,15 @@ namespace Lappa_ORM
 
                     Console.ReadKey(true);
 
-                    return new T[0];
+                    return new TEntity[0];
                 }
             }
 
-            var entities = new T[data.Rows.Count];
+            var entities = new TEntity[data.Rows.Count];
             var datapPartitioner = Partitioner.Create(0, data.Rows.Count);
 
             // Create one test object for foreign key assignment check
-            var foreignKeys = typeof(T).GetProperties().Where(p => p.GetMethod.IsVirtual).ToArray();
+            var foreignKeys = typeof(TEntity).GetProperties().Where(p => p.GetMethod.IsVirtual).ToArray();
 
             // Key: GroupStartIndex, Value: GroupCount
             var groups = new ConcurrentDictionary<int, int>();
@@ -121,7 +122,7 @@ namespace Lappa_ORM
                 {
                     for (var i = dataRange.Item1; i < dataRange.Item2; i++)
                     {
-                        entities[i] = new T();
+                        entities[i] = new TEntity();
 
                         for (var j = 0; j < fieldCount; j++)
                         {
@@ -158,7 +159,7 @@ namespace Lappa_ORM
                                 {
                                     for (var c = 0; c < groupCount; c++, j++)
                                     {
-                                        var arr = builder.Properties[j].GetValue(new T()) as Array;
+                                        var arr = builder.Properties[j].GetValue(new TEntity()) as Array;
 
                                         for (var k = 0; k < arr.Length; k++)
                                             arr.SetValue(data.Rows[i][j + (k * groupCount)], k);
@@ -168,7 +169,7 @@ namespace Lappa_ORM
                                 }
                                 else
                                 {
-                                    var arr = builder.Properties[j].GetValue(new T()) as Array;
+                                    var arr = builder.Properties[j].GetValue(new TEntity()) as Array;
 
                                     for (var k = 0; k < arr.Length; k++)
                                         arr.SetValue(data.Rows[i][j + k], k);
@@ -192,7 +193,7 @@ namespace Lappa_ORM
                 {
                     for (var i = dataRange.Item1; i < dataRange.Item2; i++)
                     {
-                        entities[i] = new T();
+                        entities[i] = new TEntity();
 
                         for (var j = 0; j < fieldCount; j++)
                         {

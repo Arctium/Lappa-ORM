@@ -5,6 +5,7 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using Lappa_ORM.Misc;
+using static Lappa_ORM.Misc.Helper;
 
 namespace Lappa_ORM
 {
@@ -12,14 +13,14 @@ namespace Lappa_ORM
     {
         internal string BuildUpdate(QuerySettings querySettings, T entity, PropertyInfo[] properties, PropertyInfo[] primaryKeys)
         {
-            var typeName = typeof(T).Name;
+            var typeName = Pluralize<T>();
 
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, typeName.Pluralize(), typeName[0]);
+            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, typeName, typeName[0]);
 
             for (var i = 0; i < properties.Length; i++)
                 sqlQuery.AppendFormat(numberFormat, querySettings.Equal + ", ", properties[i].Name, properties[i].GetGetter<T>().GetValue(entity));
 
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQueryEnd, typeName.Pluralize(), typeName[0]);
+            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQueryEnd, typeName, typeName[0]);
             sqlQuery.AppendFormat(numberFormat, querySettings.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
@@ -34,14 +35,14 @@ namespace Lappa_ORM
         internal string BuildUpdate(QuerySettings querySettings, T entity, PropertyInfo[] primaryKeys, string[] fields)
         {
             var type = typeof(T);
-            var typeName = type.Name;
+            var typeName = Pluralize(type);
 
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, typeName.Pluralize(), typeName[0]);
+            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, typeName, typeName[0]);
 
             for (var i = 0; i < fields.Length; i++)
                 sqlQuery.AppendFormat(numberFormat, querySettings.Equal + ", ", fields[i], type.GetProperty(fields[i]).GetGetter<T>().GetValue(entity));
 
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQueryEnd, typeName.Pluralize(), typeName[0]);
+            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQueryEnd, typeName, typeName[0]);
             sqlQuery.AppendFormat(numberFormat, querySettings.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
@@ -56,14 +57,14 @@ namespace Lappa_ORM
         internal string BuildUpdate(Expression expression, QuerySettings querySettings, T entity, string param, string[] fields)
         {
             var type = typeof(T);
-            var typeName = type.Name;
+            var typeName = Pluralize(type);
 
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, typeName.Pluralize(), param);
+            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, typeName, param);
 
             for (var i = 0; i < fields.Length; i++)
                 sqlQuery.AppendFormat(numberFormat, querySettings.Equal + ", ", fields[i], type.GetProperty(fields[i]).GetGetter<T>().GetValue(entity));
 
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQueryEnd, typeName.Pluralize(), param);
+            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQueryEnd, typeName, param);
 
             Visit(expression);
 
@@ -75,7 +76,7 @@ namespace Lappa_ORM
 
         internal string BuildUpdate(MethodCallExpression[] expression, QuerySettings querySettings, string param, bool preSql)
         {
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, typeof(T).Name.Pluralize(), param);
+            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, Pluralize<T>(), param);
 
             for (var i = 0; i < expression.Length; i++)
             {

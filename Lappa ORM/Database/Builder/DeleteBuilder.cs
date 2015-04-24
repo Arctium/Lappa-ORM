@@ -4,6 +4,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using Lappa_ORM.Misc;
+using static Lappa_ORM.Misc.Helper;
 
 namespace Lappa_ORM
 {
@@ -11,7 +12,7 @@ namespace Lappa_ORM
     {
         internal string BuildDelete(QuerySettings querySettings, T entity, PropertyInfo[] primaryKeys)
         {
-            sqlQuery.AppendFormat(numberFormat, querySettings.DeleteQuery, typeof(T).Name.Pluralize(), typeof(T).Name[0]);
+            sqlQuery.AppendFormat(numberFormat, querySettings.DeleteQuery, Pluralize<T>(), typeof(T).Name[0]);
             sqlQuery.AppendFormat(numberFormat, querySettings.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
@@ -22,7 +23,7 @@ namespace Lappa_ORM
 
         internal string BuildDelete(Expression expression, QuerySettings querySetting, string param)
         {
-            sqlQuery.AppendFormat(numberFormat, querySetting.DeleteQuery, typeof(T).Name.Pluralize(), param);
+            sqlQuery.AppendFormat(numberFormat, querySetting.DeleteQuery, Pluralize<T>(), param);
 
             Visit(expression);
 

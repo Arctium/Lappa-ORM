@@ -3,6 +3,7 @@
 
 using System.Data;
 using Lappa_ORM.Misc;
+using static Lappa_ORM.Misc.Helper;
 
 namespace Lappa_ORM
 {
@@ -10,7 +11,7 @@ namespace Lappa_ORM
     {
         public TReturn GetAutoIncrementValue<TEntity, TReturn>()
         {
-            var tableName = typeof(TEntity).Name.Pluralize();
+            var tableName = Pluralize<TEntity>();
             var data = Select($"SHOW TABLE STATUS LIKE '{tableName}';", tableName);
 
             if (data?.Rows.Count == 1)
@@ -21,7 +22,7 @@ namespace Lappa_ORM
 
         public bool Exists<TEntity>()
         {
-            var tableName = typeof(TEntity).Name.Pluralize();
+            var tableName = Pluralize<TEntity>();
 
             DataTable result;
 

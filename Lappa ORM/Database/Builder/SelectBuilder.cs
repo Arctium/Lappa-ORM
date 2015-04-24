@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using Lappa_ORM.Misc;
+using static Lappa_ORM.Misc.Helper;
 
 namespace Lappa_ORM
 {
@@ -12,7 +13,7 @@ namespace Lappa_ORM
     {
         internal string BuildSelectAll()
         {
-            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + QuerySettings.Part0, typeof(T).Name.Pluralize());
+            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + QuerySettings.Part0, Pluralize<T>());
 
             return sqlQuery.ToString();
         }
@@ -24,7 +25,7 @@ namespace Lappa_ORM
             for (var i = 0; i < members.Count; i++)
                 sqlQuery.AppendFormat(numberFormat, QuerySettings.Part0 + ", ", members[i].Name);
 
-            sqlQuery.AppendFormat(numberFormat, "FROM " + QuerySettings.Part0, typeof(T).Name.Pluralize());
+            sqlQuery.AppendFormat(numberFormat, "FROM " + QuerySettings.Part0, Pluralize<T>());
 
             sqlQuery.Replace(", FROM", " FROM");
 
@@ -34,7 +35,7 @@ namespace Lappa_ORM
         internal string BuildWhereAll(Expression expression, string param)
         {
             // ToDo: Add support for query more than 1 table
-            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + QuerySettings.Part0 + " " + QuerySettings.Part1 + " WHERE ", typeof(T).Name.Pluralize(), param);
+            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + QuerySettings.Part0 + " " + QuerySettings.Part1 + " WHERE ", Pluralize<T>(), param);
 
             Visit(expression);
 
@@ -48,7 +49,7 @@ namespace Lappa_ORM
             for (var i = 0; i < members.Count; i++)
                 sqlQuery.AppendFormat(numberFormat, QuerySettings.Part0 + ", ", members[i].Name);
 
-            sqlQuery.AppendFormat(numberFormat, "FROM " + QuerySettings.Part0 + " " + QuerySettings.Part1 + " WHERE ", typeof(T).Name.Pluralize(), param);
+            sqlQuery.AppendFormat(numberFormat, "FROM " + QuerySettings.Part0 + " " + QuerySettings.Part1 + " WHERE ", Pluralize<T>(), param);
 
             // Fix query
             sqlQuery.Replace(", FROM", " FROM");

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using Lappa_ORM.Misc;
+using static Lappa_ORM.Misc.Helper;
 
 namespace Lappa_ORM
 {
@@ -13,7 +14,7 @@ namespace Lappa_ORM
     {
         internal string BuildInsert(Dictionary<string, object> values)
         {
-            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + QuerySettings.Part0 + " (", typeof(T).Name.Pluralize());
+            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + QuerySettings.Part0 + " (", Pluralize<T>());
 
             foreach (var name in values.Keys)
                 sqlQuery.AppendFormat(numberFormat, QuerySettings.Part0 + ",", name);
@@ -59,7 +60,7 @@ namespace Lappa_ORM
         {
             var queries = new List<string>();
             var values = new Dictionary<string, object>(properties.Length);
-            var typeName = typeof(T).Name.Pluralize();
+            var typeName = Pluralize<T>();
 
             for (var i = 0; i < properties.Length; i++)
             {

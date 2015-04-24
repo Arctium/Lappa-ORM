@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Lappa_ORM.Attributes
+namespace Lappa_ORM
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class NoPluralizationAttribute : Attribute

@@ -1,7 +1,6 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using Lappa_ORM.Misc;
@@ -104,6 +103,8 @@ namespace Lappa_ORM
 
         internal string BuildUpdate(Expression expression)
         {
+            sqlQuery.Append("WHERE ");
+
             Visit(expression);
 
             sqlQuery.Replace(", WHERE", " WHERE");

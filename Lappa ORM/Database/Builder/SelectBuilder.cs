@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using Lappa_ORM.Misc;
 using static Lappa_ORM.Misc.Helper;
 
 namespace Lappa_ORM

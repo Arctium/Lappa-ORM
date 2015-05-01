@@ -1,7 +1,6 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;

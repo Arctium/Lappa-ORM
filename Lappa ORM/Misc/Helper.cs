@@ -8,19 +8,11 @@ namespace Lappa_ORM.Misc
     internal class Helper
     {
         // Create only one service. Only enUS supported.
-        internal static PluralizationService pluralService = new PluralizationService();
+        static PluralizationService pluralService = new PluralizationService();
 
-        internal static string Pluralize<T>()
-        {
-            var type = typeof(T);
+        internal static string Pluralize<T>() => Pluralize(typeof(T));
 
-            return Pluralize(type);
-        }
-
-        internal static string Pluralize(Type t)
-        {
-           return t.IsDefined(typeof(NoPluralizationAttribute), false) ? t.Name : pluralService.Pluralize(t.Name);
-        }
+        internal static string Pluralize(Type t) => t.IsDefined(typeof(NoPluralizationAttribute), false) ? t.Name : pluralService.Pluralize(t.Name);
 
         internal static int GetDefaultFieldSize(Type type)
         {
@@ -56,9 +48,6 @@ namespace Lappa_ORM.Misc
 
             return f.Method.GetGenericMethodDefinition().MakeGenericMethod(t).Invoke(null, null);
         }
-        private static T GetDefault<T>()
-        {
-            return default(T);
-        }
+        private static T GetDefault<T>() => default(T);
     }
 }

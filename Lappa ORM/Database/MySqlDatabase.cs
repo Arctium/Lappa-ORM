@@ -43,9 +43,9 @@ namespace Lappa_ORM
 
                     arrayFieldCount += arr.Length - 1;
                 }
-                else if (builder.Properties[i].PropertyType.IsClass())
+                else if (builder.Properties[i].PropertyType.IsCustomClass())
                     classFieldCount += builder.Properties[i].PropertyType.GetReadWriteProperties().Length - 1;
-                else if (builder.Properties[i].PropertyType.IsStruct())
+                else if (builder.Properties[i].PropertyType.IsCustomStruct())
                     structFieldCount += builder.Properties[i].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length - 1;
             }
 
@@ -63,7 +63,7 @@ namespace Lappa_ORM
 
             for (var i = 0; i < fieldCount; i++)
             {
-                if (builder.Properties[i].PropertyType.IsArray || builder.Properties[i].PropertyType.IsClass() || builder.Properties[i].PropertyType.IsStruct())
+                if (builder.Properties[i].PropertyType.IsArray || builder.Properties[i].PropertyType.IsCustomClass() || builder.Properties[i].PropertyType.IsCustomStruct())
                     continue;
 
                 // Return an empty list if any column/property type mismatches
@@ -97,7 +97,7 @@ namespace Lappa_ORM
             // Get Groups
             for (var i = 0; i < fieldCount; i++)
             {
-                var group = builder.Properties[i].GetAttribute<GroupAttribute>();
+                var group = builder.Properties[i].GetCustomAttribute<GroupAttribute>();
 
                 if (group != null)
                 {
@@ -128,7 +128,7 @@ namespace Lappa_ORM
                         {
                             if (!builder.Properties[j].PropertyType.IsArray)
                             {
-                                if (builder.Properties[j].PropertyType.IsClass())
+                                if (builder.Properties[j].PropertyType.IsCustomClass())
                                 {
                                     var instanceFields = builder.Properties[j].PropertyType.GetReadWriteProperties();
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
@@ -138,7 +138,7 @@ namespace Lappa_ORM
 
                                     builder.PropertySetter[j].SetValue(entities[i], instance);
                                 }
-                                else if (builder.Properties[j].PropertyType.IsStruct())
+                                else if (builder.Properties[j].PropertyType.IsCustomStruct())
                                 {
                                     var instanceFields = builder.Properties[j].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
@@ -199,7 +199,7 @@ namespace Lappa_ORM
                         {
                             if (!builder.Properties[j].PropertyType.IsArray)
                             {
-                                if (builder.Properties[j].PropertyType.IsClass())
+                                if (builder.Properties[j].PropertyType.IsCustomClass())
                                 {
                                     var instanceFields = builder.Properties[j].PropertyType.GetReadWriteProperties();
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
@@ -209,7 +209,7 @@ namespace Lappa_ORM
 
                                     builder.PropertySetter[j].SetValue(entities[i], instance);
                                 }
-                                else if (builder.Properties[j].PropertyType.IsStruct())
+                                else if (builder.Properties[j].PropertyType.IsCustomStruct())
                                 {
                                     var instanceFields = builder.Properties[j].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);

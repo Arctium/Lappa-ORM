@@ -34,7 +34,7 @@ namespace Lappa_ORM
                 // Get Groups
                 for (var i = 0; i < properties.Length; i++)
                 {
-                    var group = properties[i].GetAttribute<GroupAttribute>();
+                    var group = properties[i].GetCustomAttribute<GroupAttribute>();
 
                     if (group != null)
                     {

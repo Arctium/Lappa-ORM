@@ -17,12 +17,9 @@ namespace Lappa_ORM.Misc
     internal static class Extensions
     {
         // Create only one service. Only enUS supported.
-        internal static PluralizationService pluralService = new PluralizationService();
+        static PluralizationService pluralService = new PluralizationService();
 
-        internal static string Pluralize(this string s)
-        {
-            return pluralService.Pluralize(s);
-        }
+        internal static string Pluralize(this string s) => pluralService.Pluralize(s);
 
         internal static IList CreateList(this Type type)
         {
@@ -31,23 +28,14 @@ namespace Lappa_ORM.Misc
             return Activator.CreateInstance(genericType) as IList;
         }
 
-        internal static T ChangeTypeGet<T>(this object value)
-        {
-            return (T)ChangeTypeGet(value, typeof(T));
-        }
+        internal static T ChangeTypeGet<T>(this object value) => (T)ChangeTypeGet(value, typeof(T));
 
         internal static object ChangeTypeGet(this object value, Type destType)
         {
-            if (destType.IsEnum)
-                return Convert.ChangeType(value, destType.GetEnumUnderlyingType());
-
-            return Convert.ChangeType(value, destType);
+            return Convert.ChangeType(value, destType.IsEnum ? destType.GetEnumUnderlyingType() : destType);
         }
 
-        internal static T ChangeTypeSet<T>(this object value)
-        {
-            return (T)ChangeTypeSet(value, typeof(T));
-        }
+        internal static T ChangeTypeSet<T>(this object value) => (T)ChangeTypeSet(value, typeof(T));
 
         internal static object ChangeTypeSet(this object value, Type destType)
         {
@@ -122,10 +110,7 @@ namespace Lappa_ORM.Misc
             return ret?.ChangeTypeGet(ret.GetType());
         }
 
-        internal static void SetValue<T>(this Action<T, object> action, T entity, object value)
-        {
-            action.Invoke(entity, value);
-        }
+        internal static void SetValue<T>(this Action<T, object> action, T entity, object value) => action.Invoke(entity, value);
 
         internal static bool HasMember(this object obj, string memberName)
         {
@@ -139,20 +124,9 @@ namespace Lappa_ORM.Misc
             return property.GetCustomAttribute<T>() != null;
         }
 
-        internal static T GetAttribute<T>(this PropertyInfo property) where T : Attribute
-        {
-            return property.GetCustomAttribute<T>();
-        }
+        internal static bool IsCustomClass(this Type type) => type.IsClass && type != typeof(string);
 
-        internal static bool IsClass(this Type type)
-        {
-            return type.IsClass && type != typeof(string);
-        }
-
-        internal static bool IsStruct(this Type type)
-        {
-            return type.IsValueType && !type.IsEnum && !type.IsPrimitive;
-        }
+        internal static bool IsCustomStruct(this Type type) => type.IsValueType && !type.IsEnum && !type.IsPrimitive;
 
         internal static PropertyInfo[] GetReadWriteProperties(this Type t)
         {

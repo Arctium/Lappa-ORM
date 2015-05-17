@@ -36,7 +36,7 @@ namespace Lappa_ORM.Misc
         {
             KeyValuePair<string, string> irregularNoun;
 
-            if ((irregularNoun = irregularNouns.SingleOrDefault(s => noun.EndsWith(s.Key, StringComparison.InvariantCultureIgnoreCase))).Key != "")
+            if ((irregularNoun = irregularNouns.SingleOrDefault(s => noun.EndsWith(s.Key, StringComparison.InvariantCultureIgnoreCase))).Key != null)
                 return noun.Remove(noun.Length - irregularNoun.Key.Length, irregularNoun.Key.Length) + noun[noun.Length - irregularNoun.Key.Length] + irregularNoun.Value.Substring(1);
 
             if (nonChangingNouns.Any(s => noun.EndsWith(s, StringComparison.InvariantCultureIgnoreCase)))

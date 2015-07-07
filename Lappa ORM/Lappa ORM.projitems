@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>d5ff446f-caa9-4995-9957-88b43bc86fab</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Lappa_ORM</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\AutoIncrementAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\FieldAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\ForeignKeyAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\GroupAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\NoPluralizationAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\PrimaryKeyAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\UniqueAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Constants\ConnectionType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\DeleteBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\InsertBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\QueryBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\SelectBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\TableBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\UpdateBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\ConnectorSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Functions\Database.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Functions\ForeignKeyFunctions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Functions\MiscFunctions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Functions\ReadFunctions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Functions\TableFunctions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Functions\WriteFunctions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\Entity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\IDatabase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Misc\Extensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Misc\Helper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Misc\PluralizationService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Misc\PublicExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\MSSqlDatabase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\MySqlDatabase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Constants\MySqlEngine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\QuerySettings.cs" />
+  </ItemGroup>
+</Project>

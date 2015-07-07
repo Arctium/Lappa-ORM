@@ -39,7 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\MSSqlDatabase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\MySqlDatabase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Constants\MySqlEngine.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
+    <!--<Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />-->
     <Compile Include="$(MSBuildThisFileDirectory)Settings\QuerySettings.cs" />
   </ItemGroup>
 </Project>

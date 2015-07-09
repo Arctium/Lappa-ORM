@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Lappa_ORM.Settings;
 
 namespace Lappa_ORM.Misc
 {
@@ -34,6 +35,9 @@ namespace Lappa_ORM.Misc
 
         public string Pluralize(string noun)
         {
+            if (PluralizationSettings.PluralizationExceptions.Contains(noun))
+                return noun;
+
             KeyValuePair<string, string> irregularNoun;
 
             if ((irregularNoun = irregularNouns.SingleOrDefault(s => noun.EndsWith(s.Key, StringComparison.InvariantCultureIgnoreCase))).Key != null)

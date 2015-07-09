@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Lappa_ORM.Settings
+namespace Lappa_ORM
 {
     public class PluralizationSettings
     {

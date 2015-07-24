@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Lappa_ORM.Settings;
 
 namespace Lappa_ORM.Misc
 {

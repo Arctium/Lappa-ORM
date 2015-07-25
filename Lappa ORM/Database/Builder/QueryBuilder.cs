@@ -157,7 +157,10 @@ namespace Lappa_ORM
 
                         for (var i = memberExpressionStore.Count; i > 1; i--)
                         {
-                            objReference = (memberExpressionStore[i - 1].Member as PropertyInfo).GetValue(objReference);
+                            if (memberExpressionStore[i - 1].Member is PropertyInfo)
+                                objReference = (memberExpressionStore[i - 1].Member as PropertyInfo).GetValue(objReference);
+                            else
+                                objReference = (memberExpressionStore[i - 1].Member as FieldInfo).GetValue(objReference);
 
                             memberExpressionStore.RemoveAt(i - 1);
                         }

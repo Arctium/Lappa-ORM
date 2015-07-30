@@ -58,15 +58,15 @@ namespace Lappa_ORM
             }
         }
 
-        protected override Expression VisitBinary(BinaryExpression bExpression)
+        protected override Expression VisitBinary(BinaryExpression binaryExpression)
         {
             sqlQuery.Append("(");
 
-            Visit(bExpression.Left);
+            Visit(binaryExpression.Left);
 
             string condition;
 
-            switch (bExpression.NodeType)
+            switch (binaryExpression.NodeType)
             {
                 case ExpressionType.Equal:
                     condition = " = ";
@@ -104,33 +104,30 @@ namespace Lappa_ORM
                 MemberExpression memberExp = null;
                 object exVal = null;
 
-                if (bExpression.Right.NodeType == ExpressionType.MemberAccess)
-                    memberExp = bExpression.Right as MemberExpression;
-                else if (bExpression.Right.NodeType == ExpressionType.Convert)
-                    memberExp = (bExpression.Right as UnaryExpression)?.Operand as MemberExpression;
-                else if (bExpression.Right.NodeType == ExpressionType.Constant)
-                    exVal = (bExpression.Right as ConstantExpression)?.Value;
+                if (binaryExpression.Right.NodeType == ExpressionType.MemberAccess)
+                    memberExp = binaryExpression.Right as MemberExpression;
+                else if (binaryExpression.Right.NodeType == ExpressionType.Convert)
+                    memberExp = (binaryExpression.Right as UnaryExpression)?.Operand as MemberExpression;
+                else if (binaryExpression.Right.NodeType == ExpressionType.Constant)
+                    exVal = (binaryExpression.Right as ConstantExpression)?.Value;
 
                 exVal = exVal ?? GetExpressionValue(memberExp);
 
-                var finalVal = exVal ?? Regex.Replace(Regex.Replace(bExpression.Right.ToString(), "^\"|\"$", ""), @"^Convert\(|\)$", "");
+                var finalVal = exVal ?? Regex.Replace(Regex.Replace(binaryExpression.Right.ToString(), "^\"|\"$", ""), @"^Convert\(|\)$", "");
 
-                if (bExpression.Right.Type == typeof(string))
-                    sqlQuery.AppendFormat(numberFormat, "{0}{1}'{2}'", Regex.Replace(bExpression.Left.ToString(), @"^Convert\(|\)$", ""), condition, finalVal);
-                else
-                    sqlQuery.AppendFormat(numberFormat, "{0}{1}{2}", Regex.Replace(bExpression.Left.ToString(), @"^Convert\(|\)$", ""), condition, finalVal);
+                sqlQuery.AppendFormat(numberFormat, "{0}{1}'{2}'", Regex.Replace(binaryExpression.Left.ToString(), @"^Convert\(|\)$", ""), condition, finalVal);
             }
 
-            Visit(bExpression.Right);
+            Visit(binaryExpression.Right);
 
             sqlQuery.Append(")");
 
-            return bExpression;
+            return binaryExpression;
         }
 
-        protected internal object GetExpressionValue(MemberExpression mExpression, BinaryExpression bExpression = null)
+        protected internal object GetExpressionValue(MemberExpression memberExpression, BinaryExpression binaryExpression = null)
         {
-            MemberExpression memberExp = mExpression;
+            var memberExp = memberExpression;
 
             if (memberExp != null)
             {
@@ -167,12 +164,10 @@ namespace Lappa_ORM
 
                         object val = null;
 
-                        var memberInfo = mExpression;
-
-                        if (memberInfo != null)
+                        if (memberExpression != null)
                         {
-                            var fieldInfo = memberInfo.Member as FieldInfo;
-                            var propertyInfo = memberInfo.Member as PropertyInfo;
+                            var fieldInfo = memberExpression.Member as FieldInfo;
+                            var propertyInfo = memberExpression.Member as PropertyInfo;
 
                             if (fieldInfo != null)
                                 val = fieldInfo.GetValue(objReference).ChangeTypeSet(fieldInfo.FieldType);
@@ -180,14 +175,14 @@ namespace Lappa_ORM
                                 val = propertyInfo.GetValue(objReference).ChangeTypeSet(propertyInfo.PropertyType);
                         }
 
-                        if (bExpression != null && val == null)
+                        if (binaryExpression != null && val == null)
                         {
-                            memberInfo = (bExpression.Right as UnaryExpression)?.Operand as MemberExpression;
+                            memberExpression = (binaryExpression.Right as UnaryExpression)?.Operand as MemberExpression;
 
-                            if (memberInfo != null)
+                            if (memberExpression != null)
                             {
-                                var fieldInfo = memberInfo.Member as FieldInfo;
-                                var propertyInfo = memberInfo.Member as PropertyInfo;
+                                var fieldInfo = memberExpression.Member as FieldInfo;
+                                var propertyInfo = memberExpression.Member as PropertyInfo;
 
                                 if (fieldInfo != null)
                                     val = fieldInfo.GetValue(objReference).ChangeTypeSet(fieldInfo.FieldType);
@@ -196,7 +191,7 @@ namespace Lappa_ORM
                             }
                         }
 
-                        if ((val == null) && bExpression == null || (val == null) && (!(bExpression.Right is MemberExpression) || objReference.GetType() == (bExpression.Left as MemberExpression)?.Type))
+                        if ((val == null) && binaryExpression == null || (val == null) && (!(binaryExpression.Right is MemberExpression) || objReference.GetType() == (binaryExpression.Left as MemberExpression)?.Type))
                             return objReference;
 
                         return val;

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.IO;
 using System.Reflection;
 
 namespace Lappa_ORM
@@ -18,6 +19,13 @@ namespace Lappa_ORM
 
             if (cType == ConnectionType.MYSQL)
             {
+                if (!File.Exists(Environment.CurrentDirectory + "/MySql.Data.dll"))
+                {
+                    Console.WriteLine("MySql.Data.dll doesn't exist.");
+
+                    return;
+                }
+
                 assembly = Assembly.LoadFile(Environment.CurrentDirectory + "/MySql.Data.dll");
                 type = "MySql.Data.MySqlClient.MySql";
             }

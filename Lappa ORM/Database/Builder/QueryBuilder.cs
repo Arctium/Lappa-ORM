@@ -115,7 +115,7 @@ namespace Lappa_ORM
 
                 var finalVal = exVal ?? Regex.Replace(Regex.Replace(binaryExpression.Right.ToString(), "^\"|\"$", ""), @"^Convert\(|\)$", "");
 
-                sqlQuery.AppendFormat(numberFormat, "{0}{1}'{2}'", Regex.Replace(binaryExpression.Left.ToString(), @"^Convert\(|\)$", ""), condition, finalVal);
+                sqlQuery.AppendFormat(numberFormat, "{0}{1}'{2}'", Regex.Replace(binaryExpression.Left.ToString(), @"^Convert\(|\)$", ""), condition, finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
             }
 
             Visit(binaryExpression.Right);

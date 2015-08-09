@@ -1,6 +1,7 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using Lappa_ORM.Misc;
@@ -92,7 +93,7 @@ namespace Lappa_ORM
 
                 value = value ?? GetExpressionValue(memberExp);
 
-                sqlQuery.AppendFormat(numberFormat, querySettings.Equal + ", ", member, value);
+                sqlQuery.AppendFormat(numberFormat, querySettings.Equal + ", ", member, value is bool ? Convert.ToByte(value) : value);
             }
 
             if (!preSql)

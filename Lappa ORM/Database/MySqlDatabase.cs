@@ -63,7 +63,7 @@ namespace Lappa_ORM
 
             for (var i = 0; i < fieldCount; i++)
             {
-                if (builder.Properties[i].PropertyType.IsArray || builder.Properties[i].PropertyType.IsCustomClass() || builder.Properties[i].PropertyType.IsCustomStruct())
+                if (builder.Properties[i].PropertyType == typeof(bool) || builder.Properties[i].PropertyType.IsArray || builder.Properties[i].PropertyType.IsCustomClass() || builder.Properties[i].PropertyType.IsCustomStruct())
                     continue;
 
                 // Return an empty list if any column/property type mismatches
@@ -134,7 +134,7 @@ namespace Lappa_ORM
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
                                     for (var f = 0; f < instanceFields.Length; f++)
-                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f]);
+                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f].ChangeTypeGet(builder.Properties[j].PropertyType));
 
                                     builder.PropertySetter[j].SetValue(entities[i], instance);
                                 }
@@ -144,12 +144,12 @@ namespace Lappa_ORM
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
                                     for (var f = 0; f < instanceFields.Length; f++)
-                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f]);
+                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
 
                                     builder.PropertySetter[j].SetValue(entities[i], instance);
                                 }
                                 else
-                                    builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j]);
+                                    builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j].ChangeTypeGet(builder.Properties[j].PropertyType));
                             }
                             else
                             {
@@ -215,12 +215,12 @@ namespace Lappa_ORM
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
                                     for (var f = 0; f < instanceFields.Length; f++)
-                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f]);
+                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
 
                                     builder.PropertySetter[j].SetValue(entities[i], instance);
                                 }
                                 else
-                                    builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j]);
+                                    builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j].ChangeTypeGet(builder.Properties[j].PropertyType));
                             }
                             else
                             {

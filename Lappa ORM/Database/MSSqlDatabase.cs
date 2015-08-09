@@ -138,7 +138,7 @@ namespace Lappa_ORM
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
                                     for (var f = 0; f < instanceFields.Length; f++)
-                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f]);
+                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f].ChangeTypeGet(builder.Properties[j].PropertyType));
 
                                     builder.PropertySetter[j].SetValue(entities[i], instance);
                                 }
@@ -148,7 +148,7 @@ namespace Lappa_ORM
                                     var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
                                     for (var f = 0; f < instanceFields.Length; f++)
-                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f]);
+                                        instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
 
                                     builder.PropertySetter[j].SetValue(entities[i], instance);
                                 }

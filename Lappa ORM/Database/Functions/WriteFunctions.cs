@@ -81,15 +81,7 @@ namespace Lappa_ORM
             return Execute(query);
         }
 
-        public bool Update<TEntity>(Expression<Func<TEntity, object>> condition, TEntity entity, params string[] fields) where TEntity : Entity, new()
-        {
-            var builder = new QueryBuilder<TEntity>();
-            var query = builder.BuildUpdate(condition, querySettings, entity, condition.Parameters[0].Name, fields);
-
-            return Execute(query);
-        }
-
-        public bool Update<TEntity>(params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new()
+        public bool UpdateAll<TEntity>(params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new()
         {
             var builder = new QueryBuilder<TEntity>();
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;

@@ -125,12 +125,52 @@ namespace Lappa_ORM
             return binaryExpression;
         }
 
+        object GetValue(object objReference, MemberExpression memberExpression, BinaryExpression binaryExpression)
+        {
+            object val = null;
+
+            if (memberExpression != null)
+            {
+                var fieldInfo = memberExpression.Member as FieldInfo;
+                var propertyInfo = memberExpression.Member as PropertyInfo;
+
+                if (fieldInfo != null)
+                    val = fieldInfo.GetValue(objReference).ChangeTypeSet(fieldInfo.FieldType);
+                else if (propertyInfo != null)
+                    val = propertyInfo.GetValue(objReference).ChangeTypeSet(propertyInfo.PropertyType);
+            }
+
+            if (binaryExpression != null && val == null)
+            {
+                memberExpression = (binaryExpression.Right as UnaryExpression)?.Operand as MemberExpression;
+
+                if (memberExpression != null)
+                {
+                    var fieldInfo = memberExpression.Member as FieldInfo;
+                    var propertyInfo = memberExpression.Member as PropertyInfo;
+
+                    if (fieldInfo != null)
+                        val = fieldInfo.GetValue(objReference).ChangeTypeSet(fieldInfo.FieldType);
+                    else if (propertyInfo != null)
+                        val = propertyInfo.GetValue(objReference).ChangeTypeSet(propertyInfo.PropertyType);
+                }
+            }
+
+            if ((val == null) && binaryExpression == null || (val == null) && (!(binaryExpression.Right is MemberExpression) || objReference.GetType() == (binaryExpression.Left as MemberExpression)?.Type))
+                return objReference;
+
+            return val;
+        }
+
         protected internal object GetExpressionValue(MemberExpression memberExpression, BinaryExpression binaryExpression = null)
         {
             var memberExp = memberExpression;
 
             if (memberExp != null)
             {
+                if (memberExp.Expression == null)
+                    return GetValue(null, memberExpression, binaryExpression);
+
                 var memberExpressionStore = new List<MemberExpression>();
 
                 while (memberExp.Expression is MemberExpression)
@@ -162,39 +202,7 @@ namespace Lappa_ORM
                             memberExpressionStore.RemoveAt(i - 1);
                         }
 
-                        object val = null;
-
-                        if (memberExpression != null)
-                        {
-                            var fieldInfo = memberExpression.Member as FieldInfo;
-                            var propertyInfo = memberExpression.Member as PropertyInfo;
-
-                            if (fieldInfo != null)
-                                val = fieldInfo.GetValue(objReference).ChangeTypeSet(fieldInfo.FieldType);
-                            else if (propertyInfo != null)
-                                val = propertyInfo.GetValue(objReference).ChangeTypeSet(propertyInfo.PropertyType);
-                        }
-
-                        if (binaryExpression != null && val == null)
-                        {
-                            memberExpression = (binaryExpression.Right as UnaryExpression)?.Operand as MemberExpression;
-
-                            if (memberExpression != null)
-                            {
-                                var fieldInfo = memberExpression.Member as FieldInfo;
-                                var propertyInfo = memberExpression.Member as PropertyInfo;
-
-                                if (fieldInfo != null)
-                                    val = fieldInfo.GetValue(objReference).ChangeTypeSet(fieldInfo.FieldType);
-                                else if (propertyInfo != null)
-                                    val = propertyInfo.GetValue(objReference).ChangeTypeSet(propertyInfo.PropertyType);
-                            }
-                        }
-
-                        if ((val == null) && binaryExpression == null || (val == null) && (!(binaryExpression.Right is MemberExpression) || objReference.GetType() == (binaryExpression.Left as MemberExpression)?.Type))
-                            return objReference;
-
-                        return val;
+                        return GetValue(objReference, memberExpression, binaryExpression);
                     }
                 }
             }

@@ -109,7 +109,7 @@ namespace Lappa_ORM
         }
 
         /// <summary>
-        /// Updates the database with the given properties using the <paramref name="condition"/> parameter.
+        /// Updates the database with the given properties using the given conditions.
         /// </summary>
         /// <typeparam name="TEntity">The entity type.</typeparam>
         /// <param name="condition">The used condition to identify the to be updated entity.</param>
@@ -130,7 +130,7 @@ namespace Lappa_ORM
 
         #region Delete
         /// <summary>
-        /// 
+        /// Deletes an entity from the database using it's primary keys as condition.
         /// </summary>
         /// <typeparam name="TEntity">The entity type.</typeparam>
         /// <param name="entity">The to be deleted entity</param>
@@ -146,10 +146,10 @@ namespace Lappa_ORM
         }
 
         /// <summary>
-        /// 
+        /// Deletes one or multiple entities from the database using the given conditions.
         /// </summary>
         /// <typeparam name="TEntity">The entity type.</typeparam>
-        /// <param name="condition"></param>
+        /// <param name="condition">The used condition to identify the to be updated entity.</param>
         /// <returns>True if the SQL query execution is successful.</returns>
         public bool Delete<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
         {

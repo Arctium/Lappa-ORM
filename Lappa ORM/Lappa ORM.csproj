@@ -63,6 +63,7 @@
     <Compile Include="Database\Builder\SelectBuilder.cs" />
     <Compile Include="Database\Builder\TableBuilder.cs" />
     <Compile Include="Database\Builder\UpdateBuilder.cs" />
+    <Compile Include="Database\SQLiteDatabase.cs" />
     <Compile Include="Settings\ConnectorSettings.cs" />
     <Compile Include="Database\Functions\Database.cs" />
     <Compile Include="Database\Functions\ForeignKeyFunctions.cs" />

@@ -5,7 +5,8 @@ namespace Lappa_ORM
 {
     public enum ConnectionType
     {
-        MYSQL,
-        MSSQL,
+        MySql,
+        MSSql,
+        SQLite,
     }
 }

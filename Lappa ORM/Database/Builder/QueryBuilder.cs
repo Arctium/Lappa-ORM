@@ -20,13 +20,20 @@ namespace Lappa_ORM
         public Action<T, object>[] PropertySetter { get; }
 
         StringBuilder sqlQuery = new StringBuilder();
+        QuerySettings querySettings;
+
         // Use en-US as number format for all languages.
         IFormatProvider numberFormat = CultureInfo.GetCultureInfo("en-US").NumberFormat;
 
-        internal QueryBuilder() { }
-
-        internal QueryBuilder(PropertyInfo[] properties, IReadOnlyList<MemberInfo> members = null)
+        internal QueryBuilder(QuerySettings querySettings)
         {
+            this.querySettings = querySettings;
+        }
+
+        internal QueryBuilder(QuerySettings querySettings, PropertyInfo[] properties, IReadOnlyList<MemberInfo> members = null)
+        {
+            this.querySettings = querySettings;
+
             if (members != null)
             {
                 var props = new PropertyInfo[members.Count];
@@ -115,7 +122,7 @@ namespace Lappa_ORM
 
                 var finalVal = exVal ?? Regex.Replace(Regex.Replace(binaryExpression.Right.ToString(), "^\"|\"$", ""), @"^Convert\(|\)$", "");
 
-                sqlQuery.AppendFormat(numberFormat, "{0}{1}'{2}'", Regex.Replace(binaryExpression.Left.ToString(), @"^Convert\(|\)$", ""), condition, finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
+                sqlQuery.AppendFormat(numberFormat, "{0}{1}'{2}'", Regex.Replace((binaryExpression.Left as MemberExpression).Member.Name, @"^Convert\(|\)$", ""), condition, finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
             }
 
             Visit(binaryExpression.Right);

@@ -10,7 +10,7 @@ namespace Lappa_ORM
 {
     internal partial class QueryBuilder<T>
     {
-        internal string BuildDelete(QuerySettings querySettings, T entity, PropertyInfo[] primaryKeys)
+        internal string BuildDelete(T entity, PropertyInfo[] primaryKeys)
         {
             sqlQuery.AppendFormat(numberFormat, querySettings.DeleteQuery, Pluralize<T>(), typeof(T).Name[0]);
             sqlQuery.AppendFormat(numberFormat, querySettings.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
@@ -21,9 +21,9 @@ namespace Lappa_ORM
             return sqlQuery.ToString();
         }
 
-        internal string BuildDelete(Expression expression, QuerySettings querySetting, string param)
+        internal string BuildDelete(Expression expression)
         {
-            sqlQuery.AppendFormat(numberFormat, querySetting.DeleteQuery, Pluralize<T>(), param);
+            sqlQuery.AppendFormat(numberFormat, querySettings.DeleteQuery, Pluralize<T>());
 
             Visit(expression);
 

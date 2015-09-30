@@ -17,7 +17,7 @@ namespace Lappa_ORM
         {
             ConnectionType = cType;
 
-            if (cType == ConnectionType.MYSQL)
+            if (cType == ConnectionType.MySql)
             {
                 if (!File.Exists(Environment.CurrentDirectory + "/MySql.Data.dll"))
                 {
@@ -29,7 +29,7 @@ namespace Lappa_ORM
                 assembly = Assembly.LoadFile(Environment.CurrentDirectory + "/MySql.Data.dll");
                 type = "MySql.Data.MySqlClient.MySql";
             }
-            else if (cType == ConnectionType.MSSQL)
+            else if (cType == ConnectionType.MSSql)
             {
                 // System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
                 #pragma warning disable 612 // For mono...
@@ -39,6 +39,18 @@ namespace Lappa_ORM
                 #pragma warning restore 618
 
                 type = "System.Data.SqlClient.Sql";
+            }
+            else if (cType == ConnectionType.SQLite)
+            {
+                if (!File.Exists(Environment.CurrentDirectory + "/System.Data.SQLite.dll"))
+                {
+                    Console.WriteLine("System.Data.SQLite.dll doesn't exist.");
+
+                    return;
+                }
+
+                assembly = Assembly.LoadFile(Environment.CurrentDirectory + "/System.Data.SQLite.dll");
+                type = "System.Data.SQLite.SQLite";
             }
         }
 

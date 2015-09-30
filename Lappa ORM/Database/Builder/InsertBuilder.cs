@@ -14,10 +14,10 @@ namespace Lappa_ORM
     {
         internal string BuildInsert(Dictionary<string, object> values)
         {
-            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + QuerySettings.Part0 + " (", Pluralize<T>());
+            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + querySettings.Part0 + " (", Pluralize<T>());
 
             foreach (var name in values.Keys)
-                sqlQuery.AppendFormat(numberFormat, QuerySettings.Part0 + ",", name);
+                sqlQuery.AppendFormat(numberFormat, querySettings.Part0 + ",", name);
 
             sqlQuery.Append(") VALUES (");
 
@@ -56,7 +56,7 @@ namespace Lappa_ORM
             return sqlQuery.ToString();
         }
 
-        internal List<string> BuildBulkInsert(PropertyInfo[] properties, IEnumerable<T> entities)
+        internal List<string> BuildBulkInsert(PropertyInfo[] properties, T[] entities)
         {
             var queries = new List<string>();
             var values = new Dictionary<string, object>(properties.Length);
@@ -75,10 +75,10 @@ namespace Lappa_ORM
                     values.Add(properties[i].Name, null);
             }
 
-            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + QuerySettings.Part0 + " (", typeName);
+            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + querySettings.Part0 + " (", typeName);
 
             foreach (var name in values.Keys)
-                sqlQuery.AppendFormat(numberFormat, QuerySettings.Part0 + ",", name);
+                sqlQuery.AppendFormat(numberFormat, querySettings.Part0 + ",", name);
 
             sqlQuery.Append(") VALUES ");
 
@@ -96,10 +96,10 @@ namespace Lappa_ORM
 
                     sqlQuery = new StringBuilder();
 
-                    sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + QuerySettings.Part0 + " (", typeName);
+                    sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + querySettings.Part0 + " (", typeName);
 
                     foreach (var name in values.Keys)
-                        sqlQuery.AppendFormat(numberFormat, QuerySettings.Part0 + ",", name);
+                        sqlQuery.AppendFormat(numberFormat, querySettings.Part0 + ",", name);
 
                     sqlQuery.Append(") VALUES ");
                 }

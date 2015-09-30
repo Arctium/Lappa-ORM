@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -77,7 +76,7 @@ namespace Lappa_ORM
             var entityLock = new object();
             var query = new StringBuilder();
 
-            query.AppendFormat(numberFormat, "SELECT * FROM " + QuerySettings.Part0 + " WHERE ", name);
+            query.AppendFormat(numberFormat, "SELECT * FROM " + querySettings.Part0 + " WHERE ", name);
             query.AppendFormat(numberFormat, querySettings.Equal, fkName, value);
 
             var entities = entityType.CreateList();

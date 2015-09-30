@@ -21,7 +21,7 @@ namespace Lappa_ORM
             /*var members = (newExpression?.Body as NewExpression)?.Members;
             var builder = new QueryBuilder<T>(properties, members);
             var data = await Select(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll());*/
-            var builder = new QueryBuilder<TEntity>(properties, null);
+            var builder = new QueryBuilder<TEntity>(querySettings, properties, null);
             var data = Select(builder.BuildSelectAll(), Pluralize<TEntity>());
 
             return db.GetEntityList(data, builder);
@@ -34,7 +34,7 @@ namespace Lappa_ORM
             /*var members = (newExpression?.Body as NewExpression)?.Members;
             var builder = new QueryBuilder<T>(properties, members);
             var data = await Select(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll());*/
-            var builder = new QueryBuilder<TEntity>(properties, null);
+            var builder = new QueryBuilder<TEntity>(querySettings, properties, null);
             var data = await SelectAsync(builder.BuildSelectAll(), Pluralize<TEntity>());
 
             return db.GetEntityList(data, builder);
@@ -49,7 +49,7 @@ namespace Lappa_ORM
         public async Task<Dictionary<TKey, TEntity>> SelectAsync<TKey, TEntity>(Func<TEntity, TKey> func) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
-            var builder = new QueryBuilder<TEntity>(properties, null);
+            var builder = new QueryBuilder<TEntity>(querySettings, properties, null);
             var data = await SelectAsync(builder.BuildSelectAll(), Pluralize<TEntity>());
 
             return db.GetEntityDictionary(data, builder, func);
@@ -66,12 +66,12 @@ namespace Lappa_ORM
             var query = "";
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
-            var builder = new QueryBuilder<TEntity>(properties, members);
+            var builder = new QueryBuilder<TEntity>(querySettings, properties, members);
 
             if (members != null)
-                query = builder.BuildWhere(condition.Body, condition.Parameters[0].Name, members);
+                query = builder.BuildWhere(condition.Body, members);
             else
-                query = builder.BuildWhereAll(condition.Body, condition.Parameters[0].Name);
+                query = builder.BuildWhereAll(condition.Body);
 
             var data = await SelectAsync(query, Pluralize<TEntity>());
 
@@ -89,12 +89,12 @@ namespace Lappa_ORM
             var query = "";
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
-            var builder = new QueryBuilder<TEntity>(properties, members);
+            var builder = new QueryBuilder<TEntity>(querySettings, properties, members);
 
             if (members != null)
-                query = builder.BuildWhere(condition.Body, condition.Parameters[0].Name, members);
+                query = builder.BuildWhere(condition.Body, members);
             else
-                query = builder.BuildWhereAll(condition.Body, condition.Parameters[0].Name);
+                query = builder.BuildWhereAll(condition.Body);
 
             var data = await SelectAsync(query, Pluralize<TEntity>());
 
@@ -114,8 +114,8 @@ namespace Lappa_ORM
         #region Other
         public bool Any<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
         {
-            var builder = new QueryBuilder<TEntity>();
-            var query = builder.BuildWhereAll(condition.Body, condition.Parameters[0].Name);
+            var builder = new QueryBuilder<TEntity>(querySettings);
+            var query = builder.BuildWhereAll(condition.Body);
 
             return Select(query, Pluralize<TEntity>()).Rows.Count > 0;
         }

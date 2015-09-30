@@ -14,18 +14,17 @@ namespace Lappa_ORM
         public string Equal          { get; private set; }
         public string AndEqual       { get; private set; }
 
-        // General and usable without object
-        public static string Part0;
-        public static string Part1;
-        public static string Part2;
+        public string Part0 { get; private set; }
+        public string Part1 { get; private set; }
+        public string Part2 { get; private set; }
 
         public QuerySettings(ConnectionType type)
         {
-            if (type == ConnectionType.MSSQL)
+            if (type == ConnectionType.MSSql)
             {
-                UpdateQuery    = "UPDATE [{1}] SET ";
-                UpdateQueryEnd = "FROM [{0}] AS [{1}] WHERE ";
-                DeleteQuery    = "DELETE FROM [{0}] FROM [{0}] [{1}] WHERE ";
+                UpdateQuery    = "UPDATE [{0}] SET ";
+                UpdateQueryEnd = "FROM [{0}] WHERE ";
+                DeleteQuery    = "DELETE FROM [{0}] WHERE ";
                 Equal          = "[{0}] = '{1}'";
                 AndEqual       = " AND [{0}] = '{1}'";
 
@@ -33,17 +32,29 @@ namespace Lappa_ORM
                 Part1 = "[{1}]";
                 Part2 = "[{2}]";
             }
-            else if (type == ConnectionType.MYSQL)
+            else if (type == ConnectionType.MySql)
             {
-                UpdateQuery    = "UPDATE `{0}` `{1}` SET ";
+                UpdateQuery    = "UPDATE `{0}` SET ";
                 UpdateQueryEnd = "WHERE ";
-                DeleteQuery    = "DELETE FROM `{1}` USING `{0}` AS `{1}` WHERE ";
-                Equal          = "{0} = '{1}'";
-                AndEqual       = " AND {0} = '{1}'";
+                DeleteQuery    = "DELETE FROM `{0}` WHERE ";
+                Equal          = "`{0}` = '{1}'";
+                AndEqual       = " AND `{0}` = '{1}'";
 
                 Part0 = "`{0}`";
                 Part1 = "`{1}`";
                 Part2 = "`{2}`";
+            }
+            else if (type == ConnectionType.SQLite)
+            {
+                UpdateQuery = "UPDATE \"{0}\" SET ";
+                UpdateQueryEnd = "WHERE ";
+                DeleteQuery = "DELETE FROM \"{0}\" WHERE ";
+                Equal = "\"{0}\" = '{1}'";
+                AndEqual = " AND \"{0}\" = '{1}'";
+
+                Part0 = "\"{0}\"";
+                Part1 = "\"{1}\"";
+                Part2 = "\"{2}\"";
             }
         }
     }

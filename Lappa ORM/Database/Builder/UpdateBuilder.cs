@@ -11,7 +11,7 @@ namespace Lappa_ORM
 {
     internal partial class QueryBuilder<T>
     {
-        internal string BuildUpdate(QuerySettings querySettings, T entity, PropertyInfo[] properties, PropertyInfo[] primaryKeys)
+        internal string BuildUpdate(T entity, PropertyInfo[] properties, PropertyInfo[] primaryKeys)
         {
             var typeName = Pluralize<T>();
 
@@ -32,55 +32,13 @@ namespace Lappa_ORM
             return sqlQuery.ToString();
         }
 
-        internal string BuildUpdate(QuerySettings querySettings, T entity, PropertyInfo[] primaryKeys, string[] fields)
+        internal string BuildUpdate(MethodCallExpression[] expression, bool preSql)
         {
-            var type = typeof(T);
-            var typeName = Pluralize(type);
-
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, typeName, typeName[0]);
-
-            for (var i = 0; i < fields.Length; i++)
-                sqlQuery.AppendFormat(numberFormat, querySettings.Equal + ", ", fields[i], type.GetProperty(fields[i]).GetGetter<T>().GetValue(entity));
-
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQueryEnd, typeName, typeName[0]);
-            sqlQuery.AppendFormat(numberFormat, querySettings.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
-
-            for (var i = 1; i < primaryKeys.Length; i++)
-                sqlQuery.AppendFormat(numberFormat, querySettings.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
-
-            sqlQuery.Replace(", WHERE", " WHERE");
-            sqlQuery.Replace(", FROM", " FROM");
-
-            return sqlQuery.ToString();
-        }
-
-        internal string BuildUpdate(Expression expression, QuerySettings querySettings, T entity, string param, string[] fields)
-        {
-            var type = typeof(T);
-            var typeName = Pluralize(type);
-
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, typeName, param);
-
-            for (var i = 0; i < fields.Length; i++)
-                sqlQuery.AppendFormat(numberFormat, querySettings.Equal + ", ", fields[i], type.GetProperty(fields[i]).GetGetter<T>().GetValue(entity));
-
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQueryEnd, typeName, param);
-
-            Visit(expression);
-
-            sqlQuery.Replace(", WHERE", " WHERE");
-            sqlQuery.Replace(", FROM", " FROM");
-
-            return sqlQuery.ToString();
-        }
-
-        internal string BuildUpdate(MethodCallExpression[] expression, QuerySettings querySettings, string param, bool preSql)
-        {
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, Pluralize<T>(), param);
+            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, Pluralize<T>());
 
             for (var i = 0; i < expression.Length; i++)
             {
-                var member = (expression[i].Arguments[0] as MemberExpression).ToString();
+                var member = (expression[i].Arguments[0] as MemberExpression).Member.Name;
                 MemberExpression memberExp = null;
                 object value = null;
 

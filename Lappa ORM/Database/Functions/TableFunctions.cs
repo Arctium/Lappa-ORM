@@ -14,7 +14,7 @@ namespace Lappa_ORM
         public bool Create<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
         {
             // Only MySql supported for now.
-            if (connSettings.ConnectionType != ConnectionType.MYSQL)
+            if (connSettings.ConnectionType != ConnectionType.MySql)
                 return false;
 
             // Check if table exists or is allowed to be replaced.
@@ -23,7 +23,7 @@ namespace Lappa_ORM
                 // Exclude foreign key and non db related properties.
                 var properties = typeof(TEntity).GetReadWriteProperties();
                 var fields = new Dictionary<string, PropertyInfo>();
-                var query = new QueryBuilder<TEntity>(properties);
+                var query = new QueryBuilder<TEntity>(querySettings, properties);
                 var entity = new TEntity();
 
                 // Key: GroupStartIndex, Value: GroupCount

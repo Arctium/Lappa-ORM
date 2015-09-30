@@ -28,16 +28,18 @@ namespace Lappa_ORM
             return connection;
         }
 
-        public bool Initialize(string connString, ConnectionType type = ConnectionType.MYSQL)
+        public bool Initialize(string connString, ConnectionType type = ConnectionType.MySql)
         {
             connectionString = connString;
             connSettings = new ConnectorSettings(type);
             querySettings = new QuerySettings(type);
 
-            if (type == ConnectionType.MYSQL)
+            if (type == ConnectionType.MySql)
                 db = new MySqlDatabase(this);
-            else if (type == ConnectionType.MSSQL)
+            else if (type == ConnectionType.MSSql)
                 db = new MSSqlDatabase(this);
+            else if (type == ConnectionType.SQLite)
+                db = new SQLiteDatabase(this);
 
             var isOpen = false;
 

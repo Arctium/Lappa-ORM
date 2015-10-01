@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Lappa_ORM.Misc;
@@ -14,47 +15,42 @@ namespace Lappa_ORM
     public partial class Database
     {
         #region Select
-        // TODO Re-add member selection
-        public List<TEntity> Select<TEntity>() where TEntity : Entity, new()
+        public TEntity[] SelectArray<TEntity>(Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
         {
-            var properties = typeof(TEntity).GetReadWriteProperties();
-            /*var members = (newExpression?.Body as NewExpression)?.Members;
-            var builder = new QueryBuilder<T>(properties, members);
-            var data = await Select(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll());*/
-            var builder = new QueryBuilder<TEntity>(querySettings, properties, null);
-            var data = Select(builder.BuildSelectAll(), Pluralize<TEntity>());
-
-            return db.GetEntityList(data, builder);
+            return Task.Run(() => SelectArrayAsync(newExpression)).Result;
         }
 
-        // TODO Re-add member selection
-        public async Task<List<TEntity>> SelectAsync<TEntity>() where TEntity : Entity, new()
+        public async Task<TEntity[]> SelectArrayAsync<TEntity>(Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
-            /*var members = (newExpression?.Body as NewExpression)?.Members;
-            var builder = new QueryBuilder<T>(properties, members);
-            var data = await Select(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll());*/
-            var builder = new QueryBuilder<TEntity>(querySettings, properties, null);
-            var data = await SelectAsync(builder.BuildSelectAll(), Pluralize<TEntity>());
+            var members = (newExpression?.Body as NewExpression)?.Members;
+            var builder = new QueryBuilder<TEntity>(querySettings, properties, members);
+            var data = await SelectAsync(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll(), Pluralize<TEntity>());
 
-            return db.GetEntityList(data, builder);
+            return db.CreateEntities(data, builder);
         }
 
-        public Dictionary<TKey, TEntity> Select<TKey, TEntity>(Func<TEntity, TKey> func) where TEntity : Entity, new()
+        public List<TEntity> Select<TEntity>(Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
         {
-            return Task.Run(() => SelectAsync(func)).Result;
+            return Task.Run(() => SelectAsync(newExpression)).Result;
         }
 
-        // Code duplication of Task<List<T>> SelectAsync
-        public async Task<Dictionary<TKey, TEntity>> SelectAsync<TKey, TEntity>(Func<TEntity, TKey> func) where TEntity : Entity, new()
+        public async Task<List<TEntity>> SelectAsync<TEntity>(Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
         {
-            var properties = typeof(TEntity).GetReadWriteProperties();
-            var builder = new QueryBuilder<TEntity>(querySettings, properties, null);
-            var data = await SelectAsync(builder.BuildSelectAll(), Pluralize<TEntity>());
+            return (await SelectArrayAsync(newExpression)).ToList();
+        }
 
-            return db.GetEntityDictionary(data, builder, func);
+        public Dictionary<TKey, TEntity> Select<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
+        {
+            return Task.Run(() => SelectAsync(func, newExpression)).Result;
+        }
+
+        public async Task<Dictionary<TKey, TEntity>> SelectAsync<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
+        {
+            return (await SelectArrayAsync(newExpression)).AsDictionary(func);
         }
         #endregion
+
         #region SelectWhere
         public List<TEntity> Where<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
@@ -75,9 +71,10 @@ namespace Lappa_ORM
 
             var data = await SelectAsync(query, Pluralize<TEntity>());
 
-            return db.GetEntityList(data, builder);
+            return db.CreateEntities(data, builder).ToList();
         }
         #endregion
+
         #region Single
         public TEntity Single<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
@@ -103,14 +100,15 @@ namespace Lappa_ORM
                 if (data.Rows.Count > 1)
                     Trace.TraceWarning("Result contains more than 1 element.");
 
-                var objList = db.GetEntityList(data, builder);
+                var objList = db.CreateEntities(data, builder);
 
-                return objList.Count == 0 ? null : objList[0];
+                return objList.Length == 0 ? null : objList[0];
             }
 
             return null;
         }
         #endregion
+
         #region Other
         public bool Any<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
         {

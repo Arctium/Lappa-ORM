@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
@@ -173,17 +172,6 @@ namespace Lappa_ORM
             }
 
             return entities;
-        }
-
-        public List<T> GetEntityList<T>(DataTable data, QueryBuilder<T> builder) where T : Entity, new()
-        {
-            return CreateEntities(data, builder).ToList();
-        }
-
-        public Dictionary<TKey, TValue> GetEntityDictionary<TKey, TValue>(DataTable data, QueryBuilder<TValue> builder, Func<TValue, TKey> func) where TValue : Entity, new()
-        {
-            return CreateEntities(data, builder).AsDictionary(func);
-            
         }
     }
 }

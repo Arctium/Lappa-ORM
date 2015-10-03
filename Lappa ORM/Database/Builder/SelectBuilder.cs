@@ -34,7 +34,7 @@ namespace Lappa_ORM
         internal string BuildWhereAll(Expression expression)
         {
             // ToDo: Add support for query more than 1 table
-            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + querySettings.Part0 + " " + querySettings.Part1 + " WHERE ", Pluralize<T>());
+            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + querySettings.Part0 + " WHERE ", Pluralize<T>());
 
             Visit(expression);
 
@@ -48,7 +48,7 @@ namespace Lappa_ORM
             for (var i = 0; i < members.Count; i++)
                 sqlQuery.AppendFormat(numberFormat, querySettings.Part0 + ", ", members[i].Name);
 
-            sqlQuery.AppendFormat(numberFormat, "FROM " + querySettings.Part0 + " " + querySettings.Part1 + " WHERE ", Pluralize<T>());
+            sqlQuery.AppendFormat(numberFormat, "FROM " + querySettings.Part0 + " WHERE ", Pluralize<T>());
 
             // Fix query
             sqlQuery.Replace(", FROM", " FROM");

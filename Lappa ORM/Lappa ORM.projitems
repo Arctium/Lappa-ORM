@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\SelectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\TableBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\UpdateBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Database\SQLiteDatabase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\ConnectorSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\Functions\Database.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\Functions\ForeignKeyFunctions.cs" />
@@ -39,7 +40,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\MSSqlDatabase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\MySqlDatabase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Constants\MySqlEngine.cs" />
-    <!--<Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />-->
     <Compile Include="$(MSBuildThisFileDirectory)Settings\PluralizationSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\QuerySettings.cs" />
   </ItemGroup>

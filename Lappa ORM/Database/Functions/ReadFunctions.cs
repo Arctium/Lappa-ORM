@@ -15,12 +15,12 @@ namespace Lappa_ORM
     public partial class Database
     {
         #region Select
-        public TEntity[] SelectArray<TEntity>(Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
+        public TEntity[] SelectArray<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             return Task.Run(() => SelectArrayAsync(newExpression)).Result;
         }
 
-        public async Task<TEntity[]> SelectArrayAsync<TEntity>(Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
+        public async Task<TEntity[]> SelectArrayAsync<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
@@ -30,22 +30,22 @@ namespace Lappa_ORM
             return db.CreateEntities(data, builder);
         }
 
-        public List<TEntity> Select<TEntity>(Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
+        public List<TEntity> Select<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             return Task.Run(() => SelectAsync(newExpression)).Result;
         }
 
-        public async Task<List<TEntity>> SelectAsync<TEntity>(Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
+        public async Task<List<TEntity>> SelectAsync<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             return (await SelectArrayAsync(newExpression)).ToList();
         }
 
-        public Dictionary<TKey, TEntity> Select<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
+        public Dictionary<TKey, TEntity> Select<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             return Task.Run(() => SelectAsync(func, newExpression)).Result;
         }
 
-        public async Task<Dictionary<TKey, TEntity>> SelectAsync<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression) where TEntity : Entity, new()
+        public async Task<Dictionary<TKey, TEntity>> SelectAsync<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             return (await SelectArrayAsync(newExpression)).AsDictionary(func);
         }

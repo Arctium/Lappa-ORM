@@ -121,8 +121,9 @@ namespace Lappa_ORM
                 exVal = exVal ?? GetExpressionValue(memberExp);
 
                 var finalVal = exVal ?? Regex.Replace(Regex.Replace(binaryExpression.Right.ToString(), "^\"|\"$", ""), @"^Convert\(|\)$", "");
+                var left = (binaryExpression.Left as MemberExpression)?.Member ?? ((binaryExpression.Left as UnaryExpression).Operand as MemberExpression).Member;
 
-                sqlQuery.AppendFormat(numberFormat, "{0}{1}'{2}'", Regex.Replace((binaryExpression.Left as MemberExpression).Member.Name, @"^Convert\(|\)$", ""), condition, finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
+                sqlQuery.AppendFormat(numberFormat, "{0}{1}'{2}'", Regex.Replace(left.Name, @"^Convert\(|\)$", ""), condition, finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
             }
 
             Visit(binaryExpression.Right);

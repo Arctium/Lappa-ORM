@@ -190,28 +190,33 @@ namespace Lappa_ORM
 
                 var constExpression = (memberExp.Expression as ConstantExpression);
 
-                if (constExpression != null)
+                FieldInfo info;
+                object objReference;
+
+                if (constExpression == null)
+                    objReference = (memberExp.Member as FieldInfo)?.GetValue(null) ?? (memberExp.Member as PropertyInfo)?.GetValue(null);
+                else
                 {
-                    var info = constExpression.Value.GetType().GetRuntimeFields().SingleOrDefault(fi => fi.Name == memberExp.Member.Name);
-                    var objReference = info?.GetValue(constExpression.Value);
+                    info = constExpression.Value.GetType().GetRuntimeFields().SingleOrDefault(fi => fi.Name == memberExp.Member.Name);
+                    objReference = info?.GetValue(constExpression.Value);
+                }
 
-                    if (objReference != null)
+                if (objReference != null)
+                {
+                    if (objReference.GetType().IsPrimitive || objReference.GetType() == typeof(string))
+                        return objReference;
+
+                    for (var i = memberExpressionStore.Count; i > 1; i--)
                     {
-                        if (objReference.GetType().IsPrimitive || objReference.GetType() == typeof(string))
-                            return objReference;
+                        if (memberExpressionStore[i - 1].Member is PropertyInfo)
+                            objReference = (memberExpressionStore[i - 1].Member as PropertyInfo).GetValue(objReference);
+                        else
+                            objReference = (memberExpressionStore[i - 1].Member as FieldInfo).GetValue(objReference);
 
-                        for (var i = memberExpressionStore.Count; i > 1; i--)
-                        {
-                            if (memberExpressionStore[i - 1].Member is PropertyInfo)
-                                objReference = (memberExpressionStore[i - 1].Member as PropertyInfo).GetValue(objReference);
-                            else
-                                objReference = (memberExpressionStore[i - 1].Member as FieldInfo).GetValue(objReference);
-
-                            memberExpressionStore.RemoveAt(i - 1);
-                        }
-
-                        return GetValue(objReference, memberExpression, binaryExpression);
+                        memberExpressionStore.RemoveAt(i - 1);
                     }
+
+                    return GetValue(objReference, memberExpression, binaryExpression);
                 }
             }
 

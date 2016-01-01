@@ -4,52 +4,51 @@
 using System;
 using System.IO;
 using System.Reflection;
+using Lappa_ORM.Logging;
 
 namespace Lappa_ORM
 {
     internal sealed class ConnectorSettings
     {
-        public ConnectionType ConnectionType { get; private set; }
+        public DatabaseType DatabaseType { get; private set; }
         string type;
         Assembly assembly;
 
-        internal ConnectorSettings(ConnectionType cType)
+        internal ConnectorSettings(DatabaseType dbType)
         {
-            ConnectionType = cType;
+            DatabaseType = dbType;
 
-            if (cType == ConnectionType.MySql)
+            if (dbType == DatabaseType.MySql)
             {
-                if (!File.Exists(Environment.CurrentDirectory + "/MySql.Data.dll"))
+                var connectorPath = Environment.CurrentDirectory + "/MySql.Data.dll";
+
+                if (!File.Exists(connectorPath))
                 {
-                    Console.WriteLine("MySql.Data.dll doesn't exist.");
+                    Log.Error($"{connectorPath} doesn't exist.");
 
                     return;
                 }
 
-                assembly = Assembly.LoadFile(Environment.CurrentDirectory + "/MySql.Data.dll");
+                assembly = Assembly.LoadFile(connectorPath);
                 type = "MySql.Data.MySqlClient.MySql";
             }
-            else if (cType == ConnectionType.MSSql)
+            else if (dbType == DatabaseType.MSSql)
             {
-                // System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
-                #pragma warning disable 612 // For mono...
-                #pragma warning disable 618 // Visual studio...
-                assembly = Assembly.LoadWithPartialName("System.Data");
-                #pragma warning restore 612
-                #pragma warning restore 618
-
+                assembly = Assembly.Load("System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
                 type = "System.Data.SqlClient.Sql";
             }
-            else if (cType == ConnectionType.SQLite)
+            else if (dbType == DatabaseType.SQLite)
             {
-                if (!File.Exists(Environment.CurrentDirectory + "/System.Data.SQLite.dll"))
+                var connectorPath = Environment.CurrentDirectory + "/System.Data.SQLite.dll";
+
+                if (!File.Exists(connectorPath))
                 {
-                    Console.WriteLine("System.Data.SQLite.dll doesn't exist.");
+                    Log.Error($"{connectorPath} doesn't exist.");
 
                     return;
                 }
 
-                assembly = Assembly.LoadFile(Environment.CurrentDirectory + "/System.Data.SQLite.dll");
+                assembly = Assembly.LoadFile(connectorPath);
                 type = "System.Data.SQLite.SQLite";
             }
         }

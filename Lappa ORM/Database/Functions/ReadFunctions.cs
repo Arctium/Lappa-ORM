@@ -27,7 +27,7 @@ namespace Lappa_ORM
             var builder = new QueryBuilder<TEntity>(querySettings, properties, members);
             var data = await SelectAsync(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll(), Pluralize<TEntity>());
 
-            return db.CreateEntities(data, builder);
+            return entityBuilder.CreateEntities(data, builder);
         }
 
         public List<TEntity> Select<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
@@ -71,7 +71,7 @@ namespace Lappa_ORM
 
             var data = await SelectAsync(query, Pluralize<TEntity>());
 
-            return db.CreateEntities(data, builder).ToList();
+            return entityBuilder.CreateEntities(data, builder).ToList();
         }
         #endregion
 
@@ -100,7 +100,7 @@ namespace Lappa_ORM
                 if (data.Rows.Count > 1)
                     Trace.TraceWarning("Result contains more than 1 element.");
 
-                var objList = db.CreateEntities(data, builder);
+                var objList = entityBuilder.CreateEntities(data, builder);
 
                 return objList.Length == 0 ? null : objList[0];
             }

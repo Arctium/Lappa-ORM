@@ -12,34 +12,24 @@ namespace Lappa_ORM
 {
     public partial class Database
     {
+        public DatabaseType Type { get; private set; }
+
         string connectionString;
         ConnectorSettings connSettings;
         QuerySettings querySettings;
-        IDatabase db;
+        EntityBuilder entityBuilder;
 
-        DbConnection CreateConnection()
+        public bool Initialize(string connString, DatabaseType type = DatabaseType.MySql)
         {
-            var connection = connSettings.CreateObject("Connection") as DbConnection;
+            Logging.Log.Initialize();
 
-            connection.ConnectionString = connectionString;
+            Type = type;
 
-            connection.Open();
-
-            return connection;
-        }
-
-        public bool Initialize(string connString, ConnectionType type = ConnectionType.MySql)
-        {
             connectionString = connString;
             connSettings = new ConnectorSettings(type);
             querySettings = new QuerySettings(type);
 
-            if (type == ConnectionType.MySql)
-                db = new MySqlDatabase(this);
-            else if (type == ConnectionType.MSSql)
-                db = new MSSqlDatabase(this);
-            else if (type == ConnectionType.SQLite)
-                db = new SQLiteDatabase(this);
+            entityBuilder = new EntityBuilder(this);
 
             var isOpen = false;
 
@@ -54,6 +44,17 @@ namespace Lappa_ORM
             }
 
             return isOpen;
+        }
+
+        DbConnection CreateConnection()
+        {
+            var connection = connSettings.CreateObject("Connection") as DbConnection;
+
+            connection.ConnectionString = connectionString;
+
+            connection.Open();
+
+            return connection;
         }
 
         [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]

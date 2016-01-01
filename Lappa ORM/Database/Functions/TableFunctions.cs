@@ -14,7 +14,7 @@ namespace Lappa_ORM
         public bool Create<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
         {
             // Only MySql supported for now.
-            if (connSettings.ConnectionType != ConnectionType.MySql)
+            if (connSettings.DatabaseType != DatabaseType.MySql)
                 return false;
 
             // Check if table exists or is allowed to be replaced.

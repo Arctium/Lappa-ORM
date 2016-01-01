@@ -19,7 +19,7 @@ namespace Lappa_ORM
         IFormatProvider numberFormat = CultureInfo.GetCultureInfo("en-US").NumberFormat;
 
         // TODO Rewrite...
-        internal bool AssignForeignKeyData<TEntity>(TEntity entity, PropertyInfo[] foreignKeys, ConcurrentDictionary<int, int> groups) where TEntity : Entity, new()
+        internal void AssignForeignKeyData<TEntity>(TEntity entity, PropertyInfo[] foreignKeys, ConcurrentDictionary<int, int> groups) where TEntity : Entity, new()
         {
             for (var i = 0; i < foreignKeys.Length; i++)
             {
@@ -38,8 +38,6 @@ namespace Lappa_ORM
                     fk.SetValue(entity, fk.PropertyType.IsGenericType ? data : data[0], null);
                 }
             }
-
-            return true;
         }
 
         internal Tuple<string, string> GetForeignKeyName<T>(PropertyInfo prop)

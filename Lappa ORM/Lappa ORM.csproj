@@ -9,13 +9,14 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lappa_ORM</RootNamespace>
     <AssemblyName>LappaORM</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <TargetFrameworkProfile />
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -57,14 +58,14 @@
     <Compile Include="Attributes\NoPluralizationAttribute.cs" />
     <Compile Include="Attributes\PrimaryKeyAttribute.cs" />
     <Compile Include="Attributes\UniqueAttribute.cs" />
-    <Compile Include="Constants\ConnectionType.cs" />
+    <Compile Include="Constants\DatabaseType.cs" />
     <Compile Include="Database\Builder\DeleteBuilder.cs" />
     <Compile Include="Database\Builder\InsertBuilder.cs" />
     <Compile Include="Database\Builder\QueryBuilder.cs" />
     <Compile Include="Database\Builder\SelectBuilder.cs" />
     <Compile Include="Database\Builder\TableBuilder.cs" />
     <Compile Include="Database\Builder\UpdateBuilder.cs" />
-    <Compile Include="Database\SQLiteDatabase.cs" />
+    <Compile Include="Logging\Log.cs" />
     <Compile Include="Settings\ConnectorSettings.cs" />
     <Compile Include="Database\Functions\Database.cs" />
     <Compile Include="Database\Functions\ForeignKeyFunctions.cs" />
@@ -73,13 +74,11 @@
     <Compile Include="Database\Functions\TableFunctions.cs" />
     <Compile Include="Database\Functions\WriteFunctions.cs" />
     <Compile Include="Database\Entity.cs" />
-    <Compile Include="Database\IDatabase.cs" />
+    <Compile Include="Database\EntityBuilder.cs" />
     <Compile Include="Misc\Extensions.cs" />
     <Compile Include="Misc\Helper.cs" />
     <Compile Include="Misc\PluralizationService.cs" />
     <Compile Include="Misc\PublicExtensions.cs" />
-    <Compile Include="Database\MSSqlDatabase.cs" />
-    <Compile Include="Database\MySqlDatabase.cs" />
     <Compile Include="Constants\MySqlEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings\PluralizationSettings.cs" />

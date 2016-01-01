@@ -5,12 +5,7 @@ namespace Lappa_ORM
 {
     public abstract class Entity
     {
-        public bool AutoAssignForeignKeys;
-
-        public Entity(bool autoAssignForeignKeys = true)
-        {
-            AutoAssignForeignKeys = autoAssignForeignKeys;
-        }
+        public readonly bool AutoAssignForeignKeys = true;
 
         public virtual void InitializeNonTableProperties() { }
     }

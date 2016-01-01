@@ -18,9 +18,9 @@ namespace Lappa_ORM
         public string Part1 { get; private set; }
         public string Part2 { get; private set; }
 
-        public QuerySettings(ConnectionType type)
+        public QuerySettings(DatabaseType type)
         {
-            if (type == ConnectionType.MSSql)
+            if (type == DatabaseType.MSSql)
             {
                 UpdateQuery    = "UPDATE [{0}] SET ";
                 UpdateQueryEnd = "FROM [{0}] WHERE ";
@@ -32,7 +32,7 @@ namespace Lappa_ORM
                 Part1 = "[{1}]";
                 Part2 = "[{2}]";
             }
-            else if (type == ConnectionType.MySql)
+            else if (type == DatabaseType.MySql)
             {
                 UpdateQuery    = "UPDATE `{0}` SET ";
                 UpdateQueryEnd = "WHERE ";
@@ -44,7 +44,7 @@ namespace Lappa_ORM
                 Part1 = "`{1}`";
                 Part2 = "`{2}`";
             }
-            else if (type == ConnectionType.SQLite)
+            else if (type == DatabaseType.SQLite)
             {
                 UpdateQuery = "UPDATE \"{0}\" SET ";
                 UpdateQueryEnd = "WHERE ";

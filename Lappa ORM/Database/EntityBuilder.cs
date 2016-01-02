@@ -53,7 +53,7 @@ namespace Lappa_ORM
 
             if (data.Columns.Count != totalFieldCount)
             {
-                Log.Error($"Table '{pluralizedEntityName}' (Column/Property count mismatch)\nColumns '{data.Columns.Count}'\nProperties '{totalFieldCount}'");
+                Helper.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property count mismatch)\nColumns '{data.Columns.Count}'\nProperties '{totalFieldCount}'");
 
                 return new TEntity[0];
             }
@@ -73,7 +73,7 @@ namespace Lappa_ORM
                     {
                         var propertyType = builder.Properties[i].PropertyType.IsEnum ? builder.Properties[i].PropertyType.GetEnumUnderlyingType() : builder.Properties[i].PropertyType;
 
-                        Log.Error($"Table '{pluralizedEntityName}' (Column/Property type mismatch)\n" +
+                        Helper.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property type mismatch)\n" +
                                   $"Column '{data.Columns[i].ColumnName}' ({data.Columns[i].DataType})\n" +
                                   $"Property '{builder.Properties[i].Name}' ({propertyType})");
 

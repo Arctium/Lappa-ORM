@@ -3,9 +3,8 @@
 
 namespace Lappa_ORM.Logging
 {
-    // Dummy log class.
-    internal class Log : ILog
+    public interface ILog
     {
-        public void Message(LogTypes logTypes, string message) { }
+        void Message(LogTypes logTypes, string message);
     }
 }

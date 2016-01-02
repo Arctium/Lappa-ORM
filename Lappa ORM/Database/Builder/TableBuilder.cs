@@ -23,7 +23,7 @@ namespace Lappa_ORM
             foreach (var f in fields)
             {
                 var isAutoIncrement = f.Value.HasAttribute<AutoIncrementAttribute>();
-                var fieldOptions = f.Value.GetCustomAttribute<FieldAttribute>();
+                var fieldOptions = f.Value.GetCustomAttribute<DBFieldAttribute>();
                 var fieldType = f.Value.PropertyType.IsArray ? f.Value.PropertyType.GetElementType() : f.Value.PropertyType;
                 var fieldSize = fieldOptions?.Size ?? Helper.GetDefaultFieldSize(fieldType);
                 var defaultValue = fieldOptions?.Default ?? Helper.GetDefault(fieldType);

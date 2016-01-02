@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using Lappa_ORM.Logging;
+using Lappa_ORM.Misc;
 
 namespace Lappa_ORM
 {
@@ -24,7 +25,7 @@ namespace Lappa_ORM
 
                 if (!File.Exists(connectorPath))
                 {
-                    Log.Error($"{connectorPath} doesn't exist.");
+                    Helper.Log.Message(LogTypes.Error, $"{connectorPath} doesn't exist.");
 
                     return;
                 }
@@ -43,7 +44,7 @@ namespace Lappa_ORM
 
                 if (!File.Exists(connectorPath))
                 {
-                    Log.Error($"{connectorPath} doesn't exist.");
+                    Helper.Log.Message(LogTypes.Error, $"{connectorPath} doesn't exist.");
 
                     return;
                 }

@@ -6,6 +6,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Lappa_ORM.Logging;
 using Lappa_ORM.Misc;
 
 namespace Lappa_ORM
@@ -19,10 +20,8 @@ namespace Lappa_ORM
         QuerySettings querySettings;
         EntityBuilder entityBuilder;
 
-        public bool Initialize(string connString, DatabaseType type = DatabaseType.MySql)
+        public bool Initialize(string connString, DatabaseType type)
         {
-            Logging.Log.Initialize();
-
             Type = type;
 
             connectionString = connString;
@@ -45,6 +44,10 @@ namespace Lappa_ORM
 
             return isOpen;
         }
+
+        // Overwrite dummy logger.
+        // Can be called at any time.
+        public void EnableLogging(ILog logger) => Helper.Log = logger;
 
         DbConnection CreateConnection()
         {

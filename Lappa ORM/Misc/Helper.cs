@@ -2,11 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Lappa_ORM.Logging;
+using LappaPluralization;
 
 namespace Lappa_ORM.Misc
 {
     internal class Helper
     {
+        // Use dummy logger as default.
+        public static ILog Log { get; set; } = new Log();
+
         // Create only one service. Only enUS supported.
         static PluralizationService pluralService = new PluralizationService();
 

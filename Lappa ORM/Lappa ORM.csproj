@@ -52,7 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\AutoIncrementAttribute.cs" />
-    <Compile Include="Attributes\FieldAttribute.cs" />
+    <Compile Include="Attributes\DBFieldAttribute.cs" />
     <Compile Include="Attributes\ForeignKeyAttribute.cs" />
     <Compile Include="Attributes\GroupAttribute.cs" />
     <Compile Include="Attributes\NoPluralizationAttribute.cs" />
@@ -65,7 +65,9 @@
     <Compile Include="Database\Builder\SelectBuilder.cs" />
     <Compile Include="Database\Builder\TableBuilder.cs" />
     <Compile Include="Database\Builder\UpdateBuilder.cs" />
+    <Compile Include="Logging\ILog.cs" />
     <Compile Include="Logging\Log.cs" />
+    <Compile Include="Logging\LogTypes.cs" />
     <Compile Include="Settings\ConnectorSettings.cs" />
     <Compile Include="Database\Functions\Database.cs" />
     <Compile Include="Database\Functions\ForeignKeyFunctions.cs" />
@@ -77,14 +79,13 @@
     <Compile Include="Database\EntityBuilder.cs" />
     <Compile Include="Misc\Extensions.cs" />
     <Compile Include="Misc\Helper.cs" />
-    <Compile Include="Misc\PluralizationService.cs" />
     <Compile Include="Misc\PublicExtensions.cs" />
     <Compile Include="Constants\MySqlEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Settings\PluralizationSettings.cs" />
     <Compile Include="Settings\QuerySettings.cs" />
   </ItemGroup>
   <ItemGroup />
+  <Import Project="Libraries\Pluralization\LappaPluralization\LappaPluralization.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

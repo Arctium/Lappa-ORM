@@ -29,7 +29,7 @@ namespace Lappa_ORM
             using (var connection = CreateConnection())
                 result = Select(string.Format("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = '{0}' AND table_name = '{1}'"), connection.Database, tableName, tableName);
 
-            return (int)result?.Rows[0]["ct"] == 1 ? true : false;
+            return (int)result?.Rows[0]["ct"] == 1;
         }
     }
 }

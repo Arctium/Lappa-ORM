@@ -17,9 +17,8 @@ namespace Lappa_ORM.Misc
     internal static class Extensions
     {
         // Create only one service. Only enUS supported.
-        static PluralizationService pluralService = new PluralizationService();
+        internal static string Pluralize(this string word) => Pluralize(word);
 
-        internal static string Pluralize(this string s) => pluralService.Pluralize(s);
 
         internal static IList CreateList(this Type type)
         {

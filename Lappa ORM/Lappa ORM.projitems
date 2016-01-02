@@ -10,7 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes\AutoIncrementAttribute.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Attributes\FieldAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes\DBFieldAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Attributes\ForeignKeyAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Attributes\GroupAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Attributes\NoPluralizationAttribute.cs" />
@@ -23,7 +23,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\SelectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\TableBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\Builder\UpdateBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging\ILog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging\Log.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging\LogTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\ConnectorSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\Functions\Database.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Database\Functions\ForeignKeyFunctions.cs" />
@@ -35,10 +37,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Database\EntityBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Misc\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Misc\Helper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Misc\PluralizationService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Libraries\Pluralization\LappaPluralization\PluralizationService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Libraries\Pluralization\LappaPluralization\PluralizationSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Misc\PublicExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Constants\MySqlEngine.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Settings\PluralizationSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\QuerySettings.cs" />
   </ItemGroup>
 </Project>

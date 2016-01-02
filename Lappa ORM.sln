@@ -1,11 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lappa ORM", "Lappa ORM\Lappa ORM.csproj", "{C6E26FB4-A5CA-49A0-82C8-8FEF3CAA8613}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LappaPluralization", "Lappa ORM\Libraries\Pluralization\LappaPluralization\LappaPluralization.shproj", "{19D03D18-A9CB-4D84-BE07-65C2B56C850B}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Lappa ORM\Libraries\Pluralization\LappaPluralization\LappaPluralization.projitems*{19d03d18-a9cb-4d84-be07-65c2b56c850b}*SharedItemsImports = 13
+		Lappa ORM\Libraries\Pluralization\LappaPluralization\LappaPluralization.projitems*{c6e26fb4-a5ca-49a0-82c8-8fef3caa8613}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ArchitectureIndependent = Debug|ArchitectureIndependent
 		Release|ArchitectureIndependent = Release|ArchitectureIndependent

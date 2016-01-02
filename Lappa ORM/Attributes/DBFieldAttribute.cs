@@ -6,7 +6,7 @@ using System;
 namespace Lappa_ORM
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class FieldAttribute : Attribute
+    public class DBFieldAttribute : Attribute
     {
         public int Size       { get; set; }
         public object Default { get; set; }

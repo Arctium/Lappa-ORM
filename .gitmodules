@@ -1,0 +1,3 @@
+[submodule "Lappa ORM/Libraries/Pluralization"]
+	path = Lappa ORM/Libraries/Pluralization
+	url = https://github.com/Arctium-Software/LappaPluralization.git

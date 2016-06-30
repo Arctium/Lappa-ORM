@@ -73,9 +73,8 @@ namespace Lappa_ORM
                     {
                         var propertyType = builder.Properties[i].PropertyType.IsEnum ? builder.Properties[i].PropertyType.GetEnumUnderlyingType() : builder.Properties[i].PropertyType;
 
-                        Helper.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property type mismatch)\n" +
-                                  $"Column '{data.Columns[i].ColumnName}' ({data.Columns[i].DataType})\n" +
-                                  $"Property '{builder.Properties[i].Name}' ({propertyType})");
+                        Helper.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property type mismatch)");
+                        Helper.Log.Message(LogTypes.Error, $"{data.Columns[i].ColumnName}: {data.Columns[i].DataType}/{propertyType}");
 
                         return new TEntity[0];
                     }

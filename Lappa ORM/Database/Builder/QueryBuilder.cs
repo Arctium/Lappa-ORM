@@ -117,6 +117,12 @@ namespace Lappa_ORM
                     memberExp = (binaryExpression.Right as UnaryExpression)?.Operand as MemberExpression;
                 else if (binaryExpression.Right.NodeType == ExpressionType.Constant)
                     exVal = (binaryExpression.Right as ConstantExpression)?.Value;
+                else if (binaryExpression.Right.NodeType == ExpressionType.Call)
+                {
+                    var methodMember = Expression.Convert(binaryExpression.Right, typeof(object));
+
+                    exVal = Expression.Lambda<Func<object>>(methodMember).Compile()();
+                }
 
                 exVal = exVal ?? GetExpressionValue(memberExp);
 

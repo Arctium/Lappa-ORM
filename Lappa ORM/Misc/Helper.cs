@@ -3,16 +3,12 @@
 
 using System;
 using System.Reflection;
-using LappaORM.Logging;
 using LappaPluralization;
 
 namespace LappaORM.Misc
 {
     internal class Helper
     {
-        // Use dummy logger as default.
-        internal static ILog<LogTypes> Log { get; set; } = new Log();
-
         // Create only one service. Only enUS supported.
         static readonly PluralizationService pluralService = new PluralizationService();
 

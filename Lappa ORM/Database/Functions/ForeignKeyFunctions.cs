@@ -91,7 +91,7 @@ namespace LappaORM
                 if (data.FieldCount != properties.Length)
                     throw new NotSupportedException("Columns doesn't match the entity fields.");
 
-                Parallel.ForEach(data.CanReadRow(), (state, loopState) =>
+                while (data.Read())
                 {
                     var entity = Activator.CreateInstance(entityType) as Entity;
 
@@ -103,7 +103,7 @@ namespace LappaORM
                     // IList isn't thread safe...
                     lock (entityLock)
                         entities.Add(entity);
-                });
+                }
             }
 
             return entities;

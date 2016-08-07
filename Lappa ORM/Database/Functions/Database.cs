@@ -5,22 +5,23 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using LappaORM.Constants;
+using LappaORM.Logging;
 
 namespace LappaORM
 {
     public partial class Database
     {
         public DatabaseType Type { get; private set; }
+        public ILog<Enum> Log { get; set; }
 
         string connectionString;
         Connector connector;
         ConnectorQuery connectorQuery;
         EntityBuilder entityBuilder;
 
-        public bool Initialize(string connString, DatabaseType type)
+        public bool Initialize(string connString, DatabaseType type = DatabaseType.MSSql)
         {
             Type = type;
 
@@ -39,8 +40,7 @@ namespace LappaORM
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
-                return false;
+                Log.Message(LogTypes.Error, ex.ToString());
             }
 
             return isOpen;
@@ -48,7 +48,7 @@ namespace LappaORM
 
         // Overwrite dummy logger.
         // Can be called at any time.
-        //public void EnableLogging<T>(ILog<T> logger) => Helper.Log = logger;
+        public void SetLogger<T>(ILog<T> logger) => Log = logger as ILog<Enum>;
 
         DbConnection CreateConnection()
         {
@@ -61,7 +61,6 @@ namespace LappaORM
             return connection;
         }
 
-        [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         internal DbCommand CreateSqlCommand(DbConnection connection, string sql, params object[] args)
         {
             var sqlCommand = connector.CreateCommandObject();
@@ -85,88 +84,81 @@ namespace LappaORM
 
         internal async Task<bool> ExecuteAsync(string sql, params object[] args)
         {
+            var ret = false;
+
             try
             {
-                var ret = false;
-
                 using (var connection = CreateConnection())
                 {
                     using (var cmd = CreateSqlCommand(connection, sql, args))
                         ret = await cmd.ExecuteNonQueryAsync() > 0;
                 }
-
-                return ret;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                Log.Message(LogTypes.Error, ex.ToString());
             }
+
+            return ret;
         }
 
         internal bool Execute(string sql, params object[] args)
         {
+            var ret = false;
+
             try
             {
-                var ret = false;
 
                 using (var connection = CreateConnection())
                 {
                     using (var cmd = CreateSqlCommand(connection, sql, args))
                         ret = cmd.ExecuteNonQuery() > 0;
                 }
-
-                return ret;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
-                return false;
+                Log.Message(LogTypes.Error, ex.ToString());
             }
+
+            return ret;
         }
 
         internal async Task<DbDataReader> SelectAsync(string sql, string tableName, params object[] args)
         {
+            DbDataReader result = null;
+
             try
             {
-                DbDataReader readTask = null;
-
-                var connection = CreateConnection();
+                using (var cmd = CreateSqlCommand(CreateConnection(), sql, args))
                 {
-                    using (var cmd = CreateSqlCommand(connection, sql, args))
-                    {
-                        readTask = await cmd.ExecuteReaderAsync();
-                    }
+                    result = await cmd.ExecuteReaderAsync();
                 }
-
-                return readTask;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
-                return null;
+                Log.Message(LogTypes.Error, ex.ToString());
             }
+
+            return result;
         }
 
         internal DbDataReader Select(string sql, string tableName, params object[] args)
         {
+            DbDataReader result = null;
+
             try
             {
-                DbDataReader result = null;
-
-                using (var connection = CreateConnection())
+                using (var cmd = CreateSqlCommand(CreateConnection(), sql, args))
                 {
-                    using (var cmd = CreateSqlCommand(connection, sql, args))
-                    {
-                        result = cmd.ExecuteReader();
-                    }
+                    result = cmd.ExecuteReader();
                 }
-
-                return result;
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                Log.Message(LogTypes.Error, ex.ToString());
             }
+
+            return result;
         }
     }
 }

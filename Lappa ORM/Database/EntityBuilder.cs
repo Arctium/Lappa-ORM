@@ -14,11 +14,11 @@ namespace LappaORM
 {
     internal class EntityBuilder
     {
-        Database parentDb;
+        Database database;
 
-        public EntityBuilder(Database parent)
+        public EntityBuilder(Database database)
         {
-            parentDb = parent;
+            this.database = database;
         }
 
         public TEntity[] CreateEntities<TEntity>(DbDataReader reader, QueryBuilder<TEntity> builder) where TEntity : Entity, new()
@@ -51,7 +51,7 @@ namespace LappaORM
 
             if (reader.FieldCount != totalFieldCount)
             {
-                Helper.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property count mismatch)\nColumns '{reader.FieldCount}'\nProperties '{totalFieldCount}'");
+                database.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property count mismatch)\nColumns '{reader.FieldCount}'\nProperties '{totalFieldCount}'");
 
                 return new TEntity[0];
             }
@@ -174,7 +174,7 @@ namespace LappaORM
 
                     // TODO Fix group assignment in foreign keys.
                     if (assignForeignKeys)
-                        parentDb.AssignForeignKeyData(entity, foreignKeys, groups);
+                        database.AssignForeignKeyData(entity, foreignKeys, groups);
 
                     entity.InitializeNonTableProperties();
 

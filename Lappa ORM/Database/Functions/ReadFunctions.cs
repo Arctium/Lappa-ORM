@@ -101,7 +101,7 @@ namespace LappaORM
                 var objList = entityBuilder.CreateEntities(data, builder);
 
                 if (objList.Length > 1)
-                    Helper.Log.Message(LogTypes.Warning, "Result contains more than 1 element.");
+                    Log.Message(LogTypes.Warning, "Result contains more than 1 element.");
 
                 return objList.Length == 0 ? null : objList[0];
             }

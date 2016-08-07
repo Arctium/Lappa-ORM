@@ -100,8 +100,7 @@ namespace LappaORM
                     condition = " OR ";
                     break;
                 default:
-                    condition = "Not Supported";
-                    break;
+                    throw new NotSupportedException($"{binaryExpression.NodeType} is not supported.");
             }
 
             if (condition == " AND " || condition == " OR ")
@@ -170,7 +169,7 @@ namespace LappaORM
                 }
             }
 
-            if ((val == null) && binaryExpression == null || (val == null) && (!(binaryExpression.Right is MemberExpression) || objReference.GetType() == (binaryExpression.Left as MemberExpression)?.Type))
+            if (val == null && (binaryExpression == null || (!(binaryExpression.Right is MemberExpression) || objReference.GetType() == (binaryExpression.Left as MemberExpression)?.Type)))
                 return objReference;
 
             return val;

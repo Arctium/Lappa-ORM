@@ -43,7 +43,7 @@ build/
 *.pidb
 *.log
 *.scc
-
+*.lock.*
 
 # Visual C++ cache files
 ipch/

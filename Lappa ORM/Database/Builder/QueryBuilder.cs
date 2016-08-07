@@ -9,9 +9,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using Lappa_ORM.Misc;
+using LappaORM.Misc;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     internal partial class QueryBuilder<T> : ExpressionVisitor where T : Entity, new()
     {
@@ -20,19 +20,19 @@ namespace Lappa_ORM
         public Action<T, object>[] PropertySetter { get; }
 
         StringBuilder sqlQuery = new StringBuilder();
-        QuerySettings querySettings;
+        ConnectorQuery connectorQuery;
 
         // Use en-US as number format for all languages.
-        IFormatProvider numberFormat = CultureInfo.GetCultureInfo("en-US").NumberFormat;
+        IFormatProvider numberFormat = new CultureInfo("en-US").NumberFormat;
 
-        internal QueryBuilder(QuerySettings querySettings)
+        internal QueryBuilder(ConnectorQuery connectorQuery)
         {
-            this.querySettings = querySettings;
+            this.connectorQuery = connectorQuery;
         }
 
-        internal QueryBuilder(QuerySettings querySettings, PropertyInfo[] properties, IReadOnlyList<MemberInfo> members = null)
+        internal QueryBuilder(ConnectorQuery connectorQuery, PropertyInfo[] properties, IReadOnlyList<MemberInfo> members = null)
         {
-            this.querySettings = querySettings;
+            this.connectorQuery = connectorQuery;
 
             if (members != null)
             {
@@ -129,7 +129,7 @@ namespace Lappa_ORM
                 var finalVal = exVal ?? Regex.Replace(Regex.Replace(binaryExpression.Right.ToString(), "^\"|\"$", ""), @"^Convert\(|\)$", "");
                 var left = (binaryExpression.Left as MemberExpression)?.Member ?? ((binaryExpression.Left as UnaryExpression).Operand as MemberExpression).Member;
 
-                sqlQuery.AppendFormat(numberFormat, querySettings.Part0 + "{1}'{2}'", left.Name, condition, finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", left.Name, condition, finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
             }
 
             Visit(binaryExpression.Right);
@@ -209,7 +209,7 @@ namespace Lappa_ORM
 
                 if (objReference != null)
                 {
-                    if (objReference.GetType().IsPrimitive || objReference.GetType() == typeof(string))
+                    if (objReference.GetType().GetTypeInfo().IsPrimitive || objReference.GetType() == typeof(string))
                         return objReference;
 
                     for (var i = memberExpressionStore.Count; i > 1; i--)

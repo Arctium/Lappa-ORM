@@ -4,15 +4,15 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using static Lappa_ORM.Misc.Helper;
+using static LappaORM.Misc.Helper;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     internal partial class QueryBuilder<T>
     {
         internal string BuildSelectAll()
         {
-            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + querySettings.Part0, Pluralize<T>());
+            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Part0, Pluralize<T>());
 
             return sqlQuery.ToString();
         }
@@ -22,9 +22,9 @@ namespace Lappa_ORM
             sqlQuery.Append("SELECT ");
 
             for (var i = 0; i < members.Count; i++)
-                sqlQuery.AppendFormat(numberFormat, querySettings.Part0 + ", ", members[i].Name);
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].Name);
 
-            sqlQuery.AppendFormat(numberFormat, "FROM " + querySettings.Part0, Pluralize<T>());
+            sqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Part0, Pluralize<T>());
 
             sqlQuery.Replace(", FROM", " FROM");
 
@@ -34,7 +34,7 @@ namespace Lappa_ORM
         internal string BuildWhereAll(Expression expression)
         {
             // ToDo: Add support for query more than 1 table
-            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + querySettings.Part0 + " WHERE ", Pluralize<T>());
+            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
 
             Visit(expression);
 
@@ -46,9 +46,9 @@ namespace Lappa_ORM
             sqlQuery.Append("SELECT ");
 
             for (var i = 0; i < members.Count; i++)
-                sqlQuery.AppendFormat(numberFormat, querySettings.Part0 + ", ", members[i].Name);
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].Name);
 
-            sqlQuery.AppendFormat(numberFormat, "FROM " + querySettings.Part0 + " WHERE ", Pluralize<T>());
+            sqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
 
             // Fix query
             sqlQuery.Replace(", FROM", " FROM");

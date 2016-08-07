@@ -5,9 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Lappa_ORM.Misc;
+using System.Reflection;
+using LappaORM.Misc;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     public partial class Database
     {
@@ -22,7 +23,7 @@ namespace Lappa_ORM
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var values = new Dictionary<string, object>(properties.Length);
-            var query = new QueryBuilder<TEntity>(querySettings, properties);
+            var query = new QueryBuilder<TEntity>(connectorQuery, properties);
 
             for (var i = 0; i < properties.Length; i++)
             {
@@ -51,7 +52,7 @@ namespace Lappa_ORM
         public void Add<TEntity>(TEntity[] entities) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
-            var query = new QueryBuilder<TEntity>(querySettings, properties);
+            var query = new QueryBuilder<TEntity>(connectorQuery, properties);
             var queries = query.BuildBulkInsert(properties, entities);
 
             for (var i = 0; i < queries.Count; i++)
@@ -86,8 +87,8 @@ namespace Lappa_ORM
         {
             var type = typeof(TEntity);
             var properties = type.GetReadWriteProperties();
-            var primaryKeys = type.GetProperties().Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.Name == "Id" || p.Name == type.Name + "Id").ToArray();
-            var builder = new QueryBuilder<TEntity>(querySettings);
+            var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.Name == "Id" || p.Name == type.Name + "Id").ToArray();
+            var builder = new QueryBuilder<TEntity>(connectorQuery);
             var query = builder.BuildUpdate(entity, properties, primaryKeys);
 
             return Execute(query);
@@ -101,7 +102,7 @@ namespace Lappa_ORM
         /// <returns>True if the SQL query execution is successful.</returns>
         public bool UpdateAll<TEntity>(params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new()
         {
-            var builder = new QueryBuilder<TEntity>(querySettings);
+            var builder = new QueryBuilder<TEntity>(connectorQuery);
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
             var query = builder.BuildUpdate(expressions.ToArray(), false);
 
@@ -117,7 +118,7 @@ namespace Lappa_ORM
         /// <returns>True if the SQL query execution is successful.</returns>
         public bool Update<TEntity>(Expression<Func<TEntity, bool>> condition, params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new()
         {
-            var builder = new QueryBuilder<TEntity>(querySettings);
+            var builder = new QueryBuilder<TEntity>(connectorQuery);
 
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
             var query = builder.BuildUpdate(expressions.ToArray(), true);
@@ -138,8 +139,8 @@ namespace Lappa_ORM
         public bool Delete<TEntity>(TEntity entity) where TEntity : Entity, new()
         {
             var type = typeof(TEntity);
-            var primaryKeys = type.GetProperties().Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.Name == "Id" || p.Name == type.Name + "Id").ToArray();
-            var builder = new QueryBuilder<TEntity>(querySettings);
+            var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.Name == "Id" || p.Name == type.Name + "Id").ToArray();
+            var builder = new QueryBuilder<TEntity>(connectorQuery);
             var query = builder.BuildDelete(entity, primaryKeys);
 
             return Execute(query);
@@ -153,7 +154,7 @@ namespace Lappa_ORM
         /// <returns>True if the SQL query execution is successful.</returns>
         public bool Delete<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
         {
-            var builder = new QueryBuilder<TEntity>(querySettings);
+            var builder = new QueryBuilder<TEntity>(connectorQuery);
             var query = builder.BuildDelete(condition.Body);
 
             return Execute(query);

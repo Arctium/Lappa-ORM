@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     // Not implemented
     [AttributeUsage(AttributeTargets.Property)]

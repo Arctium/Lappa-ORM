@@ -3,15 +3,14 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using Lappa_ORM.Logging;
-using Lappa_ORM.Misc;
-using static Lappa_ORM.Misc.Helper;
+using LappaORM.Logging;
+using LappaORM.Misc;
+using static LappaORM.Misc.Helper;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     internal class EntityBuilder
     {
@@ -22,18 +21,17 @@ namespace Lappa_ORM
             parentDb = parent;
         }
 
-        public TEntity[] CreateEntities<TEntity>(DataTable data, QueryBuilder<TEntity> builder) where TEntity : Entity, new()
+        public TEntity[] CreateEntities<TEntity>(DbDataReader reader, QueryBuilder<TEntity> builder) where TEntity : Entity, new()
         {
             var fieldCount = builder.PropertySetter.Length;
             var arrayFieldCount = 0;
             var classFieldCount = 0;
             var structFieldCount = 0;
 
-            if (data == null || data.Rows.Count == 0)
+            if (reader == null || !reader.HasRows)
                 return new TEntity[0];
 
             var pluralizedEntityName = Pluralize<TEntity>();
-            var entity = new TEntity();
 
             for (var i = 0; i < builder.Properties.Length; i++)
             {
@@ -51,15 +49,16 @@ namespace Lappa_ORM
 
             var totalFieldCount = fieldCount + arrayFieldCount + classFieldCount + structFieldCount;
 
-            if (data.Columns.Count != totalFieldCount)
+            if (reader.FieldCount != totalFieldCount)
             {
-                Helper.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property count mismatch)\nColumns '{data.Columns.Count}'\nProperties '{totalFieldCount}'");
+                Helper.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property count mismatch)\nColumns '{reader.FieldCount}'\nProperties '{totalFieldCount}'");
 
                 return new TEntity[0];
             }
 
+            // No MySQL support for now.
             // Strict types only used in MySQL databases.
-            if (parentDb.Type == DatabaseType.MySql)
+            /*if (parentDb.Type == DatabaseType.MySql)
             {
                 for (var i = 0; i < fieldCount; i++)
                 {
@@ -79,13 +78,12 @@ namespace Lappa_ORM
                         return new TEntity[0];
                     }
                 }
-            }
+            }*/
 
-            var entities = new TEntity[data.Rows.Count];
-            var datapPartitioner = Partitioner.Create(0, data.Rows.Count);
+            var entities = new ConcurrentBag<TEntity>();
 
             // Create one test object for foreign key assignment check
-            var foreignKeys = typeof(TEntity).GetProperties().Where(p => p.GetMethod.IsVirtual).ToArray();
+            var foreignKeys = typeof(TEntity).GetTypeInfo().DeclaredProperties.Where(p => p.GetMethod.IsVirtual).ToArray();
 
             // Key: GroupStartIndex, Value: GroupCount
             var groups = new ConcurrentDictionary<int, int>();
@@ -111,79 +109,80 @@ namespace Lappa_ORM
                 }
             }
 
-            var assignForeignKeys = entity.AutoAssignForeignKeys && foreignKeys.Length > 0 && groups.Count == 0;
+            var assignForeignKeys = new TEntity().LoadForeignKeys && foreignKeys.Length > 0 && groups.Count == 0;
 
-            Parallel.ForEach(datapPartitioner, (dataRange, loopState) =>
+            while (reader.Read())
             {
-                for (var i = dataRange.Item1; i < dataRange.Item2; i++)
+                var entity = new TEntity();
+                var row = new object[fieldCount];
+
+                reader.GetValues(row);
+
+                for (var j = 0; j < fieldCount; j++)
                 {
-                    entities[i] = new TEntity();
-
-                    for (var j = 0; j < fieldCount; j++)
+                    if (!builder.Properties[j].PropertyType.IsArray)
                     {
-                        if (!builder.Properties[j].PropertyType.IsArray)
+                        if (builder.Properties[j].PropertyType.IsCustomClass())
                         {
-                            if (builder.Properties[j].PropertyType.IsCustomClass())
+                            var instanceFields = builder.Properties[j].PropertyType.GetReadWriteProperties();
+                            var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
+
+                            for (var f = 0; f < instanceFields.Length; f++)
+                                instanceFields[f].SetValue(instance, reader.IsDBNull(j + f) ? "" : row[j + f]);
+
+                            builder.PropertySetter[j].SetValue(entity, instance);
+                        }
+                        else if (builder.Properties[j].PropertyType.IsCustomStruct())
+                        {
+                            var instanceFields = builder.Properties[j].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
+                            var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
+
+                            for (var f = 0; f < instanceFields.Length; f++)
+                                instanceFields[f].SetValue(instance, reader.IsDBNull(j + f) ? "" : row[j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
+
+                            builder.PropertySetter[j].SetValue(entity, instance);
+                        }
+                        else
+                            builder.PropertySetter[j].SetValue(entity, reader.IsDBNull(j) ? "" : row[j].ChangeTypeGet(builder.Properties[j].PropertyType));
+                    }
+                    else
+                    {
+                        var groupCount = 0;
+
+                        if (groups.TryGetValue(j, out groupCount))
+                        {
+                            for (var c = 0; c < groupCount; c++, j++)
                             {
-                                var instanceFields = builder.Properties[j].PropertyType.GetReadWriteProperties();
-                                var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
+                                var arr = builder.Properties[j].GetValue(entity) as Array;
 
-                                for (var f = 0; f < instanceFields.Length; f++)
-                                    instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f]);
+                                for (var k = 0; k < arr.Length; k++)
+                                    arr.SetValue(row[j + (k * groupCount)], k);
 
-                                builder.PropertySetter[j].SetValue(entities[i], instance);
+                                builder.PropertySetter[j].SetValue(entity, arr);
                             }
-                            else if (builder.Properties[j].PropertyType.IsCustomStruct())
-                            {
-                                var instanceFields = builder.Properties[j].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
-                                var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
-
-                                for (var f = 0; f < instanceFields.Length; f++)
-                                    instanceFields[f].SetValue(instance, Convert.IsDBNull(data.Rows[i][j + f]) ? "" : data.Rows[i][j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
-
-                                builder.PropertySetter[j].SetValue(entities[i], instance);
-                            }
-                            else
-                                builder.PropertySetter[j].SetValue(entities[i], Convert.IsDBNull(data.Rows[i][j]) ? "" : data.Rows[i][j].ChangeTypeGet(builder.Properties[j].PropertyType));
                         }
                         else
                         {
-                            var groupCount = 0;
+                            var arr = builder.Properties[j].GetValue(entity) as Array;
 
-                            if (groups.TryGetValue(j, out groupCount))
-                            {
-                                for (var c = 0; c < groupCount; c++, j++)
-                                {
-                                    var arr = builder.Properties[j].GetValue(entities[i]) as Array;
+                            for (var k = 0; k < arr.Length; k++)
+                                arr.SetValue(row[j + k], k);
 
-                                    for (var k = 0; k < arr.Length; k++)
-                                        arr.SetValue(data.Rows[i][j + (k * groupCount)], k);
-
-                                    builder.PropertySetter[j].SetValue(entities[i], arr);
-                                }
-                            }
-                            else
-                            {
-                                var arr = builder.Properties[j].GetValue(entities[i]) as Array;
-
-                                for (var k = 0; k < arr.Length; k++)
-                                    arr.SetValue(data.Rows[i][j + k], k);
-
-                                builder.PropertySetter[j].SetValue(entities[i], arr);
-                            }
+                            builder.PropertySetter[j].SetValue(entity, arr);
                         }
                     }
 
                     // TODO Fix group assignment in foreign keys.
                     if (assignForeignKeys)
-                        parentDb.AssignForeignKeyData(entities[i], foreignKeys, groups);
+                        parentDb.AssignForeignKeyData(entity, foreignKeys, groups);
 
-                    entities[i].InitializeNonTableProperties();
+                    entity.InitializeNonTableProperties();
+
+                    entities.Add(entity);
                 }
-            });
+            };
 
-
-            return entities;
+            return entities.ToArray();
         }
     }
 }

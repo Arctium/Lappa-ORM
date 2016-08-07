@@ -1,10 +1,10 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Lappa_ORM.Logging
+namespace LappaORM.Logging
 {
-    public interface ILog
+    public interface ILog<in T>
     {
-        void Message(LogTypes logTypes, string message);
+        void Message(T logTypes, string message);
     }
 }

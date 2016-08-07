@@ -5,19 +5,19 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using Lappa_ORM.Misc;
-using static Lappa_ORM.Misc.Helper;
+using LappaORM.Misc;
+using static LappaORM.Misc.Helper;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     internal partial class QueryBuilder<T>
     {
         internal string BuildInsert(Dictionary<string, object> values)
         {
-            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + querySettings.Part0 + " (", Pluralize<T>());
+            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Part0 + " (", Pluralize<T>());
 
             foreach (var name in values.Keys)
-                sqlQuery.AppendFormat(numberFormat, querySettings.Part0 + ",", name);
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ",", name);
 
             sqlQuery.Append(") VALUES (");
 
@@ -75,10 +75,10 @@ namespace Lappa_ORM
                     values.Add(properties[i].Name, null);
             }
 
-            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + querySettings.Part0 + " (", typeName);
+            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Part0 + " (", typeName);
 
             foreach (var name in values.Keys)
-                sqlQuery.AppendFormat(numberFormat, querySettings.Part0 + ",", name);
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ",", name);
 
             sqlQuery.Append(") VALUES ");
 
@@ -96,10 +96,10 @@ namespace Lappa_ORM
 
                     sqlQuery = new StringBuilder();
 
-                    sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + querySettings.Part0 + " (", typeName);
+                    sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Part0 + " (", typeName);
 
                     foreach (var name in values.Keys)
-                        sqlQuery.AppendFormat(numberFormat, querySettings.Part0 + ",", name);
+                        sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ",", name);
 
                     sqlQuery.Append(") VALUES ");
                 }

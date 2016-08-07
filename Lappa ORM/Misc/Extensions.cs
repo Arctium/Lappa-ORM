@@ -4,21 +4,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 
-namespace Lappa_ORM.Misc
+namespace LappaORM.Misc
 {
-    // For internal usage only.
     internal static class Extensions
     {
         // Create only one service. Only enUS supported.
         internal static string Pluralize(this string word) => Pluralize(word);
-
 
         internal static IList CreateList(this Type type)
         {
@@ -31,7 +27,7 @@ namespace Lappa_ORM.Misc
 
         internal static object ChangeTypeGet(this object value, Type destType)
         {
-            return Convert.ChangeType(value, destType.IsEnum ? destType.GetEnumUnderlyingType() : destType);
+            return Convert.ChangeType(value, destType.GetTypeInfo().IsEnum ? destType.GetTypeInfo().GetEnumUnderlyingType() : destType);
         }
 
         internal static T ChangeTypeSet<T>(this object value) => (T)ChangeTypeSet(value, typeof(T));
@@ -40,26 +36,10 @@ namespace Lappa_ORM.Misc
         {
             if (value is bool)
                 return Convert.ToByte(value);
-            else if (destType.IsEnum)
-                return Convert.ChangeType(value, destType.GetEnumUnderlyingType());
+            else if (destType.GetTypeInfo().IsEnum)
+                return Convert.ChangeType(value, destType.GetTypeInfo().GetEnumUnderlyingType());
 
             return Convert.ChangeType(value, destType);
-        }
-
-        internal static Task<int> FillAsync(this DbDataAdapter adapter, DataTable dt)
-        {
-            Task<int> task = null;
-
-            try
-            {
-                task = Task.FromResult(adapter.Fill(dt));
-            }
-            catch
-            {
-                return null;
-            }
-
-            return task;
         }
 
         internal static Func<T, object> GetGetter<T>(this PropertyInfo propertyInfo)
@@ -123,13 +103,13 @@ namespace Lappa_ORM.Misc
             return property.GetCustomAttribute<T>() != null;
         }
 
-        internal static bool IsCustomClass(this Type type) => type.IsClass && type != typeof(string);
+        internal static bool IsCustomClass(this Type type) => type.GetTypeInfo().IsClass && type != typeof(string);
 
-        internal static bool IsCustomStruct(this Type type) => type.IsValueType && !type.IsEnum && !type.IsPrimitive;
+        internal static bool IsCustomStruct(this Type type) => type.GetTypeInfo().IsValueType && !type.GetTypeInfo().IsEnum && !type.GetTypeInfo().IsPrimitive;
 
         internal static PropertyInfo[] GetReadWriteProperties(this Type t)
         {
-            return t.GetProperties().Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
+            return t.GetTypeInfo().DeclaredProperties.Where(p => !p.GetMethod.IsVirtual && p.GetSetMethod(false) != null).ToArray();
         }
 
         internal static Dictionary<TKey, TValue> AsDictionary<TKey, TValue>(this TValue[] data, Func<TValue, TKey> selector)

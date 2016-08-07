@@ -1,12 +1,12 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Lappa_ORM
+namespace LappaORM.Constants
 {
     public enum DatabaseType
     {
-        MySql,
-        MSSql,
-        SQLite,
+        MySql  = 0,
+        MSSql  = 1,
+        SQLite = 2
     }
 }

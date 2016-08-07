@@ -1,23 +1,23 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Lappa_ORM.Logging;
-using Lappa_ORM.Misc;
+using LappaORM.Constants;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     public partial class Database
     {
         public DatabaseType Type { get; private set; }
 
         string connectionString;
-        ConnectorSettings connSettings;
-        QuerySettings querySettings;
+        Connector connector;
+        ConnectorQuery connectorQuery;
         EntityBuilder entityBuilder;
 
         public bool Initialize(string connString, DatabaseType type)
@@ -25,8 +25,8 @@ namespace Lappa_ORM
             Type = type;
 
             connectionString = connString;
-            connSettings = new ConnectorSettings(type);
-            querySettings = new QuerySettings(type);
+            connector = new Connector(type);
+            connectorQuery = new ConnectorQuery(type);
 
             entityBuilder = new EntityBuilder(this);
 
@@ -37,8 +37,9 @@ namespace Lappa_ORM
                 using (var connection = CreateConnection())
                     isOpen = connection.State == ConnectionState.Open;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 return false;
             }
 
@@ -47,11 +48,11 @@ namespace Lappa_ORM
 
         // Overwrite dummy logger.
         // Can be called at any time.
-        public void EnableLogging(ILog logger) => Helper.Log = logger;
+        //public void EnableLogging<T>(ILog<T> logger) => Helper.Log = logger;
 
         DbConnection CreateConnection()
         {
-            var connection = connSettings.CreateObject("Connection") as DbConnection;
+            var connection = connector.CreateConnectionObject();
 
             connection.ConnectionString = connectionString;
 
@@ -63,7 +64,7 @@ namespace Lappa_ORM
         [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
         internal DbCommand CreateSqlCommand(DbConnection connection, string sql, params object[] args)
         {
-            var sqlCommand = connSettings.CreateObject("Command") as DbCommand;
+            var sqlCommand = connector.CreateCommandObject();
 
             sqlCommand.Connection = connection;
             sqlCommand.CommandText = sql;
@@ -116,62 +117,47 @@ namespace Lappa_ORM
 
                 return ret;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 return false;
             }
         }
 
-        internal async Task<DataTable> SelectAsync(string sql, string tableName, params object[] args)
+        internal async Task<DbDataReader> SelectAsync(string sql, string tableName, params object[] args)
         {
             try
             {
-                Task<int> fillTask = null;
+                DbDataReader readTask = null;
 
-                var result = new DataTable { TableName = tableName };
-
-                using (var connection = CreateConnection())
+                var connection = CreateConnection();
                 {
                     using (var cmd = CreateSqlCommand(connection, sql, args))
                     {
-                        using (var adapter = connSettings.CreateObject("DataAdapter") as DbDataAdapter)
-                        {
-                            adapter.SelectCommand = cmd;
-                            adapter.SelectCommand.CommandTimeout = 2147483;
-
-                            fillTask = adapter.FillAsync(result);
-                        }
+                        readTask = await cmd.ExecuteReaderAsync();
                     }
                 }
 
-                if (fillTask == null)
-                    return null;
-
-                return await fillTask.ContinueWith(res => { return result; });
+                return readTask;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 return null;
             }
         }
 
-        internal DataTable Select(string sql, string tableName, params object[] args)
+        internal DbDataReader Select(string sql, string tableName, params object[] args)
         {
             try
             {
-                var result = new DataTable { TableName = tableName };
+                DbDataReader result = null;
 
                 using (var connection = CreateConnection())
                 {
                     using (var cmd = CreateSqlCommand(connection, sql, args))
                     {
-                        using (var adapter = connSettings.CreateObject("DataAdapter") as DbDataAdapter)
-                        {
-                            adapter.SelectCommand = cmd;
-                            adapter.SelectCommand.CommandTimeout = 2147483;
-
-                            adapter.Fill(result);
-                        }
+                        result = cmd.ExecuteReader();
                     }
                 }
 

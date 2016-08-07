@@ -7,10 +7,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Lappa_ORM.Misc;
-using static Lappa_ORM.Misc.Helper;
+using LappaORM.Logging;
+using LappaORM.Misc;
+using static LappaORM.Misc.Helper;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     public partial class Database
     {
@@ -24,7 +25,7 @@ namespace Lappa_ORM
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
-            var builder = new QueryBuilder<TEntity>(querySettings, properties, members);
+            var builder = new QueryBuilder<TEntity>(connectorQuery, properties, members);
             var data = await SelectAsync(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll(), Pluralize<TEntity>());
 
             return entityBuilder.CreateEntities(data, builder);
@@ -62,7 +63,7 @@ namespace Lappa_ORM
             var query = "";
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
-            var builder = new QueryBuilder<TEntity>(querySettings, properties, members);
+            var builder = new QueryBuilder<TEntity>(connectorQuery, properties, members);
 
             if (members != null)
                 query = builder.BuildWhere(condition.Body, members);
@@ -86,7 +87,7 @@ namespace Lappa_ORM
             var query = "";
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
-            var builder = new QueryBuilder<TEntity>(querySettings, properties, members);
+            var builder = new QueryBuilder<TEntity>(connectorQuery, properties, members);
 
             if (members != null)
                 query = builder.BuildWhere(condition.Body, members);
@@ -97,10 +98,10 @@ namespace Lappa_ORM
 
             if (data != null)
             {
-                if (data.Rows.Count > 1)
-                    Trace.TraceWarning("Result contains more than 1 element.");
-
                 var objList = entityBuilder.CreateEntities(data, builder);
+
+                if (objList.Length > 1)
+                    Helper.Log.Message(LogTypes.Warning, "Result contains more than 1 element.");
 
                 return objList.Length == 0 ? null : objList[0];
             }
@@ -112,10 +113,10 @@ namespace Lappa_ORM
         #region Other
         public bool Any<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
         {
-            var builder = new QueryBuilder<TEntity>(querySettings);
+            var builder = new QueryBuilder<TEntity>(connectorQuery);
             var query = builder.BuildWhereAll(condition.Body);
 
-            return Select(query, Pluralize<TEntity>()).Rows.Count > 0;
+            return Select(query, Pluralize<TEntity>()).HasRows;
         }
         #endregion
     }

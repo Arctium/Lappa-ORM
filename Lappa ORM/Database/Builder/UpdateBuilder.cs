@@ -4,10 +4,10 @@
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using Lappa_ORM.Misc;
-using static Lappa_ORM.Misc.Helper;
+using LappaORM.Misc;
+using static LappaORM.Misc.Helper;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     internal partial class QueryBuilder<T>
     {
@@ -15,16 +15,16 @@ namespace Lappa_ORM
         {
             var typeName = Pluralize<T>();
 
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, typeName, typeName[0]);
+            sqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQuery, typeName, typeName[0]);
 
             for (var i = 0; i < properties.Length; i++)
-                sqlQuery.AppendFormat(numberFormat, querySettings.Equal + ", ", properties[i].Name, properties[i].GetGetter<T>().GetValue(entity));
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal + ", ", properties[i].Name, properties[i].GetGetter<T>().GetValue(entity));
 
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQueryEnd, typeName, typeName[0]);
-            sqlQuery.AppendFormat(numberFormat, querySettings.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
+            sqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQueryEnd, typeName, typeName[0]);
+            sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
-                sqlQuery.AppendFormat(numberFormat, querySettings.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
 
             sqlQuery.Replace(", WHERE", " WHERE");
             sqlQuery.Replace(", FROM", " FROM");
@@ -34,7 +34,7 @@ namespace Lappa_ORM
 
         internal string BuildUpdate(MethodCallExpression[] expression, bool preSql)
         {
-            sqlQuery.AppendFormat(numberFormat, querySettings.UpdateQuery, Pluralize<T>());
+            sqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQuery, Pluralize<T>());
 
             for (var i = 0; i < expression.Length; i++)
             {
@@ -51,7 +51,7 @@ namespace Lappa_ORM
 
                 value = value ?? GetExpressionValue(memberExp);
 
-                sqlQuery.AppendFormat(numberFormat, querySettings.Equal + ", ", member, value is bool ? Convert.ToByte(value) : value);
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal + ", ", member, value is bool ? Convert.ToByte(value) : value);
             }
 
             if (!preSql)

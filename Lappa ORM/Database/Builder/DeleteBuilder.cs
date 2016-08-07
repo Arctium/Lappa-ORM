@@ -3,27 +3,27 @@
 
 using System.Linq.Expressions;
 using System.Reflection;
-using Lappa_ORM.Misc;
-using static Lappa_ORM.Misc.Helper;
+using LappaORM.Misc;
+using static LappaORM.Misc.Helper;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     internal partial class QueryBuilder<T>
     {
         internal string BuildDelete(T entity, PropertyInfo[] primaryKeys)
         {
-            sqlQuery.AppendFormat(numberFormat, querySettings.DeleteQuery, Pluralize<T>(), typeof(T).Name[0]);
-            sqlQuery.AppendFormat(numberFormat, querySettings.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
+            sqlQuery.AppendFormat(numberFormat, connectorQuery.DeleteQuery, Pluralize<T>(), typeof(T).Name[0]);
+            sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
-                sqlQuery.AppendFormat(numberFormat, querySettings.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
 
             return sqlQuery.ToString();
         }
 
         internal string BuildDelete(Expression expression)
         {
-            sqlQuery.AppendFormat(numberFormat, querySettings.DeleteQuery, Pluralize<T>());
+            sqlQuery.AppendFormat(numberFormat, connectorQuery.DeleteQuery, Pluralize<T>());
 
             Visit(expression);
 

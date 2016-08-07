@@ -3,14 +3,14 @@
 
 using System;
 
-namespace Lappa_ORM.Logging
+namespace LappaORM.Logging
 {
     [Flags]
-    public enum LogTypes
+    enum LogTypes
     {
         None    = 0x0,
         Info    = 0x1,
         Warning = 0x2,
-        Error   = 0x4,
+        Error   = 0x4
     }
 }

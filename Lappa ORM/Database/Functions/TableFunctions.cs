@@ -5,13 +5,13 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
-using Lappa_ORM.Misc;
+using LappaORM.Misc;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     public partial class Database
     {
-        public bool Create<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
+        /*public bool Create<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
         {
             // Only MySql supported for now.
             if (connSettings.DatabaseType != DatabaseType.MySql)
@@ -88,6 +88,6 @@ namespace Lappa_ORM
             }
 
             return false;
-        }
+        }*/
     }
 }

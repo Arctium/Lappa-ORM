@@ -9,14 +9,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Lappa_ORM.Misc;
+using LappaORM;
+using LappaORM.Misc;
 
-namespace Lappa_ORM
+namespace LappaORM
 {
     public partial class Database
     {
         // Use en-US as number format for all languages.
-        IFormatProvider numberFormat = CultureInfo.GetCultureInfo("en-US").NumberFormat;
+        IFormatProvider numberFormat = new CultureInfo("en-US").NumberFormat;
 
         // TODO Rewrite...
         internal void AssignForeignKeyData<TEntity>(TEntity entity, PropertyInfo[] foreignKeys, ConcurrentDictionary<int, int> groups) where TEntity : Entity, new()
@@ -29,13 +30,13 @@ namespace Lappa_ORM
                 if (fkName?.Item1 != null)
                 {
                     var value = typeof(TEntity).GetProperty(fkName.Item1).GetValue(entity);
-                    var pType = fk.PropertyType.IsGenericType ? fk.PropertyType.GetGenericArguments()[0] : fk.PropertyType;
+                    var pType = fk.PropertyType.GetTypeInfo().IsGenericType ? fk.PropertyType.GetGenericArguments()[0] : fk.PropertyType;
                     var data = WhereForeignKey(pType, Helper.Pluralize(pType), fkName.Item2, value, groups);
 
                     if (data == null || data.Count == 0)
                         continue;
 
-                    fk.SetValue(entity, fk.PropertyType.IsGenericType ? data : data[0], null);
+                    fk.SetValue(entity, fk.PropertyType.GetTypeInfo().IsGenericType ? data : data[0], null);
                 }
             }
         }
@@ -49,7 +50,7 @@ namespace Lappa_ORM
             if (fkNameByAttribute != null)
                 return Tuple.Create(fkNameByAttribute.Name, fkNameByAttribute.Name);
 
-            var primaryKeysByAttribute = type.GetProperties().Where(p =>
+            var primaryKeysByAttribute = type.GetTypeInfo().DeclaredProperties.Where(p =>
             {
                 return p.HasAttribute<PrimaryKeyAttribute>();
             }).ToArray();
@@ -60,7 +61,7 @@ namespace Lappa_ORM
                 fkNameByPk = primaryKeysByAttribute[0]?.Name;
             else
             {
-                var primaryKeys = type.GetProperties().Where(p => p.Name == "Id" || p.Name == typeName + "Id").ToArray();
+                var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.Name == "Id" || p.Name == typeName + "Id").ToArray();
 
                 fkNameByPk = primaryKeys.Length > 0 ? primaryKeys[0]?.Name : null;
             }
@@ -74,39 +75,34 @@ namespace Lappa_ORM
             var entityLock = new object();
             var query = new StringBuilder();
 
-            query.AppendFormat(numberFormat, "SELECT * FROM " + querySettings.Part0 + " WHERE ", name);
-            query.AppendFormat(numberFormat, querySettings.Equal, fkName, value);
+            query.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Part0 + " WHERE ", name);
+            query.AppendFormat(numberFormat, connectorQuery.Equal, fkName, value);
 
             var entities = entityType.CreateList();
             var data = Select(query.ToString(), name);
 
             if (data != null)
             {
-                if (data.Rows.Count == 0)
+                if (!data.HasRows)
                     return entities;
 
                 var properties = entityType.GetReadWriteProperties();
 
-                if (data.Columns.Count != properties.Length)
+                if (data.FieldCount != properties.Length)
                     throw new NotSupportedException("Columns doesn't match the entity fields.");
 
-                var datapPartitioner = Partitioner.Create(0, data.Rows.Count);
-
-                Parallel.ForEach(datapPartitioner, (dataRange, loopState) =>
+                Parallel.ForEach(data.CanReadRow(), (state, loopState) =>
                 {
-                    for (var i = dataRange.Item1; i < dataRange.Item2; i++)
-                    {
-                        var entity = Activator.CreateInstance(entityType) as Entity;
+                    var entity = Activator.CreateInstance(entityType) as Entity;
 
-                        for (var j = 0; j < properties.Length; j++)
-                            properties[j].SetValue(entity, data.Rows[i][properties[j].Name].ChangeTypeGet(properties[j].PropertyType));
+                    for (var j = 0; j < properties.Length; j++)
+                        properties[j].SetValue(entity, data[properties[j].Name].ChangeTypeGet(properties[j].PropertyType));
 
-                        entity.InitializeNonTableProperties();
+                    entity.InitializeNonTableProperties();
 
-                        // IList isn't thread safe...
-                        lock (entityLock)
-                            entities.Add(entity);
-                    }
+                    // IList isn't thread safe...
+                    lock (entityLock)
+                        entities.Add(entity);
                 });
             }
 

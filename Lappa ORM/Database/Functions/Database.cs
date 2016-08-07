@@ -14,12 +14,17 @@ namespace LappaORM
     public partial class Database
     {
         public DatabaseType Type { get; private set; }
-        public ILog<Enum> Log { get; set; }
+        public ILog<Enum> Log { get; private set; }
 
         string connectionString;
         Connector connector;
         ConnectorQuery connectorQuery;
         EntityBuilder entityBuilder;
+
+        public Database()
+        {
+            SetLogger(new Log());
+        }
 
         public bool Initialize(string connString, DatabaseType type = DatabaseType.MSSql)
         {

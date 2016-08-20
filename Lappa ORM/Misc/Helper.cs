@@ -13,7 +13,20 @@ namespace LappaORM.Misc
         static readonly PluralizationService pluralService = new PluralizationService();
 
         public static string Pluralize<T>() => Pluralize(typeof(T));
-        public static string Pluralize(Type t) => t.GetTypeInfo().IsDefined(typeof(NoPluralizationAttribute)) ? t.Name : pluralService.Pluralize(t.Name);
+        public static string Pluralize(Type t)
+        {
+            var dbTableAttribute = t.GetTypeInfo().GetCustomAttribute<DBTableAttribute>();
+
+            if (dbTableAttribute != null)
+            {
+                if (dbTableAttribute.Name == null)
+                    return dbTableAttribute.Pluralize ? pluralService.Pluralize(t.Name) : t.Name;
+                else
+                    return dbTableAttribute.Pluralize ? pluralService.Pluralize(dbTableAttribute.Name) : dbTableAttribute.Name;
+            }
+
+            return pluralService.Pluralize(t.Name);
+        }
 
         internal static int GetDefaultFieldSize(Type type)
         {

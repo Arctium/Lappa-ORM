@@ -6,7 +6,9 @@ using System;
 namespace LappaORM
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class NoPluralizationAttribute : Attribute
+    public class DBTableAttribute : Attribute
     {
+        public string Name    { get; set; } = null;
+        public bool Pluralize { get; set; } = true;
     }
 }

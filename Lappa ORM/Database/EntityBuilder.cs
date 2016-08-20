@@ -46,7 +46,7 @@ namespace LappaORM
                 else if (builder.Properties[i].PropertyType.IsCustomClass())
                     classFieldCount += builder.Properties[i].PropertyType.GetReadWriteProperties().Length - 1;
                 else if (builder.Properties[i].PropertyType.IsCustomStruct())
-                    structFieldCount += builder.Properties[i].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length - 1;
+                    structFieldCount += builder.Properties[i].PropertyType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length - 1;
             }
 
             var totalFieldCount = fieldCount + arrayFieldCount + classFieldCount + structFieldCount;
@@ -136,7 +136,7 @@ namespace LappaORM
                         }
                         else if (builder.Properties[j].PropertyType.IsCustomStruct())
                         {
-                            var instanceFields = builder.Properties[j].PropertyType.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
+                            var instanceFields = builder.Properties[j].PropertyType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
                             var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
                             for (var f = 0; f < instanceFields.Length; f++)

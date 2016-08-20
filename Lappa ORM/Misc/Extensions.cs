@@ -94,7 +94,7 @@ namespace LappaORM.Misc
         {
             var type = obj.GetType();
 
-            return type.GetField(memberName) != null || type.GetProperty(memberName) != null;
+            return type.GetTypeInfo().GetField(memberName) != null || type.GetTypeInfo().GetProperty(memberName) != null;
         }
 
         internal static bool HasAttribute<T>(this PropertyInfo property) where T : Attribute

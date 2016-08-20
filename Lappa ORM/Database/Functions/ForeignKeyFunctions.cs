@@ -27,8 +27,8 @@ namespace LappaORM
 
                 if (fkName?.Item1 != null)
                 {
-                    var value = typeof(TEntity).GetProperty(fkName.Item1).GetValue(entity);
-                    var pType = fk.PropertyType.GetTypeInfo().IsGenericType ? fk.PropertyType.GetGenericArguments()[0] : fk.PropertyType;
+                    var value = typeof(TEntity).GetTypeInfo().GetProperty(fkName.Item1).GetValue(entity);
+                    var pType = fk.PropertyType.GetTypeInfo().IsGenericType ? fk.PropertyType.GetTypeInfo().GetGenericArguments()[0] : fk.PropertyType;
                     var data = WhereForeignKey(pType, Helper.Pluralize(pType), fkName.Item2, value, groups);
 
                     if (data == null || data.Count == 0)

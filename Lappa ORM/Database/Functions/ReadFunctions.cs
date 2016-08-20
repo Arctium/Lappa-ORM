@@ -26,7 +26,7 @@ namespace LappaORM
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
             var builder = new QueryBuilder<TEntity>(connectorQuery, properties, members);
-            var data = await SelectAsync(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll(), Pluralize<TEntity>());
+            var data = await SelectAsync(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll());
 
             return entityBuilder.CreateEntities(data, builder);
         }
@@ -70,7 +70,7 @@ namespace LappaORM
             else
                 query = builder.BuildWhereAll(condition.Body);
 
-            var data = await SelectAsync(query, Pluralize<TEntity>());
+            var data = await SelectAsync(query);
 
             return entityBuilder.CreateEntities(data, builder).ToList();
         }
@@ -94,7 +94,7 @@ namespace LappaORM
             else
                 query = builder.BuildWhereAll(condition.Body);
 
-            var data = await SelectAsync(query, Pluralize<TEntity>());
+            var data = await SelectAsync(query);
 
             if (data != null)
             {
@@ -120,7 +120,7 @@ namespace LappaORM
         {
             var builder = new QueryBuilder<TEntity>(connectorQuery);
             var query = builder.BuildWhereAll(condition.Body);
-            var reader = await SelectAsync(query, Pluralize<TEntity>());
+            var reader = await SelectAsync(query);
 
             // Some MySql connectors need at least one read before all column info are available.
             await reader.ReadAsync();

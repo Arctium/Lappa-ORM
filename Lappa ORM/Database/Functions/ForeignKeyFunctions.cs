@@ -77,7 +77,7 @@ namespace LappaORM
             query.AppendFormat(numberFormat, connectorQuery.Equal, fkName, value);
 
             var entities = entityType.CreateList();
-            var data = Select(query.ToString(), name);
+            var data = Select(query.ToString());
 
             if (data != null)
             {

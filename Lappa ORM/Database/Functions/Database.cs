@@ -88,10 +88,17 @@ namespace LappaORM
 
             if (args.Length > 0)
             {
-                var mParams = new SqlParameter[args.Length];
+                var mParams = new DbParameter[args.Length];
 
                 for (var i = 0; i < args.Length; i++)
-                    mParams[i] = new SqlParameter("", args[i]);
+                {
+                    var param = connector.CreateParameterObject();
+
+                    param.ParameterName = "";
+                    param.Value = args[i];
+
+                    mParams[i] = param;
+                }
 
                 sqlCommand.Parameters.AddRange(mParams);
             }
@@ -140,7 +147,7 @@ namespace LappaORM
             return ret;
         }
 
-        internal async Task<DbDataReader> SelectAsync(string sql, string tableName, params object[] args)
+        internal async Task<DbDataReader> SelectAsync(string sql, params object[] args)
         {
             DbDataReader result = null;
 
@@ -159,7 +166,7 @@ namespace LappaORM
             return result;
         }
 
-        internal DbDataReader Select(string sql, string tableName, params object[] args)
+        internal DbDataReader Select(string sql, params object[] args)
         {
             DbDataReader result = null;
 

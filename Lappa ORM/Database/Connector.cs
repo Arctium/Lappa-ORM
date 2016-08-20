@@ -19,6 +19,7 @@ namespace LappaORM
         Assembly assembly;
         Type connectionType;
         Type commandType;
+        Type parameterType;
 
         internal void Load(DatabaseType dbType, bool loadFromFile)
         {
@@ -56,12 +57,14 @@ namespace LappaORM
 
             connectionType = assembly.GetType($"{typeBase}Connection");
             commandType = assembly.GetType($"{typeBase}Command");
+            parameterType = assembly.GetType($"{typeBase}Parameter");
 
-            if (connectionType == null || commandType == null)
-                throw new TypeLoadException($"Can't find '{typeBase}Connection' or '{typeBase}Command'.");
+            if (connectionType == null || commandType == null || parameterType == null)
+                throw new TypeLoadException($"Can't find '{typeBase}Connection' or '{typeBase}Command' or '{typeBase}Parameter'.");
         }
 
         public DbConnection CreateConnectionObject() => Activator.CreateInstance(connectionType) as DbConnection;
         public DbCommand CreateCommandObject() => Activator.CreateInstance(commandType) as DbCommand;
+        public DbParameter CreateParameterObject() => Activator.CreateInstance(parameterType) as DbParameter;
     }
 }

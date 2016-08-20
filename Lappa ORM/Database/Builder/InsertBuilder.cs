@@ -66,7 +66,7 @@ namespace LappaORM
             {
                 if (properties[i].PropertyType.IsArray)
                 {
-                    var arr = (PropertyGetter[i].GetValue(new T()) as Array);
+                    var arr = PropertyGetter[i](new T()) as Array;
 
                     for (var j = 1; j <= arr.Length; j++)
                         values.Add(properties[i].Name + j, null);
@@ -110,7 +110,7 @@ namespace LappaORM
                 {
                     if (properties[i].PropertyType.IsArray)
                     {
-                        var arr = (PropertyGetter[i].GetValue(entity) as Array);
+                        var arr = (PropertyGetter[i](entity) as Array);
                         var arrElementType = arr.GetType().GetElementType();
 
                         for (var j = 1; j <= arr.Length; j++)
@@ -118,7 +118,7 @@ namespace LappaORM
                     }
                     else if (!properties[i].HasAttribute<AutoIncrementAttribute>())
                     {
-                        var val = PropertyGetter[i].GetValue(entity);
+                        var val = PropertyGetter[i](entity);
 
                         if (val is string)
                             val = ((string)val).Replace("\"", "\"\"").Replace("'", @"\'");

@@ -132,7 +132,7 @@ namespace LappaORM
                             for (var f = 0; f < instanceFields.Length; f++)
                                 instanceFields[f].SetValue(instance, reader.IsDBNull(j + f) ? "" : row[j + f]);
 
-                            builder.PropertySetter[j].SetValue(entity, instance);
+                            builder.PropertySetter[j](entity, instance);
                         }
                         else if (builder.Properties[j].PropertyType.IsCustomStruct())
                         {
@@ -142,10 +142,10 @@ namespace LappaORM
                             for (var f = 0; f < instanceFields.Length; f++)
                                 instanceFields[f].SetValue(instance, reader.IsDBNull(j + f) ? "" : row[j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
 
-                            builder.PropertySetter[j].SetValue(entity, instance);
+                            builder.PropertySetter[j](entity, instance);
                         }
                         else
-                            builder.PropertySetter[j].SetValue(entity, reader.IsDBNull(j) ? "" : row[j].ChangeTypeGet(builder.Properties[j].PropertyType));
+                            builder.PropertySetter[j](entity, reader.IsDBNull(j) ? "" : row[j].ChangeTypeGet(builder.Properties[j].PropertyType));
                     }
                     else
                     {
@@ -160,7 +160,7 @@ namespace LappaORM
                                 for (var k = 0; k < arr.Length; k++)
                                     arr.SetValue(row[j + (k * groupCount)], k);
 
-                                builder.PropertySetter[j].SetValue(entity, arr);
+                                builder.PropertySetter[j](entity, arr);
                             }
                         }
                         else
@@ -170,7 +170,7 @@ namespace LappaORM
                             for (var k = 0; k < arr.Length; k++)
                                 arr.SetValue(row[j + k], k);
 
-                            builder.PropertySetter[j].SetValue(entity, arr);
+                            builder.PropertySetter[j](entity, arr);
                         }
                     }
                 }

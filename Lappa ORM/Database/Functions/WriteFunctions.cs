@@ -32,7 +32,7 @@ namespace LappaORM
             {
                 if (properties[i].PropertyType.IsArray)
                 {
-                    var arr = (query.PropertyGetter[i].GetValue(entity) as Array);
+                    var arr = (query.PropertyGetter[i](entity) as Array);
                     var arrElementType = arr.GetType().GetElementType();
 
                     for (var j = 0; j <= arr.Length; j++)
@@ -40,7 +40,7 @@ namespace LappaORM
                 }
                 else if (!properties[i].HasAttribute<AutoIncrementAttribute>())
                 {
-                    values.Add(properties[i].Name, query.PropertyGetter[i].GetValue(entity));
+                    values.Add(properties[i].Name, query.PropertyGetter[i](entity));
                 }
             }
 

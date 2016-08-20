@@ -83,7 +83,7 @@ namespace LappaORM
                         }
                         else
                         {
-                            var arr = (query.PropertyGetter[i].GetValue(entity) as Array);
+                            var arr = (query.PropertyGetter[i](entity) as Array);
 
                             for (var j = 1; j <= arr.Length; j++)
                                 fields.Add(properties[i].Name + j, properties[i]);

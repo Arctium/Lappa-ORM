@@ -15,7 +15,6 @@ namespace LappaORM
     {
         public DatabaseType Type { get; private set; }
         public ILog Log { get; private set; }
-        public string ConnectorFileName { get; private set; } = null;
 
         string connectionString;
         Connector connector;
@@ -26,14 +25,15 @@ namespace LappaORM
         {
             // Initialize dummy logger.
             Log = new Log();
+
+            connector = new Connector();
         }
 
-        public bool Initialize(string connString, DatabaseType type = DatabaseType.MSSql)
+        public bool Initialize(string connString, DatabaseType type, bool loadConnectorFromFile = true)
         {
             Type = type;
 
             connectionString = connString;
-            connector = new Connector(type, ConnectorFileName);
             connectorQuery = new ConnectorQuery(type);
 
             entityBuilder = new EntityBuilder(this);
@@ -42,6 +42,8 @@ namespace LappaORM
 
             try
             {
+                connector.Load(type, loadConnectorFromFile);
+
                 using (var connection = CreateConnection())
                     isOpen = connection.State == ConnectionState.Open;
             }
@@ -57,9 +59,13 @@ namespace LappaORM
         // Can be called at any time.
         public void SetLogger(ILog logger) => Log = logger;
 
+        // Default for MySql is the current assembly directory.
+        // Must be called before Initialize.
+        public void SetConnectorFilePath(string connectorFilePath) => connector.FilePath = connectorFilePath;
+
         // Default for MySql is "MySql.Data.dll".
         // Must be called before Initialize.
-        public void SetConnectorFileName(string fileName) => ConnectorFileName = fileName;
+        public void SetConnectorFileName(string connectorFileName) => connector.FileName = connectorFileName;
 
         DbConnection CreateConnection()
         {

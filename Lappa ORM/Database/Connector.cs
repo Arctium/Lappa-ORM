@@ -13,11 +13,14 @@ namespace LappaORM
 {
     internal sealed class Connector
     {
+        public string FilePath { get; set; } = null;
+        public string FileName { get; set; } = null;
+
         Assembly assembly;
         Type connectionType;
         Type commandType;
 
-        internal Connector(DatabaseType dbType, string connectorFileName = null)
+        internal void Load(DatabaseType dbType, bool loadFromFile)
         {
             // Use MSSQL as default.
             var typeBase = "System.Data.SqlClient.Sql";
@@ -32,7 +35,12 @@ namespace LappaORM
                 case DatabaseType.MySql:
                 {
                     typeBase = "MySql.Data.MySqlClient.MySql";
-                    assembly = new AssemblyLoader().LoadFromAssemblyPath($"{AppContext.BaseDirectory}/{connectorFileName ?? "MySql.Data.dll"}");
+
+                    if (loadFromFile)
+                        assembly = new AssemblyLoader().LoadFromAssemblyPath($"{FilePath ?? AppContext.BaseDirectory}/{FileName ?? "MySql.Data.dll"}");
+                    else
+                        assembly = Assembly.GetEntryAssembly();
+
                     break;
                 }
                 case DatabaseType.SQLite:
@@ -48,6 +56,9 @@ namespace LappaORM
 
             connectionType = assembly.GetType($"{typeBase}Connection");
             commandType = assembly.GetType($"{typeBase}Command");
+
+            if (connectionType == null || commandType == null)
+                throw new TypeLoadException($"Can't find '{typeBase}Connection' or '{typeBase}Command'.");
         }
 
         public DbConnection CreateConnectionObject() => Activator.CreateInstance(connectionType) as DbConnection;

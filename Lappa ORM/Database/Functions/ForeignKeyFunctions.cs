@@ -81,6 +81,9 @@ namespace LappaORM
 
             if (data != null)
             {
+                // Some MySql connectors need at least one read before all column info are available.
+                data.Read();
+
                 if (!data.HasRows)
                     return entities;
 
@@ -89,7 +92,7 @@ namespace LappaORM
                 if (data.FieldCount != properties.Length)
                     throw new NotSupportedException("Columns doesn't match the entity fields.");
 
-                while (data.Read())
+                do
                 {
                     var entity = Activator.CreateInstance(entityType) as Entity;
 
@@ -101,7 +104,7 @@ namespace LappaORM
                     // IList isn't thread safe...
                     lock (entityLock)
                         entities.Add(entity);
-                }
+                } while (data.Read());
             }
 
             return entities;

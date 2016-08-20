@@ -1,6 +1,6 @@
 {
     "title": "Lappa ORM",
-    "copyright": "Copyright © 2015-2016 Arctium Software",,
+    "copyright": "Copyright © 2015-2016 Arctium Software",
     "version": "1.0.0-*",
 
     "dependencies": {

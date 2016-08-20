@@ -9,6 +9,7 @@ namespace LappaORM
 {
     public partial class Database
     {
+        // MySQL only.
         public TReturn GetAutoIncrementValue<TEntity, TReturn>()
         {
             var tableName = Pluralize<TEntity>();
@@ -20,6 +21,7 @@ namespace LappaORM
             return default(TReturn);
         }
 
+        // MySQL only.
         public bool Exists<TEntity>()
         {
             var tableName = Pluralize<TEntity>();

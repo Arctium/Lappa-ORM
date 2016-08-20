@@ -5,16 +5,23 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
+using LappaORM.Constants;
 using LappaORM.Misc;
 
 namespace LappaORM
 {
     public partial class Database
     {
-        /*public bool Create<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
+        public bool Create<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
+        {
+            return CreateAsync<TEntity>(dbEngine, replaceTable).GetAwaiter().GetResult();
+        }
+
+        public async Task<bool> CreateAsync<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
         {
             // Only MySql supported for now.
-            if (connSettings.DatabaseType != DatabaseType.MySql)
+            if (Type != DatabaseType.MySql)
                 return false;
 
             // Check if table exists or is allowed to be replaced.
@@ -23,7 +30,7 @@ namespace LappaORM
                 // Exclude foreign key and non db related properties.
                 var properties = typeof(TEntity).GetReadWriteProperties();
                 var fields = new Dictionary<string, PropertyInfo>();
-                var query = new QueryBuilder<TEntity>(querySettings, properties);
+                var query = new QueryBuilder<TEntity>(connectorQuery, properties);
                 var entity = new TEntity();
 
                 // Key: GroupStartIndex, Value: GroupCount
@@ -84,10 +91,10 @@ namespace LappaORM
                     }
                 }
 
-                return Execute(query.BuildTableCreate(fields, dbEngine));
+                return await ExecuteAsync(query.BuildTableCreate(fields, dbEngine));
             }
 
             return false;
-        }*/
+        }
     }
 }

@@ -5,13 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using LappaORM.Constants;
 using LappaORM.Misc;
 
 namespace LappaORM
 {
     internal partial class QueryBuilder<T>
     {
-        /*internal string BuildTableCreate(Dictionary<string, PropertyInfo> fields, MySqlEngine dbEngine)
+        internal string BuildTableCreate(Dictionary<string, PropertyInfo> fields, MySqlEngine dbEngine)
         {
             var pluralized = Helper.Pluralize<T>();
 
@@ -105,6 +106,6 @@ namespace LappaORM
             sqlQuery.Replace("',)", "')");
 
             return sqlQuery.ToString();
-        }*/
+        }
     }
 }

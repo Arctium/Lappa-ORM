@@ -26,11 +26,11 @@ namespace LappaORM
             {
                 case DatabaseType.MSSql:
                 {
-                    UpdateQuery = "UPDATE [{0}] SET ";
+                    UpdateQuery    = "UPDATE [{0}] SET ";
                     UpdateQueryEnd = "FROM [{0}] WHERE ";
-                    DeleteQuery = "DELETE FROM [{0}] WHERE ";
-                    Equal = "[{0}] = '{1}'";
-                    AndEqual = " AND [{0}] = '{1}'";
+                    DeleteQuery    = "DELETE FROM [{0}] WHERE ";
+                    Equal          = "[{0}] = '{1}'";
+                    AndEqual       = " AND [{0}] = '{1}'";
 
                     Part0 = "[{0}]";
                     Part1 = "[{1}]";
@@ -39,11 +39,11 @@ namespace LappaORM
                 }
                 case DatabaseType.MySql:
                 {
-                    UpdateQuery = "UPDATE `{0}` SET ";
+                    UpdateQuery    = "UPDATE `{0}` SET ";
                     UpdateQueryEnd = "WHERE ";
-                    DeleteQuery = "DELETE FROM `{0}` WHERE ";
-                    Equal = "`{0}` = '{1}'";
-                    AndEqual = " AND `{0}` = '{1}'";
+                    DeleteQuery    = "DELETE FROM `{0}` WHERE ";
+                    Equal          = "`{0}` = '{1}'";
+                    AndEqual       = " AND `{0}` = '{1}'";
 
                     Part0 = "`{0}`";
                     Part1 = "`{1}`";
@@ -53,11 +53,11 @@ namespace LappaORM
                 }
                 case DatabaseType.SQLite:
                 {
-                    UpdateQuery = "UPDATE \"{0}\" SET ";
+                    UpdateQuery    = "UPDATE \"{0}\" SET ";
                     UpdateQueryEnd = "WHERE ";
-                    DeleteQuery = "DELETE FROM \"{0}\" WHERE ";
-                    Equal = "\"{0}\" = '{1}'";
-                    AndEqual = " AND \"{0}\" = '{1}'";
+                    DeleteQuery    = "DELETE FROM \"{0}\" WHERE ";
+                    Equal          = "\"{0}\" = '{1}'";
+                    AndEqual       = " AND \"{0}\" = '{1}'";
 
                     Part0 = "\"{0}\"";
                     Part1 = "\"{1}\"";

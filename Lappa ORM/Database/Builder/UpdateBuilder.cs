@@ -18,7 +18,15 @@ namespace LappaORM
             sqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQuery, typeName, typeName[0]);
 
             for (var i = 0; i < properties.Length; i++)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal + ", ", properties[i].Name, properties[i].GetGetter<T>().GetValue(entity));
+            {
+                // Don't update primary keys.
+                if (properties[i].HasAttribute<PrimaryKeyAttribute>())
+                    continue;
+
+                var value = properties[i].GetGetter<T>().GetValue(entity);
+
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal + ", ", properties[i].Name, value is bool ? Convert.ToByte(value) : value);
+            }
 
             sqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQueryEnd, typeName, typeName[0]);
             sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));

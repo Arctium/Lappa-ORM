@@ -1,12 +1,11 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-
-namespace LappaORM.Logging
+namespace LappaORM.Constants
 {
-    public interface ILog
+    public enum MySqlEngine
     {
-        void Message(Enum logTypes, string message);
+        MyISAM = 0,
+        InnoDB = 1
     }
 }

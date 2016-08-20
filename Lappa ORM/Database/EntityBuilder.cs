@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Linq;
 using System.Reflection;
+using LappaORM.Constants;
 using LappaORM.Logging;
 using LappaORM.Misc;
 using static LappaORM.Misc.Helper;
@@ -28,7 +29,8 @@ namespace LappaORM
             var classFieldCount = 0;
             var structFieldCount = 0;
 
-            if (reader == null || !reader.HasRows)
+            // Some MySql connectors need at least one read before all column info are available.
+            if (reader?.Read() == null || !reader.HasRows)
                 return new TEntity[0];
 
             var pluralizedEntityName = Pluralize<TEntity>();
@@ -58,7 +60,7 @@ namespace LappaORM
 
             // No MySQL support for now.
             // Strict types only used in MySQL databases.
-            /*if (parentDb.Type == DatabaseType.MySql)
+            if (database.Type == DatabaseType.MySql)
             {
                 for (var i = 0; i < fieldCount; i++)
                 {
@@ -67,18 +69,18 @@ namespace LappaORM
                         continue;
 
                     // Return an empty list if any column/property type mismatches
-                    if (!data.Columns[i].DataType.IsEquivalentTo(builder.Properties[i].PropertyType.IsEnum ?
-                        builder.Properties[i].PropertyType.GetEnumUnderlyingType() : builder.Properties[i].PropertyType))
+                    if (!reader.GetFieldType(i).GetTypeInfo().IsEquivalentTo(builder.Properties[i].PropertyType.GetTypeInfo().IsEnum ?
+                        builder.Properties[i].PropertyType.GetTypeInfo().GetEnumUnderlyingType() : builder.Properties[i].PropertyType))
                     {
-                        var propertyType = builder.Properties[i].PropertyType.IsEnum ? builder.Properties[i].PropertyType.GetEnumUnderlyingType() : builder.Properties[i].PropertyType;
+                        var propertyType = builder.Properties[i].PropertyType.GetTypeInfo().IsEnum ? builder.Properties[i].PropertyType.GetTypeInfo().GetEnumUnderlyingType() : builder.Properties[i].PropertyType;
 
-                        Helper.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property type mismatch)");
-                        Helper.Log.Message(LogTypes.Error, $"{data.Columns[i].ColumnName}: {data.Columns[i].DataType}/{propertyType}");
+                        database.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property type mismatch)");
+                        database.Log.Message(LogTypes.Error, $"{reader.GetName(i)}: {reader.GetFieldType(i)}/{propertyType}");
 
                         return new TEntity[0];
                     }
                 }
-            }*/
+            }
 
             var entities = new ConcurrentBag<TEntity>();
 
@@ -111,7 +113,7 @@ namespace LappaORM
 
             var assignForeignKeys = new TEntity().LoadForeignKeys && foreignKeys.Length > 0 && groups.Count == 0;
 
-            while (reader.Read())
+            do
             {
                 var entity = new TEntity();
                 var row = new object[fieldCount];
@@ -171,16 +173,16 @@ namespace LappaORM
                             builder.PropertySetter[j].SetValue(entity, arr);
                         }
                     }
-
-                    // TODO Fix group assignment in foreign keys.
-                    if (assignForeignKeys)
-                        database.AssignForeignKeyData(entity, foreignKeys, groups);
-
-                    entity.InitializeNonTableProperties();
-
-                    entities.Add(entity);
                 }
-            };
+
+                // TODO Fix group assignment in foreign keys.
+                if (assignForeignKeys)
+                    database.AssignForeignKeyData(entity, foreignKeys, groups);
+
+                entity.InitializeNonTableProperties();
+
+                entities.Add(entity);
+            } while (reader.Read());
 
             return entities.ToArray();
         }

@@ -14,7 +14,8 @@ namespace LappaORM
     public partial class Database
     {
         public DatabaseType Type { get; private set; }
-        public ILog<Enum> Log { get; private set; }
+        public ILog Log { get; private set; }
+        public string ConnectorFileName { get; private set; } = null;
 
         string connectionString;
         Connector connector;
@@ -23,7 +24,8 @@ namespace LappaORM
 
         public Database()
         {
-            SetLogger(new Log());
+            // Initialize dummy logger.
+            Log = new Log();
         }
 
         public bool Initialize(string connString, DatabaseType type = DatabaseType.MSSql)
@@ -31,7 +33,7 @@ namespace LappaORM
             Type = type;
 
             connectionString = connString;
-            connector = new Connector(type);
+            connector = new Connector(type, ConnectorFileName);
             connectorQuery = new ConnectorQuery(type);
 
             entityBuilder = new EntityBuilder(this);
@@ -53,7 +55,11 @@ namespace LappaORM
 
         // Overwrite dummy logger.
         // Can be called at any time.
-        public void SetLogger<T>(ILog<T> logger) => Log = logger as ILog<Enum>;
+        public void SetLogger(ILog logger) => Log = logger;
+
+        // Default for MySql is "MySql.Data.dll".
+        // Must be called before Initialize.
+        public void SetConnectorFileName(string fileName) => ConnectorFileName = fileName;
 
         DbConnection CreateConnection()
         {

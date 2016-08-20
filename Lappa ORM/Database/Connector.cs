@@ -3,8 +3,11 @@
 
 using System;
 using System.Data.Common;
+using System.IO;
 using System.Reflection;
+using System.Runtime.Loader;
 using LappaORM.Constants;
+using LappaORM.Misc;
 
 namespace LappaORM
 {
@@ -14,7 +17,7 @@ namespace LappaORM
         Type connectionType;
         Type commandType;
 
-        internal Connector(DatabaseType dbType)
+        internal Connector(DatabaseType dbType, string connectorFileName = null)
         {
             // Use MSSQL as default.
             var typeBase = "System.Data.SqlClient.Sql";
@@ -28,10 +31,9 @@ namespace LappaORM
                 }
                 case DatabaseType.MySql:
                 {
-                    typeBase = "";
-                    //assembly = Assembly.Load(new AssemblyName(""));
-
-                    throw new NotSupportedException("MySQL is not supported.");
+                    typeBase = "MySql.Data.MySqlClient.MySql";
+                    assembly = new AssemblyLoader().LoadFromAssemblyPath($"{AppContext.BaseDirectory}/{connectorFileName ?? "MySql.Data.dll"}");
+                    break;
                 }
                 case DatabaseType.SQLite:
                 {

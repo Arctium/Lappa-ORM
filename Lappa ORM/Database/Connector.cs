@@ -46,10 +46,10 @@ namespace LappaORM
                 }
                 case DatabaseType.SQLite:
                 {
-                    typeBase = "";
-                    //assembly = Assembly.Load(new AssemblyName(""));
+                    typeBase = "Microsoft.Data.Sqlite.Sqlite";
+                    assembly = Assembly.Load(new AssemblyName("Microsoft.Data.Sqlite, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60"));
 
-                    throw new NotSupportedException("SQLite is not supported.");
+                    break;                    
                 }
                 default:
                     break;

@@ -38,7 +38,7 @@ namespace LappaORM
                     typeBase = "MySql.Data.MySqlClient.MySql";
 
                     if (loadFromFile)
-                        assembly = new AssemblyLoader().LoadFromAssemblyPath($"{FilePath ?? AppContext.BaseDirectory}/{FileName ?? "MySql.Data.dll"}");
+                        assembly = new AssemblyLoader().LoadFromAssemblyPath($"{FilePath ?? AppContext.BaseDirectory}/{FileName ?? "MySqlConnector.dll"}");
                     else
                         assembly = Assembly.GetEntryAssembly();
 

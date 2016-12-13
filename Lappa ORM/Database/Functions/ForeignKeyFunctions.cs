@@ -79,16 +79,11 @@ namespace LappaORM
             var entities = entityType.CreateList();
             var data = Select(query.ToString());
 
-            if (data != null)
+            if (data?.Read() == true)
             {
-                // Some MySql connectors need at least one read before all column info are available.
-                data.Read();
-
-                if (!data.HasRows)
-                    return entities;
-
                 var properties = entityType.GetReadWriteProperties();
 
+                // TODO: Replace with error log?
                 if (data.FieldCount != properties.Length)
                     throw new NotSupportedException("Columns doesn't match the entity fields.");
 

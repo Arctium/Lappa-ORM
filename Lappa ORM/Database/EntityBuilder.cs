@@ -29,8 +29,8 @@ namespace LappaORM
             var classFieldCount = 0;
             var structFieldCount = 0;
 
-            // Some MySql connectors need at least one read before all column info are available.
-            if (reader?.Read() == null || !reader.HasRows)
+            // Return an empty array if the used DbDataReader is null or doesn't contain any rows.
+            if (reader?.Read() == false)
                 return new TEntity[0];
 
             var pluralizedEntityName = Pluralize<TEntity>();
@@ -58,8 +58,7 @@ namespace LappaORM
                 return new TEntity[0];
             }
 
-            // No MySQL support for now.
-            // Strict types only used in MySQL databases.
+            // Strict types (signed/unsigned) only used in MySQL databases.
             if (database.Type == DatabaseType.MySql)
             {
                 for (var i = 0; i < fieldCount; i++)
@@ -118,6 +117,7 @@ namespace LappaORM
                 var entity = new TEntity();
                 var row = new object[fieldCount];
 
+                // TODO: Should be safe without any additional checks?
                 reader.GetValues(row);
 
                 for (var j = 0; j < fieldCount; j++)

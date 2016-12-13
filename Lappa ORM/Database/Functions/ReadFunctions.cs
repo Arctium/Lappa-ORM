@@ -122,9 +122,6 @@ namespace LappaORM
             var query = builder.BuildWhereAll(condition.Body);
             var reader = await SelectAsync(query);
 
-            // Some MySql connectors need at least one read before all column info are available.
-            await reader.ReadAsync();
-
             return reader.HasRows;
         }
         #endregion

@@ -38,21 +38,19 @@ namespace LappaORM
 
             entityBuilder = new EntityBuilder(this);
 
-            var isOpen = false;
-
             try
             {
                 connector.Load(type, loadConnectorFromFile);
 
                 using (var connection = CreateConnection())
-                    isOpen = connection.State == ConnectionState.Open;
+                    return connection.State == ConnectionState.Open;
             }
             catch (Exception ex)
             {
                 Log.Message(LogTypes.Error, ex.ToString());
-            }
 
-            return isOpen;
+                return false;
+            }
         }
 
         // Overwrite dummy logger.
@@ -108,81 +106,64 @@ namespace LappaORM
 
         internal async Task<bool> ExecuteAsync(string sql, params object[] args)
         {
-            var ret = false;
-
             try
             {
                 using (var connection = CreateConnection())
-                {
-                    using (var cmd = CreateSqlCommand(connection, sql, args))
-                        ret = await cmd.ExecuteNonQueryAsync() > 0;
-                }
+                using (var cmd = CreateSqlCommand(connection, sql, args))
+                    return await cmd.ExecuteNonQueryAsync() > 0;
             }
             catch (Exception ex)
             {
                 Log.Message(LogTypes.Error, ex.ToString());
-            }
 
-            return ret;
+                return false;
+            }
         }
 
         internal bool Execute(string sql, params object[] args)
         {
-            var ret = false;
-
             try
             {
-
                 using (var connection = CreateConnection())
-                {
-                    using (var cmd = CreateSqlCommand(connection, sql, args))
-                        ret = cmd.ExecuteNonQuery() > 0;
-                }
+                using (var cmd = CreateSqlCommand(connection, sql, args))
+                    return cmd.ExecuteNonQuery() > 0;
             }
             catch (Exception ex)
             {
                 Log.Message(LogTypes.Error, ex.ToString());
-            }
 
-            return ret;
+                return false;
+            }
         }
 
         internal async Task<DbDataReader> SelectAsync(string sql, params object[] args)
         {
-            DbDataReader result = null;
-
             try
             {
                 using (var cmd = CreateSqlCommand(CreateConnection(), sql, args))
-                {
-                    result = await cmd.ExecuteReaderAsync();
-                }
+                    return await cmd.ExecuteReaderAsync();
             }
             catch (Exception ex)
             {
                 Log.Message(LogTypes.Error, ex.ToString());
-            }
 
-            return result;
+                return null;
+            }
         }
 
         internal DbDataReader Select(string sql, params object[] args)
         {
-            DbDataReader result = null;
-
             try
             {
                 using (var cmd = CreateSqlCommand(CreateConnection(), sql, args))
-                {
-                    result = cmd.ExecuteReader();
-                }
+                    return cmd.ExecuteReader();
             }
             catch (Exception ex)
             {
                 Log.Message(LogTypes.Error, ex.ToString());
-            }
 
-            return result;
+                return null;
+            }
         }
     }
 }

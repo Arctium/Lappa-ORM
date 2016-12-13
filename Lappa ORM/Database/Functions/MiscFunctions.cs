@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using Framework.Logging;
+using LappaORM.Logging;
 using LappaORM.Misc;
 using static LappaORM.Misc.Helper;
 

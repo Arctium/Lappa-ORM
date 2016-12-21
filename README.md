@@ -9,5 +9,5 @@ Lappa ORM is a object relational mapper for .NET Core (MySQL/MSSQL/SQLite) writt
 - .NET Core (netstandard1.6)
 
 ###Supported .NET Core compatible MySQL connectors:
-- https://github.com/bgrainger/MySqlConnector (A fresh, clean & fully async ADO.NET MySQL connector, tested and supported by us, MIT licensed)
+- https://github.com/mysql-net/MySqlConnector (A fresh, clean & fully async ADO.NET MySQL connector, tested and supported by us, MIT licensed)
 - http://dev.mysql.com/downloads/connector/net/7.0.html (The official ADO.NET MySQL connector, UNTESTED and NOT supported for now, GPL licensed?)

@@ -18,9 +18,10 @@ namespace LappaORM
             return CreateAsync<TEntity>(dbEngine, replaceTable).GetAwaiter().GetResult();
         }
 
+        // MySql only.
+        // TODO: Fix for MSSql & SQLite
         public async Task<bool> CreateAsync<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
         {
-            // Only MySql supported for now.
             if (Type != DatabaseType.MySql)
                 return false;
 

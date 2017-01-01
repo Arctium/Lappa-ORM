@@ -65,11 +65,31 @@ namespace LappaORM
             }
         }
 
+        protected override Expression VisitMember(MemberExpression memberEexpression)
+        {
+            // TODO: Find a better way...
+            if ((memberEexpression.Member as PropertyInfo)?.PropertyType == typeof(bool))
+            {
+                var expressionString = memberEexpression.ToString();
+                var count = 0;
+
+                for (var i = 0; i != -1; i += 3)
+                {
+                    if (expressionString.IndexOf("Not", i) == -1)
+                        break;
+
+                    count++;
+                }
+
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", memberEexpression?.Member?.Name, " = ", count % 2 == 0 ? "1" : "0");
+            }
+
+            return memberEexpression;
+        }
+
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
         {
             sqlQuery.Append("(");
-
-            Visit(binaryExpression.Left);
 
             string condition;
 
@@ -104,7 +124,11 @@ namespace LappaORM
             }
 
             if (condition == " AND " || condition == " OR ")
+            {
+                Visit(binaryExpression.Left);
+
                 sqlQuery.Append(condition);
+            }
             else
             {
                 MemberExpression memberExp = null;

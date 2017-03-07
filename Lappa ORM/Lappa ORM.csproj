@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.6</TargetFramework>
+    <AssemblyName>LappaORM</AssemblyName>
+    <RootNamespace>LappaORM</RootNamespace>
+    <Version>1.0.0-dev</Version>
+    <Authors />
+    <Company>Arctium Software</Company>
+    <Product>Lappa ORM</Product>
+    <Description>Lappa ORM is a object relational mapper for .NET Core (MySQL/MSSQL/SQLite) written in C# (.NET Core) released under the MIT License.</Description>
+    <Copyright>Copyright 2015-2017 Arctium Software</Copyright>
+    <PackageProjectUrl>https://github.com/Arctium-Software/LappaORM</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Arctium-Software/LappaORM</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LappaPluralization" Version="1.0.0" />
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
+    <PackageReference Include="System.Reflection" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>

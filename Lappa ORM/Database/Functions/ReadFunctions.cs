@@ -122,6 +122,25 @@ namespace LappaORM
 
             return reader.HasRows;
         }
+
+        public long Count<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
+        {
+            return CountAsync(condition).GetAwaiter().GetResult();
+        }
+
+        public async Task<long> CountAsync<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
+        {
+            var properties = typeof(TEntity).GetReadWriteProperties();
+            var builder = new QueryBuilder<TEntity>(connectorQuery, properties);
+            var query = condition != null ? builder.BuildWhereCount(condition.Body) : builder.BuildSelectCount();
+            var data = await SelectAsync(query);
+
+            // Read the first row.
+            await data?.ReadAsync();
+
+            // Return -1 if row data are null.
+            return Convert.ToInt64(data?[0] ?? -1);
+        }
         #endregion
     }
 }

@@ -31,6 +31,13 @@ namespace LappaORM
             return sqlQuery.ToString();
         }
 
+        internal string BuildSelectCount()
+        {
+            sqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Part0, Pluralize<T>());
+
+            return sqlQuery.ToString();
+        }
+
         internal string BuildWhereAll(Expression expression)
         {
             // ToDo: Add support for query more than 1 table
@@ -52,6 +59,15 @@ namespace LappaORM
 
             // Fix query
             sqlQuery.Replace(", FROM", " FROM");
+
+            Visit(expression);
+
+            return sqlQuery.ToString();
+        }
+
+        internal string BuildWhereCount(Expression expression)
+        {
+            sqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
 
             Visit(expression);
 

@@ -69,10 +69,10 @@ namespace LappaORM
                     var arr = PropertyGetter[i](new T()) as Array;
 
                     for (var j = 1; j <= arr.Length; j++)
-                        values.Add(properties[i].Name + j, null);
+                        values.Add(properties[i].GetName() + j, null);
                 }
                 else
-                    values.Add(properties[i].Name, null);
+                    values.Add(properties[i].GetName(), null);
             }
 
             sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Part0 + " (", typeName);
@@ -114,7 +114,7 @@ namespace LappaORM
                         var arrElementType = arr.GetType().GetElementType();
 
                         for (var j = 1; j <= arr.Length; j++)
-                            values[properties[i].Name + j] = arr.GetValue(j - 1).ChangeTypeGet(arrElementType);
+                            values[properties[i].GetName() + j] = arr.GetValue(j - 1).ChangeTypeGet(arrElementType);
                     }
                     else if (!properties[i].HasAttribute<AutoIncrementAttribute>())
                     {
@@ -123,7 +123,7 @@ namespace LappaORM
                         if (val is string)
                             val = ((string)val).Replace("\"", "\"\"").Replace("'", @"\'");
 
-                        values[properties[i].Name] = val;
+                        values[properties[i].GetName()] = val;
                     }
                 }
 

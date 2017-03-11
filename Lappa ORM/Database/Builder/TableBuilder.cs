@@ -95,9 +95,9 @@ namespace LappaORM
             for (var i = 0; i < primaryKeys.Length; i++)
             {
                 if (i == primaryKeys.Length - 1)
-                    sqlQuery.Append($"`{primaryKeys[i].Name}`)");
+                    sqlQuery.Append($"`{primaryKeys[i].GetName()}`)");
                 else
-                    sqlQuery.Append($"`{primaryKeys[i].Name}`,");
+                    sqlQuery.Append($"`{primaryKeys[i].GetName()}`,");
             }
 
             sqlQuery.Append($") ENGINE={Enum.GetName(typeof(MySqlEngine), dbEngine)} DEFAULT CHARSET=utf8;");

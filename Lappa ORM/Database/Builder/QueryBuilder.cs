@@ -42,7 +42,7 @@ namespace LappaORM
                 {
                     for (var j = 0; j < properties.Length; j++)
                     {
-                        if (properties[j].Name == members[i].Name)
+                        if (properties[j].GetName() == members[i].GetName())
                         {
                             props[i] = properties[j];
                             break;
@@ -152,7 +152,7 @@ namespace LappaORM
                 var finalVal = exVal ?? Regex.Replace(Regex.Replace(binaryExpression.Right.ToString(), "^\"|\"$", ""), @"^Convert\(|\)$", "");
                 var left = (binaryExpression.Left as MemberExpression)?.Member ?? ((binaryExpression.Left as UnaryExpression).Operand as MemberExpression).Member;
 
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", left.Name, condition, finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", left.GetName(), condition, finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
             }
 
             Visit(binaryExpression.Right);
@@ -226,7 +226,7 @@ namespace LappaORM
                     objReference = (memberExp.Member as FieldInfo)?.GetValue(null) ?? (memberExp.Member as PropertyInfo)?.GetValue(null);
                 else
                 {
-                    info = constExpression.Value.GetType().GetRuntimeFields().SingleOrDefault(fi => fi.Name == memberExp.Member.Name);
+                    info = constExpression.Value.GetType().GetRuntimeFields().SingleOrDefault(fi => fi.GetName() == memberExp.Member.GetName());
                     objReference = info?.GetValue(constExpression.Value);
                 }
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using LappaORM.Managers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -101,6 +102,8 @@ namespace LappaORM.Misc
         {
             return property.GetCustomAttribute<T>() != null;
         }
+
+        internal static string GetName(this MemberInfo memberInfo) => CacheManager.Instance.GetDBField(memberInfo).Name;
 
         internal static bool IsCustomClass(this Type type) => type.GetTypeInfo().IsClass && type != typeof(string);
 

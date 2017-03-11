@@ -65,7 +65,7 @@ namespace LappaORM
                     var groupCount = 0;
 
                     if (!properties[i].PropertyType.IsArray)
-                        fields.Add(properties[i].Name, properties[i]);
+                        fields.Add(properties[i].GetName(), properties[i]);
                     else
                     {
                         if (groups.TryGetValue(i, out groupCount))
@@ -76,7 +76,7 @@ namespace LappaORM
                             {
                                 for (var j = 0; j < groupCount; j++)
                                 {
-                                    fields.Add(properties[i + j].Name + k, properties[i + j]);
+                                    fields.Add(properties[i + j].GetName() + k, properties[i + j]);
                                 }
                             }
 
@@ -87,7 +87,7 @@ namespace LappaORM
                             var arr = (query.PropertyGetter[i](entity) as Array);
 
                             for (var j = 1; j <= arr.Length; j++)
-                                fields.Add(properties[i].Name + j, properties[i]);
+                                fields.Add(properties[i].GetName() + j, properties[i]);
                         }
                     }
                 }

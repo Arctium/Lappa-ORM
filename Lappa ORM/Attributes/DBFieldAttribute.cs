@@ -8,6 +8,7 @@ namespace LappaORM
     [AttributeUsage(AttributeTargets.Property)]
     public class DBFieldAttribute : Attribute
     {
+        public string Name    { get; set; }
         public int Size       { get; set; }
         public object Default { get; set; }
         public bool Null      { get; set; }

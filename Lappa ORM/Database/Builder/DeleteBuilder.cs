@@ -13,10 +13,10 @@ namespace LappaORM
         internal string BuildDelete(T entity, PropertyInfo[] primaryKeys)
         {
             sqlQuery.AppendFormat(numberFormat, connectorQuery.DeleteQuery, Pluralize<T>(), typeof(T).Name[0]);
-            sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
+            sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, primaryKeys[0].GetName(), primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.AndEqual, primaryKeys[i].GetName(), primaryKeys[i].GetGetter<T>().GetValue(entity));
 
             return sqlQuery.ToString();
         }

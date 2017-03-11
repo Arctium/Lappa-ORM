@@ -1,6 +1,7 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using LappaORM.Misc;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -22,7 +23,7 @@ namespace LappaORM
             sqlQuery.Append("SELECT ");
 
             for (var i = 0; i < members.Count; i++)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].Name);
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].GetName());
 
             sqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Part0, Pluralize<T>());
 
@@ -53,7 +54,7 @@ namespace LappaORM
             sqlQuery.Append("SELECT ");
 
             for (var i = 0; i < members.Count; i++)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].Name);
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].GetName());
 
             sqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
 

@@ -25,14 +25,14 @@ namespace LappaORM
 
                 var value = properties[i].GetGetter<T>().GetValue(entity);
 
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal + ", ", properties[i].Name, value is bool ? Convert.ToByte(value) : value);
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal + ", ", properties[i].GetName(), value is bool ? Convert.ToByte(value) : value);
             }
 
             sqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQueryEnd, typeName, typeName[0]);
-            sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, primaryKeys[0].Name, primaryKeys[0].GetGetter<T>().GetValue(entity));
+            sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, primaryKeys[0].GetName(), primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.AndEqual, primaryKeys[i].Name, primaryKeys[i].GetGetter<T>().GetValue(entity));
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.AndEqual, primaryKeys[i].GetName(), primaryKeys[i].GetGetter<T>().GetValue(entity));
 
             sqlQuery.Replace(", WHERE", " WHERE");
             sqlQuery.Replace(", FROM", " FROM");
@@ -46,7 +46,7 @@ namespace LappaORM
 
             for (var i = 0; i < expression.Length; i++)
             {
-                var member = (expression[i].Arguments[0] as MemberExpression).Member.Name;
+                var member = (expression[i].Arguments[0] as MemberExpression).Member.GetName();
                 MemberExpression memberExp = null;
                 object value = null;
 

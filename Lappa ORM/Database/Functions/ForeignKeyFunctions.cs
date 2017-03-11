@@ -56,12 +56,12 @@ namespace LappaORM
             var fkNameByPk = "";
 
             if (primaryKeysByAttribute.Length > 0)
-                fkNameByPk = primaryKeysByAttribute[0]?.Name;
+                fkNameByPk = primaryKeysByAttribute[0]?.GetName();
             else
             {
-                var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.Name == "Id" || p.Name == typeName + "Id").ToArray();
+                var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.GetName() == "Id" || p.GetName() == typeName + "Id").ToArray();
 
-                fkNameByPk = primaryKeys.Length > 0 ? primaryKeys[0]?.Name : null;
+                fkNameByPk = primaryKeys.Length > 0 ? primaryKeys[0]?.GetName() : null;
             }
 
             return fkNameByPk == null ? null : Tuple.Create(fkNameByPk, typeName + fkNameByPk);
@@ -92,7 +92,7 @@ namespace LappaORM
                     var entity = Activator.CreateInstance(entityType) as Entity;
 
                     for (var j = 0; j < properties.Length; j++)
-                        properties[j].SetValue(entity, data[properties[j].Name].ChangeTypeGet(properties[j].PropertyType));
+                        properties[j].SetValue(entity, data[properties[j].GetName()].ChangeTypeGet(properties[j].PropertyType));
 
                     entity.InitializeNonTableProperties();
 

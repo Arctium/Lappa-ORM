@@ -7,6 +7,7 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using LappaORM.Constants;
 using LappaORM.Logging;
+using LappaORM.Managers;
 
 namespace LappaORM
 {
@@ -22,6 +23,9 @@ namespace LappaORM
 
         public Database()
         {
+            // Initialize the cache manager on first database creation. 
+            CacheManager.Instance.Initialize();
+
             // Initialize dummy logger.
             Log = new Log();
 

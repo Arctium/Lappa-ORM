@@ -36,11 +36,11 @@ namespace LappaORM
                     var arrElementType = arr.GetType().GetElementType();
 
                     for (var j = 0; j <= arr.Length; j++)
-                        values.Add(properties[i].Name + j, arr.GetValue(j).ChangeTypeGet(arrElementType));
+                        values.Add(properties[i].GetName() + j, arr.GetValue(j).ChangeTypeGet(arrElementType));
                 }
                 else if (!properties[i].HasAttribute<AutoIncrementAttribute>())
                 {
-                    values.Add(properties[i].Name, query.PropertyGetter[i](entity));
+                    values.Add(properties[i].GetName(), query.PropertyGetter[i](entity));
                 }
             }
 
@@ -97,7 +97,7 @@ namespace LappaORM
         {
             var type = typeof(TEntity);
             var properties = type.GetReadWriteProperties();
-            var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.Name == "Id" || p.Name == type.Name + "Id").ToArray();
+            var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.GetName() == "Id" || p.GetName() == type.Name + "Id").ToArray();
             var builder = new QueryBuilder<TEntity>(connectorQuery);
             var query = builder.BuildUpdate(entity, properties, primaryKeys);
 
@@ -155,7 +155,7 @@ namespace LappaORM
         public async Task<bool> DeleteAsync<TEntity>(TEntity entity) where TEntity : Entity, new()
         {
             var type = typeof(TEntity);
-            var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.Name == "Id" || p.Name == type.Name + "Id").ToArray();
+            var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.GetName() == "Id" || p.GetName() == type.Name + "Id").ToArray();
             var builder = new QueryBuilder<TEntity>(connectorQuery);
             var query = builder.BuildDelete(entity, primaryKeys);
 

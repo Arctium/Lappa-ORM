@@ -14,11 +14,12 @@ namespace LappaORM
         // TODO: Fix for MSSql & SQLite
         public TReturn GetAutoIncrementValue<TEntity, TReturn>()
         {
-            var result = Select($"SHOW TABLE STATUS LIKE ?", Pluralize<TEntity>());
+            var tableName = Pluralize<TEntity>();
+            var result = Select($"SHOW TABLE STATUS LIKE ?", tableName);
 
             if (!result.Read())
             {
-                Log.Message(LogTypes.Warning, $"Can't get auto increment value for '{Pluralize<TEntity>()}' table.");
+                Log.Message(LogTypes.Warning, $"Can't get auto increment value for '{tableName}' table.");
 
                 return default(TReturn);
             }
@@ -38,7 +39,7 @@ namespace LappaORM
 
                 if (!result.Read())
                 {
-                    Log.Message(LogTypes.Warning, $"Can't check if '{Pluralize<TEntity>()}' table exists, no schema info.");
+                    Log.Message(LogTypes.Warning, $"Can't check if '{tableName}' table exists, no schema info.");
 
                     return false;
                 }

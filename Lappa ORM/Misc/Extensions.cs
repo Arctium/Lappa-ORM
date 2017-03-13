@@ -13,15 +13,7 @@ namespace LappaORM.Misc
 {
     internal static class Extensions
     {
-        // Create only one service. Only enUS supported.
-        internal static string Pluralize(this string word) => Pluralize(word);
-
-        internal static IList CreateList(this Type type)
-        {
-            var genericType = typeof(List<>).MakeGenericType(type);
-
-            return Activator.CreateInstance(genericType) as IList;
-        }
+        internal static IList CreateList(this Type type) => Activator.CreateInstance(typeof(List<>).MakeGenericType(type)) as IList;
 
         internal static T ChangeTypeGet<T>(this object value) => (T)ChangeTypeGet(value, typeof(T));
 
@@ -93,9 +85,9 @@ namespace LappaORM.Misc
 
         internal static bool HasMember(this object obj, string memberName)
         {
-            var type = obj.GetType();
+            var typeInfo = obj.GetType().GetTypeInfo();
 
-            return type.GetTypeInfo().GetField(memberName) != null || type.GetTypeInfo().GetProperty(memberName) != null;
+            return typeInfo.GetField(memberName) != null || typeInfo.GetProperty(memberName) != null;
         }
 
         internal static bool HasAttribute<T>(this PropertyInfo property) where T : Attribute

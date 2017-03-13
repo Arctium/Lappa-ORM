@@ -81,7 +81,7 @@ namespace LappaORM
                     count++;
                 }
 
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", memberExpression?.Member?.GetName(), " = ", count % 2 == 0 ? "1" : "0");
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", memberExpression.Member.GetName(), " = ", count % 2 == 0 ? "1" : "0");
             }
 
             return memberExpression;

@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="LappaPluralization" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="1.1.1" />
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
     <PackageReference Include="System.Reflection" Version="4.3.0" />

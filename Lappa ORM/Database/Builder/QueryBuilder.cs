@@ -65,12 +65,12 @@ namespace LappaORM
             }
         }
 
-        protected override Expression VisitMember(MemberExpression memberEexpression)
+        protected override Expression VisitMember(MemberExpression memberExpression)
         {
             // TODO: Find a better way...
-            if ((memberEexpression.Member as PropertyInfo)?.PropertyType == typeof(bool))
+            if ((memberExpression.Member as PropertyInfo)?.PropertyType == typeof(bool))
             {
-                var expressionString = memberEexpression.ToString();
+                var expressionString = memberExpression.ToString();
                 var count = 0;
 
                 for (var i = 0; i != -1; i += 3)
@@ -81,10 +81,10 @@ namespace LappaORM
                     count++;
                 }
 
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", memberEexpression?.Member?.Name, " = ", count % 2 == 0 ? "1" : "0");
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", memberExpression?.Member?.GetName(), " = ", count % 2 == 0 ? "1" : "0");
             }
 
-            return memberEexpression;
+            return memberExpression;
         }
 
         protected override Expression VisitBinary(BinaryExpression binaryExpression)

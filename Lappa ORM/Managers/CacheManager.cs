@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using LapapORM.Misc;
+using Microsoft.Extensions.DependencyModel;
 
 namespace LappaORM.Managers
 {
@@ -21,18 +22,29 @@ namespace LappaORM.Managers
 
         void CacheDBFieldAttributes()
         {
-            var entityTypes = Assembly.GetEntryAssembly().DefinedTypes.Where(t => t.IsSubclassOf(typeof(Entity)));
+            var mysqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames();
 
-            foreach (var t in entityTypes)
+            foreach (var asm in mysqlAssemblyNames)
             {
-                foreach (var p in t.DeclaredProperties)
+                var entityTypes = Assembly.Load(asm).DefinedTypes.Where(t => t.IsSubclassOf(typeof(Entity)));
+
+                foreach (var t in entityTypes)
                 {
-                    // Also add a default DBFieldAttribute for all properties.
-                    dbFieldCache.TryAdd(p, p.GetCustomAttribute<DBFieldAttribute>() ?? new DBFieldAttribute { Name = p.Name });
+                    foreach (var p in t.DeclaredProperties)
+                    {
+                        // Also add a default DBFieldAttribute for all properties.
+                        dbFieldCache.TryAdd(p, p.GetCustomAttribute<DBFieldAttribute>() ?? new DBFieldAttribute { Name = p.Name });
+                    }
                 }
             }
         }
 
-        public DBFieldAttribute GetDBField(MemberInfo memberInfo) => dbFieldCache[memberInfo];
+        public DBFieldAttribute GetDBField(MemberInfo memberInfo)
+        {
+            if (dbFieldCache.TryGetValue(memberInfo, out DBFieldAttribute dbFieldAttribute))
+                return dbFieldAttribute;
+
+            return new DBFieldAttribute { Name = memberInfo.Name };
+        }
     }
 }

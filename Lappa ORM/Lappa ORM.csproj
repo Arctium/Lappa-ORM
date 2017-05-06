@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <DebugType>Portable</DebugType>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <AssemblyName>LappaORM</AssemblyName>
     <RootNamespace>LappaORM</RootNamespace>
-    <Version>1.0.1-dev1</Version>
+    <Version>1.0.1-dev1-2</Version>
     <Company>Arctium Software</Company>
     <Product>Lappa ORM</Product>
     <Description>Lappa ORM is a object relational mapper for .NET Core (MySQL/MSSQL/SQLite) written in C# (.NET Core) released under the MIT License.</Description>
@@ -17,17 +17,12 @@
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <PackageLicenseUrl>https://github.com/Arctium-Software/LappaORM/blob/master/LICENSE</PackageLicenseUrl>
     <PackageTags>lappa-orm, orm, mysql, mssql, sqlite</PackageTags>
-    <PackageReleaseNotes>CacheManager:
-- Search for Entity classes in all known assemblies/types.
-- Fixed an exception when MemberInfo doesn't exist in db field cache.</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated to netstandard2.0</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="LappaPluralization" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="1.1.1" />
-    <PackageReference Include="System.Data.Common" Version="4.3.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
-    <PackageReference Include="System.Reflection" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.0-preview2-25303-04" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
   </ItemGroup>
 

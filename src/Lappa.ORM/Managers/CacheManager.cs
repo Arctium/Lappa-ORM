@@ -7,7 +7,7 @@ using System.Reflection;
 using LapapORM.Misc;
 using Microsoft.Extensions.DependencyModel;
 
-namespace LappaORM.Managers
+namespace Lappa.ORM.Managers
 {
     internal class CacheManager : Singleton<CacheManager>
     {

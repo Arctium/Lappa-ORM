@@ -6,10 +6,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using LappaORM.Constants;
-using LappaORM.Misc;
+using Lappa.ORM.Constants;
+using Lappa.ORM.Misc;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     public partial class Database
     {

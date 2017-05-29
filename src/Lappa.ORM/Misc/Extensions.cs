@@ -1,7 +1,7 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using LappaORM.Managers;
+using Lappa.ORM.Managers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace LappaORM.Misc
+namespace Lappa.ORM.Misc
 {
     internal static class Extensions
     {

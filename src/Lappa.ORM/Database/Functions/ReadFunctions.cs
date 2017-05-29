@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using LappaORM.Logging;
-using LappaORM.Misc;
+using Lappa.ORM.Logging;
+using Lappa.ORM.Misc;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     public partial class Database
     {

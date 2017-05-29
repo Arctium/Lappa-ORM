@@ -5,11 +5,11 @@ using System;
 using System.Data.Common;
 using System.Linq;
 using System.Reflection;
-using LappaORM.Constants;
-using LappaORM.Misc;
+using Lappa.ORM.Constants;
+using Lappa.ORM.Misc;
 using Microsoft.Extensions.DependencyModel;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     internal sealed class Connector
     {

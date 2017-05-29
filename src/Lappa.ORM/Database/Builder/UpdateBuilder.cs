@@ -4,10 +4,10 @@
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using LappaORM.Misc;
-using static LappaORM.Misc.Helper;
+using Lappa.ORM.Misc;
+using static Lappa.ORM.Misc.Helper;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T>
     {

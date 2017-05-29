@@ -3,7 +3,7 @@
 
 using System;
 
-namespace LappaORM.Logging
+namespace Lappa.ORM.Logging
 {
     public interface ILog
     {

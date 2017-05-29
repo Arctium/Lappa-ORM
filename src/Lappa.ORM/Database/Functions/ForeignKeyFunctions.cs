@@ -8,9 +8,9 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using LappaORM.Misc;
+using Lappa.ORM.Misc;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     public partial class Database
     {

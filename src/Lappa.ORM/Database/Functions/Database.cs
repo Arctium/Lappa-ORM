@@ -5,11 +5,11 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
-using LappaORM.Constants;
-using LappaORM.Logging;
-using LappaORM.Managers;
+using Lappa.ORM.Constants;
+using Lappa.ORM.Logging;
+using Lappa.ORM.Managers;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     public partial class Database
     {

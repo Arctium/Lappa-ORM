@@ -1,9 +1,9 @@
 ﻿// Copyright (C) Arctium Software.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using LappaORM.Constants;
+using Lappa.ORM.Constants;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     // Use if db engines need different versions for base queries
     internal class ConnectorQuery

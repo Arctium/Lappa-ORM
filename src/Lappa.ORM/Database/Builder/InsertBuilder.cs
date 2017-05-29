@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using LappaORM.Misc;
-using static LappaORM.Misc.Helper;
+using Lappa.ORM.Misc;
+using static Lappa.ORM.Misc.Helper;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T>
     {

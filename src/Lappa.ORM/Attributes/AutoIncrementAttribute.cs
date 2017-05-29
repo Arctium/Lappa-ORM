@@ -3,7 +3,7 @@
 
 using System;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class AutoIncrementAttribute : Attribute

@@ -9,9 +9,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using LappaORM.Misc;
+using Lappa.ORM.Misc;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T> : ExpressionVisitor where T : Entity, new()
     {

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace LappaORM.Logging
+namespace Lappa.ORM.Logging
 {
     internal class Log : ILog
     {

@@ -4,7 +4,7 @@
 using System.Reflection;
 using System.Runtime.Loader;
 
-namespace LappaORM.Misc
+namespace Lappa.ORM.Misc
 {
     internal class AssemblyLoader : AssemblyLoadContext
     {

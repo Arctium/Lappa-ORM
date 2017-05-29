@@ -4,8 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <DebugType>Portable</DebugType>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <AssemblyName>LappaORM</AssemblyName>
-    <RootNamespace>LappaORM</RootNamespace>
+    <AssemblyName>Lappa.ORM</AssemblyName>
+    <RootNamespace>Lappa.ORM</RootNamespace>
     <Version>1.0.1-dev1-2</Version>
     <Company>Arctium Software</Company>
     <Product>Lappa ORM</Product>

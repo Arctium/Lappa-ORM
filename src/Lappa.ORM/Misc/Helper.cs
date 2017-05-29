@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using LappaPluralization;
 
-namespace LappaORM.Misc
+namespace Lappa.ORM.Misc
 {
     internal class Helper
     {

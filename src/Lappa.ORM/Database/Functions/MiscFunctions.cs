@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using LappaORM.Logging;
-using LappaORM.Misc;
-using static LappaORM.Misc.Helper;
+using Lappa.ORM.Logging;
+using Lappa.ORM.Misc;
+using static Lappa.ORM.Misc.Helper;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     public partial class Database
     {

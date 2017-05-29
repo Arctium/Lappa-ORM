@@ -6,12 +6,12 @@ using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Linq;
 using System.Reflection;
-using LappaORM.Constants;
-using LappaORM.Logging;
-using LappaORM.Misc;
-using static LappaORM.Misc.Helper;
+using Lappa.ORM.Constants;
+using Lappa.ORM.Logging;
+using Lappa.ORM.Misc;
+using static Lappa.ORM.Misc.Helper;
 
-namespace LappaORM
+namespace Lappa.ORM
 {
     internal class EntityBuilder
     {

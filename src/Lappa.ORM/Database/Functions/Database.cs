@@ -34,6 +34,11 @@ namespace Lappa.ORM
 
         public bool Initialize(string connString, DatabaseType type, bool loadConnectorFromFile = true)
         {
+            return InitializeAsync(connString, type, loadConnectorFromFile).GetAwaiter().GetResult();
+        }
+
+        public async Task<bool> InitializeAsync(string connString, DatabaseType type, bool loadConnectorFromFile = true)
+        {
             Type = type;
 
             connectionString = connString;
@@ -45,7 +50,7 @@ namespace Lappa.ORM
             {
                 connector.Load(type, loadConnectorFromFile);
 
-                using (var connection = CreateConnection())
+                using (var connection = await CreateConnectionAsync())
                     return connection.State == ConnectionState.Open;
             }
             catch (Exception ex)
@@ -68,13 +73,15 @@ namespace Lappa.ORM
         // Must be called before Initialize.
         public void SetConnectorFileName(string connectorFileName) => connector.FileName = connectorFileName;
 
-        DbConnection CreateConnection()
+        DbConnection CreateConnection() => CreateConnectionAsync().GetAwaiter().GetResult();
+
+        internal async Task<DbConnection> CreateConnectionAsync()
         {
             var connection = connector.CreateConnectionObject();
 
             connection.ConnectionString = connectionString;
 
-            connection.Open();
+            await connection.OpenAsync();
 
             return connection;
         }
@@ -107,11 +114,13 @@ namespace Lappa.ORM
             return sqlCommand;
         }
 
+        internal bool Execute(string sql, params object[] args) => ExecuteAsync(sql, args).GetAwaiter().GetResult();
+
         internal async Task<bool> ExecuteAsync(string sql, params object[] args)
         {
             try
             {
-                using (var connection = CreateConnection())
+                using (var connection = await CreateConnectionAsync())
                 using (var cmd = CreateSqlCommand(connection, sql, args))
                     return await cmd.ExecuteNonQueryAsync() > 0;
             }
@@ -123,43 +132,15 @@ namespace Lappa.ORM
             }
         }
 
-        internal bool Execute(string sql, params object[] args)
-        {
-            try
-            {
-                using (var connection = CreateConnection())
-                using (var cmd = CreateSqlCommand(connection, sql, args))
-                    return cmd.ExecuteNonQuery() > 0;
-            }
-            catch (Exception ex)
-            {
-                Log.Message(LogTypes.Error, ex.ToString());
-
-                return false;
-            }
-        }
+        internal DbDataReader Select(string sql, params object[] args) => SelectAsync(sql, args).GetAwaiter().GetResult();
 
         internal async Task<DbDataReader> SelectAsync(string sql, params object[] args)
         {
             try
             {
-                using (var cmd = CreateSqlCommand(CreateConnection(), sql, args))
+                using (var connection = await CreateConnectionAsync())
+                using (var cmd = CreateSqlCommand(connection, sql, args))
                     return await cmd.ExecuteReaderAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.Message(LogTypes.Error, ex.ToString());
-
-                return null;
-            }
-        }
-
-        internal DbDataReader Select(string sql, params object[] args)
-        {
-            try
-            {
-                using (var cmd = CreateSqlCommand(CreateConnection(), sql, args))
-                    return cmd.ExecuteReader();
             }
             catch (Exception ex)
             {

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
 using Lappa.ORM.Logging;
 using Lappa.ORM.Misc;
 using static Lappa.ORM.Misc.Helper;
@@ -10,14 +11,16 @@ namespace Lappa.ORM
 {
     public partial class Database
     {
+        public TReturn GetAutoIncrementValue<TEntity, TReturn>() => GetAutoIncrementValueAsync<TEntity, TReturn>().GetAwaiter().GetResult();
+
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public TReturn GetAutoIncrementValue<TEntity, TReturn>()
+        public async Task<TReturn> GetAutoIncrementValueAsync<TEntity, TReturn>()
         {
             var tableName = Pluralize<TEntity>();
-            var result = Select($"SHOW TABLE STATUS LIKE ?", tableName);
+            var result = await SelectAsync($"SHOW TABLE STATUS LIKE ?", tableName);
 
-            if (!result.Read())
+            if (!await result.ReadAsync())
             {
                 Log.Message(LogTypes.Warning, $"Can't get auto increment value for '{tableName}' table.");
 
@@ -27,15 +30,17 @@ namespace Lappa.ORM
             return result["Auto_increment"].ChangeTypeGet<TReturn>();
         }
 
+        public bool Exists<TEntity>() => ExistsAsync<TEntity>().GetAwaiter().GetResult();
+
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public bool Exists<TEntity>()
+        public async Task<bool> ExistsAsync<TEntity>()
         {
             var tableName = Pluralize<TEntity>();
 
-            using (var connection = CreateConnection())
+            using (var connection = await CreateConnectionAsync())
             {
-                var result = Select("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", connection.Database, tableName);
+                var result = await SelectAsync("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", connection.Database, tableName);
 
                 if (!result.Read())
                 {

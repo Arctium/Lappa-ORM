@@ -18,16 +18,18 @@ namespace Lappa.ORM
         public async Task<TReturn> GetAutoIncrementValueAsync<TEntity, TReturn>()
         {
             var tableName = Pluralize<TEntity>();
-            var result = await SelectAsync($"SHOW TABLE STATUS LIKE ?", tableName);
 
-            if (!await result.ReadAsync())
+            using (var dataReader = await SelectAsync($"SHOW TABLE STATUS LIKE ?", tableName))
             {
-                Log.Message(LogTypes.Warning, $"Can't get auto increment value for '{tableName}' table.");
+                if (!await dataReader.ReadAsync())
+                {
+                    Log.Message(LogTypes.Warning, $"Can't get auto increment value for '{tableName}' table.");
 
-                return default(TReturn);
+                    return default(TReturn);
+                }
+
+                return dataReader["Auto_increment"].ChangeTypeGet<TReturn>();
             }
-
-            return result["Auto_increment"].ChangeTypeGet<TReturn>();
         }
 
         public bool Exists<TEntity>() => ExistsAsync<TEntity>().GetAwaiter().GetResult();
@@ -39,17 +41,16 @@ namespace Lappa.ORM
             var tableName = Pluralize<TEntity>();
 
             using (var connection = await CreateConnectionAsync())
+            using (var dataReader = await SelectAsync("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", connection.Database, tableName))
             {
-                var result = await SelectAsync("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", connection.Database, tableName);
-
-                if (!result.Read())
+                if (!dataReader.Read())
                 {
                     Log.Message(LogTypes.Warning, $"Can't check if '{tableName}' table exists, no schema info.");
 
                     return false;
                 }
 
-                return Convert.ToBoolean(result["ct"]);
+                return Convert.ToBoolean(dataReader["ct"]);
             }
         }
     }

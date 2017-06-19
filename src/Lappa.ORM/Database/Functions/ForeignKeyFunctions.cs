@@ -29,12 +29,12 @@ namespace Lappa.ORM
                 {
                     var value = typeof(TEntity).GetTypeInfo().GetProperty(fkName.Item1).GetValue(entity);
                     var pType = fk.PropertyType.GetTypeInfo().IsGenericType ? fk.PropertyType.GetTypeInfo().GetGenericArguments()[0] : fk.PropertyType;
-                    var data = WhereForeignKey(pType, Helper.Pluralize(pType), fkName.Item2, value, groups);
+                    var foreignKeyData = WhereForeignKey(pType, Helper.Pluralize(pType), fkName.Item2, value, groups);
 
-                    if (data == null || data.Count == 0)
+                    if (foreignKeyData == null || foreignKeyData.Count == 0)
                         continue;
 
-                    fk.SetValue(entity, fk.PropertyType.GetTypeInfo().IsGenericType ? data : data[0], null);
+                    fk.SetValue(entity, fk.PropertyType.GetTypeInfo().IsGenericType ? foreignKeyData : foreignKeyData[0], null);
                 }
             }
         }
@@ -77,29 +77,31 @@ namespace Lappa.ORM
             query.AppendFormat(numberFormat, connectorQuery.Equal, fkName, value);
 
             var entities = entityType.CreateList();
-            var data = Select(query.ToString());
 
-            if (data?.Read() == true)
+            using (var dataReader = Select(query.ToString()))
             {
-                var properties = entityType.GetReadWriteProperties();
-
-                // TODO: Replace with error log?
-                if (data.FieldCount != properties.Length)
-                    throw new NotSupportedException("Columns doesn't match the entity fields.");
-
-                do
+                if (dataReader?.Read() == true)
                 {
-                    var entity = Activator.CreateInstance(entityType) as Entity;
+                    var properties = entityType.GetReadWriteProperties();
 
-                    for (var j = 0; j < properties.Length; j++)
-                        properties[j].SetValue(entity, data[properties[j].GetName()].ChangeTypeGet(properties[j].PropertyType));
+                    // TODO: Replace with error log?
+                    if (dataReader.FieldCount != properties.Length)
+                        throw new NotSupportedException("Columns doesn't match the entity fields.");
 
-                    entity.InitializeNonTableProperties();
+                    do
+                    {
+                        var entity = Activator.CreateInstance(entityType) as Entity;
 
-                    // IList isn't thread safe...
-                    lock (entityLock)
-                        entities.Add(entity);
-                } while (data.Read());
+                        for (var j = 0; j < properties.Length; j++)
+                            properties[j].SetValue(entity, dataReader[properties[j].GetName()].ChangeTypeGet(properties[j].PropertyType));
+
+                        entity.InitializeNonTableProperties();
+
+                        // IList isn't thread safe...
+                        lock (entityLock)
+                            entities.Add(entity);
+                    } while (dataReader.Read());
+                }
             }
 
             return entities;

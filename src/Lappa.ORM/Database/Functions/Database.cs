@@ -138,9 +138,9 @@ namespace Lappa.ORM
         {
             try
             {
-                using (var connection = await CreateConnectionAsync())
-                using (var cmd = CreateSqlCommand(connection, sql, args))
-                    return await cmd.ExecuteReaderAsync();
+                // Usage of an 'using' statement closes the connection too early.
+                // Let the calling method dispose the command for us and close the connection with the correct CommandBehavior.
+                return await CreateSqlCommand(await CreateConnectionAsync(), sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
             }
             catch (Exception ex)
             {

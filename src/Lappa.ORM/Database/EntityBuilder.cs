@@ -22,7 +22,7 @@ namespace Lappa.ORM
             this.database = database;
         }
 
-        public TEntity[] CreateEntities<TEntity>(DbDataReader reader, QueryBuilder<TEntity> builder) where TEntity : Entity, new()
+        public TEntity[] CreateEntities<TEntity>(DbDataReader dataReader, QueryBuilder<TEntity> builder) where TEntity : Entity, new()
         {
             var fieldCount = builder.PropertySetter.Length;
             var arrayFieldCount = 0;
@@ -30,7 +30,7 @@ namespace Lappa.ORM
             var structFieldCount = 0;
 
             // Return an empty array if the used DbDataReader is null or doesn't contain any rows.
-            if (reader?.Read() == false)
+            if (dataReader?.Read() == false)
                 return new TEntity[0];
 
             var pluralizedEntityName = Pluralize<TEntity>();
@@ -51,9 +51,9 @@ namespace Lappa.ORM
 
             var totalFieldCount = fieldCount + arrayFieldCount + classFieldCount + structFieldCount;
 
-            if (reader.FieldCount != totalFieldCount)
+            if (dataReader.FieldCount != totalFieldCount)
             {
-                database.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property count mismatch)\nColumns '{reader.FieldCount}'\nProperties '{totalFieldCount}'");
+                database.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property count mismatch)\nColumns '{dataReader.FieldCount}'\nProperties '{totalFieldCount}'");
 
                 return new TEntity[0];
             }
@@ -68,13 +68,13 @@ namespace Lappa.ORM
                         continue;
 
                     // Return an empty list if any column/property type mismatches
-                    if (!reader.GetFieldType(i).GetTypeInfo().IsEquivalentTo(builder.Properties[i].PropertyType.GetTypeInfo().IsEnum ?
+                    if (!dataReader.GetFieldType(i).GetTypeInfo().IsEquivalentTo(builder.Properties[i].PropertyType.GetTypeInfo().IsEnum ?
                         builder.Properties[i].PropertyType.GetTypeInfo().GetEnumUnderlyingType() : builder.Properties[i].PropertyType))
                     {
                         var propertyType = builder.Properties[i].PropertyType.GetTypeInfo().IsEnum ? builder.Properties[i].PropertyType.GetTypeInfo().GetEnumUnderlyingType() : builder.Properties[i].PropertyType;
 
                         database.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property type mismatch)");
-                        database.Log.Message(LogTypes.Error, $"{reader.GetName(i)}: {reader.GetFieldType(i)}/{propertyType}");
+                        database.Log.Message(LogTypes.Error, $"{dataReader.GetName(i)}: {dataReader.GetFieldType(i)}/{propertyType}");
 
                         return new TEntity[0];
                     }
@@ -118,7 +118,7 @@ namespace Lappa.ORM
                 var row = new object[fieldCount];
 
                 // TODO: Should be safe without any additional checks?
-                reader.GetValues(row);
+                dataReader.GetValues(row);
 
                 for (var j = 0; j < fieldCount; j++)
                 {
@@ -130,7 +130,7 @@ namespace Lappa.ORM
                             var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
                             for (var f = 0; f < instanceFields.Length; f++)
-                                instanceFields[f].SetValue(instance, reader.IsDBNull(j + f) ? "" : row[j + f]);
+                                instanceFields[f].SetValue(instance, dataReader.IsDBNull(j + f) ? "" : row[j + f]);
 
                             builder.PropertySetter[j](entity, instance);
                         }
@@ -140,12 +140,12 @@ namespace Lappa.ORM
                             var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
                             for (var f = 0; f < instanceFields.Length; f++)
-                                instanceFields[f].SetValue(instance, reader.IsDBNull(j + f) ? "" : row[j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
+                                instanceFields[f].SetValue(instance, dataReader.IsDBNull(j + f) ? "" : row[j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
 
                             builder.PropertySetter[j](entity, instance);
                         }
                         else
-                            builder.PropertySetter[j](entity, reader.IsDBNull(j) ? "" : row[j].ChangeTypeGet(builder.Properties[j].PropertyType));
+                            builder.PropertySetter[j](entity, dataReader.IsDBNull(j) ? "" : row[j].ChangeTypeGet(builder.Properties[j].PropertyType));
                     }
                     else
                     {
@@ -182,7 +182,7 @@ namespace Lappa.ORM
                 entity.InitializeNonTableProperties();
 
                 entities.Add(entity);
-            } while (reader.Read());
+            } while (dataReader.Read());
 
             return entities.ToArray();
         }

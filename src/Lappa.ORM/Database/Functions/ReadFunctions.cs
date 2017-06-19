@@ -24,9 +24,9 @@ namespace Lappa.ORM
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
             var builder = new QueryBuilder<TEntity>(connectorQuery, properties, members);
-            var data = await SelectAsync(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll());
 
-            return entityBuilder.CreateEntities(data, builder);
+            using (var dataReader = await SelectAsync(members != null ? builder.BuildSelect(members) : builder.BuildSelectAll()))
+                return entityBuilder.CreateEntities(dataReader, builder);
         }
 
         public List<TEntity> Select<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
@@ -68,9 +68,8 @@ namespace Lappa.ORM
             else
                 query = builder.BuildWhereAll(condition.Body);
 
-            var data = await SelectAsync(query);
-
-            return entityBuilder.CreateEntities(data, builder).ToList();
+            using (var dataReader = await SelectAsync(query))
+                return entityBuilder.CreateEntities(dataReader, builder).ToList();
         }
         #endregion
 
@@ -92,16 +91,17 @@ namespace Lappa.ORM
             else
                 query = builder.BuildWhereAll(condition.Body);
 
-            var data = await SelectAsync(query);
-
-            if (data != null)
+            using (var dataReader = await SelectAsync(query))
             {
-                var objList = entityBuilder.CreateEntities(data, builder);
+                if (dataReader != null)
+                {
+                    var objList = entityBuilder.CreateEntities(dataReader, builder);
 
-                if (objList.Length > 1)
-                    Log.Message(LogTypes.Warning, "Result contains more than 1 element.");
+                    if (objList.Length > 1)
+                        Log.Message(LogTypes.Warning, "Result contains more than 1 element.");
 
-                return objList.Length == 0 ? null : objList[0];
+                    return objList.Length == 0 ? null : objList[0];
+                }
             }
 
             return null;
@@ -118,9 +118,9 @@ namespace Lappa.ORM
         {
             var builder = new QueryBuilder<TEntity>(connectorQuery);
             var query = builder.BuildWhereAll(condition.Body);
-            var reader = await SelectAsync(query);
 
-            return reader.HasRows;
+            using (var dataReader = await SelectAsync(query))
+                return dataReader.HasRows;
         }
 
         public long Count<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
@@ -133,13 +133,15 @@ namespace Lappa.ORM
             var properties = typeof(TEntity).GetReadWriteProperties();
             var builder = new QueryBuilder<TEntity>(connectorQuery, properties);
             var query = condition != null ? builder.BuildWhereCount(condition.Body) : builder.BuildSelectCount();
-            var data = await SelectAsync(query);
 
-            // Read the first row.
-            await data?.ReadAsync();
+            using (var dataReader = await SelectAsync(query))
+            {
+                // Read the first row.
+                await dataReader?.ReadAsync();
 
-            // Return -1 if row data are null.
-            return Convert.ToInt64(data?[0] ?? -1);
+                // Return -1 if row data are null.
+                return Convert.ToInt64(dataReader?[0] ?? -1);
+            }
         }
         #endregion
     }

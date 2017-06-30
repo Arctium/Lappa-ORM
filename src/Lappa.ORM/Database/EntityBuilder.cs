@@ -58,7 +58,12 @@ namespace Lappa.ORM
                 return new TEntity[0];
             }
 
+            // TODO:
+            // - Move this check to a new Manager class, so it's done one time on initialization.
+            // - Fix array field type checks.
+            // - Optimize?!
             // Strict types (signed/unsigned) only used in MySQL databases.
+            /*
             if (database.Type == DatabaseType.MySql)
             {
                 for (var i = 0; i < fieldCount; i++)
@@ -79,7 +84,7 @@ namespace Lappa.ORM
                         return new TEntity[0];
                     }
                 }
-            }
+            }*/
 
             var entities = new ConcurrentBag<TEntity>();
 
@@ -115,12 +120,12 @@ namespace Lappa.ORM
             do
             {
                 var entity = new TEntity();
-                var row = new object[fieldCount];
+                var row = new object[totalFieldCount];
 
                 // TODO: Should be safe without any additional checks?
                 dataReader.GetValues(row);
 
-                for (var j = 0; j < fieldCount; j++)
+                for (int j = 0, a = 0; j < fieldCount; j++)
                 {
                     if (!builder.Properties[j].PropertyType.IsArray)
                     {
@@ -149,28 +154,33 @@ namespace Lappa.ORM
                     }
                     else
                     {
-                        var groupCount = 0;
-
-                        if (groups.TryGetValue(j, out groupCount))
+                        if (groups.TryGetValue(j, out int groupCount))
                         {
                             for (var c = 0; c < groupCount; c++, j++)
                             {
                                 var arr = builder.Properties[j].GetValue(entity) as Array;
 
-                                for (var k = 0; k < arr.Length; k++)
+                                for (var k = 0; k < arr.Length; k++, a++)
                                     arr.SetValue(row[j + (k * groupCount)], k);
 
                                 builder.PropertySetter[j](entity, arr);
+
+                                // TODO: Test field groups.
+                                // -1 for each new array field.
+                                --a;
                             }
                         }
                         else
                         {
                             var arr = builder.Properties[j].GetValue(entity) as Array;
 
-                            for (var k = 0; k < arr.Length; k++)
-                                arr.SetValue(row[j + k], k);
+                            for (var k = 0; k < arr.Length; k++, a++)
+                                arr.SetValue(row[j + a], k);
 
                             builder.PropertySetter[j](entity, arr);
+
+                            // -1 for each new array field.
+                            --a;
                         }
                     }
                 }

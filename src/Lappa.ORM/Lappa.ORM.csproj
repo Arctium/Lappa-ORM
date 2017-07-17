@@ -21,9 +21,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LappaPluralization" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.0-preview2-25303-04" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\deps\src\Lappa.Pluralization\src\Lappa.Pluralization.csproj" />
   </ItemGroup>
 
 </Project>

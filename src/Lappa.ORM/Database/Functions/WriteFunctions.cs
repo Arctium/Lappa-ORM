@@ -13,16 +13,16 @@ namespace Lappa.ORM
 {
     public partial class Database
     {
-        #region Add
+        #region Insert
         /// <summary>
-        /// Adds the given entity to the database.
+        /// Inserts the given entity to the database.
         /// </summary>
         /// <typeparam name="TEntity">The entity type.</typeparam>
         /// <param name="entity">The TEntity object.</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public bool Add<TEntity>(TEntity entity) where TEntity : Entity, new() => AddAsync(entity).GetAwaiter().GetResult();
+        public bool Insert<TEntity>(TEntity entity) where TEntity : Entity, new() => InsertAsync(entity).GetAwaiter().GetResult();
 
-        public async Task<bool> AddAsync<TEntity>(TEntity entity) where TEntity : Entity, new()
+        public async Task<bool> InsertAsync<TEntity>(TEntity entity) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var values = new Dictionary<string, object>(properties.Length);
@@ -48,13 +48,13 @@ namespace Lappa.ORM
         }
 
         /// <summary>
-        /// Adds a 'list' of given entities to the database.
+        /// Inserts a 'list' of given entities to the database.
         /// </summary>
         /// <typeparam name="TEntity">The entity type.</typeparam>
         /// <param name="entities">A 'list' of TEntity objects.</param>
-        public bool Add<TEntity>(TEntity[] entities) where TEntity : Entity, new() => AddAsync(entities).GetAwaiter().GetResult();
+        public bool Insert<TEntity>(TEntity[] entities) where TEntity : Entity, new() => InsertAsync(entities).GetAwaiter().GetResult();
 
-        public async Task<bool> AddAsync<TEntity>(TEntity[] entities) where TEntity : Entity, new()
+        public async Task<bool> InsertAsync<TEntity>(TEntity[] entities) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var query = new QueryBuilder<TEntity>(connectorQuery, properties);
@@ -70,17 +70,17 @@ namespace Lappa.ORM
         /// <summary>
         /// <see cref="Add{TEntity}(TEntity[])"/>
         /// </summary>
-        public void Add<TEntity>(IEnumerable<TEntity> entities) where TEntity : Entity, new()
+        public void Insert<TEntity>(IEnumerable<TEntity> entities) where TEntity : Entity, new()
         {
-            Add(entities.ToArray());
+            Insert(entities.ToArray());
         }
 
         /// <summary>
         /// <see cref="Add{TEntity}(TEntity[])"/>
         /// </summary>
-        public void Add<TEntity>(List<TEntity> entities) where TEntity : Entity, new()
+        public void Insert<TEntity>(List<TEntity> entities) where TEntity : Entity, new()
         {
-            Add(entities.ToArray());
+            Insert(entities.ToArray());
         }
         #endregion
 

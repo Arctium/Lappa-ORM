@@ -26,7 +26,7 @@ namespace Lappa.ORM
                 return false;
 
             // Check if table exists or is allowed to be replaced.
-            if (!Exists<TEntity>() || replaceTable)
+            if (!await ExistsAsync<TEntity>() || replaceTable)
             {
                 // Exclude foreign key and non db related properties.
                 var properties = typeof(TEntity).GetReadWriteProperties();

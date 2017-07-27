@@ -43,7 +43,7 @@ namespace Lappa.ORM
             using (var connection = await CreateConnectionAsync())
             using (var dataReader = await SelectAsync("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", connection.Database, tableName))
             {
-                if (!dataReader.Read())
+                if (!await dataReader.ReadAsync())
                 {
                     Log.Message(LogTypes.Warning, $"Can't check if '{tableName}' table exists, no schema info.");
 

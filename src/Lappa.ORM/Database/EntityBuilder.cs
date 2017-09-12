@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Linq;
 using System.Reflection;
-using Lappa.ORM.Constants;
 using Lappa.ORM.Logging;
 using Lappa.ORM.Misc;
 using static Lappa.ORM.Misc.Helper;

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Lappa.ORM.Constants;
+using System;
 
 namespace Lappa.ORM
 {
@@ -64,8 +65,12 @@ namespace Lappa.ORM
                     Part2 = "\"{2}\"";
                     break;
                 }
+                case DatabaseType.Oracle:
+                    throw new NotSupportedException("Oracle is not supported.");
+                case DatabaseType.PostgreSql:
+                    throw new NotSupportedException("PostgreSql is not supported.");
                 default:
-                    break;
+                    throw new NotSupportedException($"{dbType} is not supported.");
             }
         }
     }

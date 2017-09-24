@@ -22,9 +22,9 @@ namespace Lappa.ORM.Managers
 
         void CacheDBFieldAttributes()
         {
-            var mysqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames();
+            var assemblyNames = DependencyContext.Default.GetDefaultAssemblyNames();
 
-            foreach (var asm in mysqlAssemblyNames)
+            foreach (var asm in assemblyNames)
             {
                 var entityTypes = Assembly.Load(asm).DefinedTypes.Where(t => t.IsSubclassOf(typeof(Entity)));
 

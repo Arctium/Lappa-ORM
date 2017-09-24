@@ -22,7 +22,7 @@ namespace Lappa.ORM
 
         internal void Load(DatabaseType dbType, bool loadFromFile)
         {
-            // Use MSSQL as default.
+            // Use MSSql as default.
             var typeBase = "System.Data.SqlClient.Sql";
 
             switch (dbType)
@@ -61,6 +61,10 @@ namespace Lappa.ORM
 
                     break;                    
                 }
+                case DatabaseType.Oracle:
+                    throw new NotSupportedException("Oracle is not supported.");
+                case DatabaseType.PostgreSql:
+                    throw new NotSupportedException("PostgreSql is not supported.");
                 default:
                     break;
             }

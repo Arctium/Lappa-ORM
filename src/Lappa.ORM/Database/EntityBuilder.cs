@@ -61,7 +61,7 @@ namespace Lappa.ORM
             // - Move this check to a new Manager class, so it's done one time on initialization.
             // - Fix array field type checks.
             // - Optimize?!
-            // Strict types (signed/unsigned) only used in MySQL databases.
+            // Strict types (signed/unsigned) only used in MySql databases.
             /*
             if (database.Type == DatabaseType.MySql)
             {

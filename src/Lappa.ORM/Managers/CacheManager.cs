@@ -32,8 +32,21 @@ namespace Lappa.ORM.Managers
                 {
                     foreach (var p in t.DeclaredProperties)
                     {
-                        // Also add a default DBFieldAttribute for all properties.
-                        dbFieldCache.TryAdd(p, p.GetCustomAttribute<DBFieldAttribute>() ?? new DBFieldAttribute { Name = p.Name });
+                        var dbFieldAttribute = p.GetCustomAttribute<DBFieldAttribute>();
+
+                        if (dbFieldAttribute != null)
+                        {
+                            // Use the property name if no DBField name is set.
+                            if (string.IsNullOrEmpty(dbFieldAttribute.Name))
+                                dbFieldAttribute.Name = p.Name;
+
+                            dbFieldCache.TryAdd(p, dbFieldAttribute);
+                        }
+                        else
+                        {
+                            // Also add a default DBFieldAttribute for all properties.
+                            dbFieldCache.TryAdd(p, p.GetCustomAttribute<DBFieldAttribute>() ?? new DBFieldAttribute { Name = p.Name });
+                        }
                     }
                 }
             }

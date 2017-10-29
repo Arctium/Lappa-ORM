@@ -48,6 +48,10 @@ namespace Lappa.ORM
                     structFieldCount += builder.Properties[i].PropertyType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length - 1;
             }
 
+            // Workaround for types like Datetime.
+            if (structFieldCount < 0)
+                structFieldCount = 0;
+
             var totalFieldCount = fieldCount + arrayFieldCount + classFieldCount + structFieldCount;
 
             if (dataReader.FieldCount != totalFieldCount)
@@ -141,12 +145,19 @@ namespace Lappa.ORM
                         else if (builder.Properties[j].PropertyType.IsCustomStruct())
                         {
                             var instanceFields = builder.Properties[j].PropertyType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
-                            var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
-                            for (var f = 0; f < instanceFields.Length; f++)
-                                instanceFields[f].SetValue(instance, dataReader.IsDBNull(j + f) ? "" : row[j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
+                            // Workaround for types like Datetime.
+                            if (instanceFields.Length > 0)
+                            {
+                                var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
 
-                            builder.PropertySetter[j](entity, instance);
+                                for (var f = 0; f < instanceFields.Length; f++)
+                                    instanceFields[f].SetValue(instance, dataReader.IsDBNull(j + f) ? "" : row[j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
+
+                                builder.PropertySetter[j](entity, instance);
+                            }
+                            else
+                                builder.PropertySetter[j](entity, dataReader.IsDBNull(j) ? "" : row[j].ChangeTypeGet(builder.Properties[j].PropertyType));
                         }
                         else
                             builder.PropertySetter[j](entity, dataReader.IsDBNull(j) ? "" : row[j].ChangeTypeGet(builder.Properties[j].PropertyType));

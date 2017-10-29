@@ -35,7 +35,7 @@ namespace Lappa.ORM
                     var arr = (query.PropertyGetter[i](entity) as Array);
                     var arrElementType = arr.GetType().GetElementType();
 
-                    for (var j = 0; j <= arr.Length; j++)
+                    for (var j = 0; j < arr.Length; j++)
                         values.Add(properties[i].GetName() + j, arr.GetValue(j).ChangeTypeGet(arrElementType));
                 }
                 else if (!properties[i].HasAttribute<AutoIncrementAttribute>())

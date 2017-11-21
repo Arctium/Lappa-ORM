@@ -1,13 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26711.1
+VisualStudioVersion = 15.0.27004.2008
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lappa.ORM", "src\Lappa.ORM\Lappa.ORM.csproj", "{7238BB13-5A3A-4501-812A-AD87945B1685}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lappa.ORM.Tests", "tests\Lappa.ORM.Tests\Lappa.ORM.Tests.csproj", "{F1ED2912-C958-4287-A9BC-417FBC71729E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lappa.Pluralization", "deps\src\Lappa.Pluralization\src\Lappa.Pluralization.csproj", "{845E621F-A8BE-4A65-ABF1-ED9B3AD36286}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99412AF8-AAD2-45A1-A0DA-E98CE7FD1663}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

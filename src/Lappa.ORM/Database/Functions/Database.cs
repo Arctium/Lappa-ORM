@@ -126,47 +126,47 @@ namespace Lappa.ORM
             using (var connection = await CreateConnectionAsync()) 
             {
                 DbTransaction trans = transactions ? connection.BeginTransaction( IsolationLevel.ReadCommitted ) : null;
-				try 
-				{
-					using (var cmd = CreateSqlCommand(connection, trans, sql, args)) {
-						bool ret = await cmd.ExecuteNonQueryAsync() > 0;
+                try 
+                {
+                    using (var cmd = CreateSqlCommand(connection, trans, sql, args)) {
+                        bool ret = await cmd.ExecuteNonQueryAsync() > 0;
 
                         trans?.Commit();
 
                         return ret;
-					}
-				}
+                    }
+                }
                 catch (Exception ex)
                 {
                     Log.Message(LogTypes.Error, ex.ToString());
                     trans?.Rollback();
                     return false;
                 }
-			}
+            }
         }
 
         internal DbDataReader Select(string sql, params object[] args) => SelectAsync(sql, args).GetAwaiter().GetResult();
 
         internal async Task<DbDataReader> SelectAsync(string sql, params object[] args)
         {
-			var connection = await CreateConnectionAsync();
+            var connection = await CreateConnectionAsync();
 
-			DbTransaction trans = transactions ? connection.BeginTransaction( IsolationLevel.ReadCommitted ) : null;
+            DbTransaction trans = transactions ? connection.BeginTransaction( IsolationLevel.ReadCommitted ) : null;
             try
             {
                 // Usage of an 'using' statement closes the connection too early.
                 // Let the calling method dispose the command for us and close the connection with the correct CommandBehavior.
                 DbDataReader dbDataReader = await CreateSqlCommand(connection, trans, sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
 
-				trans?.Commit();
+                trans?.Commit();
 
-				return dbDataReader;
+                return dbDataReader;
             }
             catch (Exception ex)
             {
                 Log.Message(LogTypes.Error, ex.ToString());
 
-				trans?.Rollback();
+                trans?.Rollback();
 
                 return null;
             }

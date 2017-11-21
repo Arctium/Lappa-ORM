@@ -118,32 +118,28 @@ namespace Lappa.ORM
 
         internal async Task<bool> ExecuteAsync(string sql, params object[] args)
         {
-            try
-            {
-                using (var connection = await CreateConnectionAsync()) {
-		    DbTransaction trans = connection.BeginTransaction( IsolationLevel.ReadCommitted );
-		    try 
-		    {
-		        using (var cmd = CreateSqlCommand(connection, sql, args)) {
-			    bool ret = await cmd.ExecuteNonQueryAsync() > 0;
-			    if( ret )
-				trans.Commit();
-				return ret;
-			}
-		    }
-		    catch {
-		        trans.Rollback();
-			return false;
-		    }	
-		}
-                
-            }
-            catch (Exception ex)
-            {
-                Log.Message(LogTypes.Error, ex.ToString());
+            using( var connection = await CreateConnectionAsync() ) {
+	        DbTransaction trans = connection.BeginTransaction( IsolationLevel.ReadCommitted );
+		try
+		{
+		    using (var cmd = CreateSqlCommand(connection, sql, args)) {
+			bool ret = await cmd.ExecuteNonQueryAsync() > 0;
 
-                return false;
-            }
+			trans.Commit();
+
+			return ret;
+		    }
+
+		}
+		catch (Exception ex)
+		{
+		    Log.Message(LogTypes.Error, ex.ToString());
+
+		    trans.Rollback();
+
+		    return false;
+		}
+	    }
         }
 
         internal DbDataReader Select(string sql, params object[] args) => SelectAsync(sql, args).GetAwaiter().GetResult();

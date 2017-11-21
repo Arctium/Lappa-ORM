@@ -39,6 +39,20 @@ namespace Lappa.ORM
             return sqlQuery.ToString();
         }
 
+        internal string BuildSelectMax() 
+        {
+            sqlQuery.AppendFormat(numberFormat, "SELECT MAX(*) FROM " + connectorQuery.Part0, Pluralize<T>());
+
+            return sqlQuery.ToString();
+        }
+
+        internal string BuildSelectMin()
+        {
+            sqlQuery.AppendFormat(numberFormat, "SELECT MIN(*) FROM " + connectorQuery.Part0, Pluralize<T>());
+
+            return sqlQuery.ToString();
+        }
+
         internal string BuildWhereAll(Expression expression)
         {
             // ToDo: Add support for query more than 1 table
@@ -69,6 +83,24 @@ namespace Lappa.ORM
         internal string BuildWhereCount(Expression expression)
         {
             sqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
+
+            Visit(expression);
+
+            return sqlQuery.ToString();
+        }
+
+        internal string BuildWhereMax(Expression expression)
+        {
+            sqlQuery.AppendFormat(numberFormat, "SELECT MAX(*) FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
+
+            Visit(expression);
+
+            return sqlQuery.ToString();
+        }
+
+        internal string BuildWhereMin(Expression expression)
+        {
+            sqlQuery.AppendFormat(numberFormat, "SELECT MIN(*) FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
 
             Visit(expression);
 

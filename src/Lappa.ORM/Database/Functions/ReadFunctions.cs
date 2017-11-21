@@ -143,6 +143,50 @@ namespace Lappa.ORM
                 return Convert.ToInt64(dataReader?[0] ?? -1);
             }
         }
+
+        public long Max<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new() 
+        {
+            return MaxAsync(condition).GetAwaiter().GetResult();
+        }
+
+        public async Task<long> MaxAsync<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
+        {
+            var properties = typeof(TEntity).GetReadWriteProperties();
+            var builder = new QueryBuilder<TEntity>(connectorQuery, properties);
+            var query = condition != null ? builder.BuildWhereMax(condition.Body) : builder.BuildSelectMax();
+
+            using (var dataReader = await SelectAsync(query))
+            {
+                // Read the first row.
+                await dataReader?.ReadAsync();
+
+                // Return -1 if row data are null.
+                return Convert.ToInt64(dataReader?[0] ?? -1);
+            }
+        }
+
+        public long Min<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
+        {
+            return MinAsync(condition).GetAwaiter().GetResult();
+        }
+
+        public async Task<long> MinAsync<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
+        {
+            var properties = typeof(TEntity).GetReadWriteProperties();
+            var builder = new QueryBuilder<TEntity>(connectorQuery, properties);
+            var query = condition != null ? builder.BuildWhereMax(condition.Body) : builder.BuildSelectMax();
+
+            using (var dataReader = await SelectAsync(query))
+            {
+                // Read the first row.
+                await dataReader?.ReadAsync();
+
+                // Return -1 if row data are null.
+                return Convert.ToInt64(dataReader?[0] ?? -1);
+            }
+        }
+
+
         #endregion
     }
 }

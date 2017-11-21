@@ -4,6 +4,7 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Lappa.ORM.Constants;
 using Lappa.ORM.Logging;
@@ -89,13 +90,14 @@ namespace Lappa.ORM
             return connection;
         }
 
-        internal DbCommand CreateSqlCommand(DbConnection connection, string sql, params object[] args)
+        internal DbCommand CreateSqlCommand(DbConnection connection, DbTransaction trans, string sql, params object[] args)
         {
             var sqlCommand = connector.CreateCommandObject();
 
             sqlCommand.Connection = connection;
             sqlCommand.CommandText = sql;
             sqlCommand.CommandTimeout = 2147483;
+            sqlCommand.Transaction = trans;
 
             if (args.Length > 0)
             {
@@ -121,57 +123,50 @@ namespace Lappa.ORM
 
         internal async Task<bool> ExecuteAsync(string sql, params object[] args)
         {
-            try
+            using (var connection = await CreateConnectionAsync()) 
             {
-                using (var connection = await CreateConnectionAsync()) {
-                    DbTransaction trans = transactions ? connection.BeginTransaction( IsolationLevel.ReadCommitted ) : null;
-                    try 
-                    {
-                        using (var cmd = CreateSqlCommand(connection, sql, args)) {
-                            bool ret = await cmd.ExecuteNonQueryAsync() > 0;
-                            if( ret )
-                                trans?.Commit();
+                DbTransaction trans = transactions ? connection.BeginTransaction( IsolationLevel.ReadCommitted ) : null;
+				try 
+				{
+					using (var cmd = CreateSqlCommand(connection, trans, sql, args)) {
+						bool ret = await cmd.ExecuteNonQueryAsync() > 0;
 
-                            return ret;
-                        }
-                    }
-                    catch {
-                        trans?.Rollback();
-                        return false;
-                    }	
+                        trans?.Commit();
+
+                        return ret;
+					}
+				}
+                catch (Exception ex)
+                {
+                    Log.Message(LogTypes.Error, ex.ToString());
+                    trans?.Rollback();
+                    return false;
                 }
-                
-            }
-            catch (Exception ex)
-            {
-                Log.Message(LogTypes.Error, ex.ToString());
-
-                return false;
-            }
+			}
         }
 
         internal DbDataReader Select(string sql, params object[] args) => SelectAsync(sql, args).GetAwaiter().GetResult();
 
         internal async Task<DbDataReader> SelectAsync(string sql, params object[] args)
         {
-            var connection = await CreateConnectionAsync();
+			var connection = await CreateConnectionAsync();
 
-            DbTransaction trans = transactions ? connection.BeginTransaction( IsolationLevel.ReadCommitted ) : null;
+			DbTransaction trans = transactions ? connection.BeginTransaction( IsolationLevel.ReadCommitted ) : null;
             try
             {
                 // Usage of an 'using' statement closes the connection too early.
                 // Let the calling method dispose the command for us and close the connection with the correct CommandBehavior.
-                DbDataReader dbDataReader = await CreateSqlCommand(connection, sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
+                DbDataReader dbDataReader = await CreateSqlCommand(connection, trans, sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
 
-                trans?.Commit();
+				trans?.Commit();
 
-                return dbDataReader;
+				return dbDataReader;
             }
             catch (Exception ex)
             {
                 Log.Message(LogTypes.Error, ex.ToString());
 
-                trans?.Rollback();
+				trans?.Rollback();
 
                 return null;
             }

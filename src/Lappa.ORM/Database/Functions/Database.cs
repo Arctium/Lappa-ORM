@@ -120,9 +120,24 @@ namespace Lappa.ORM
         {
             try
             {
-                using (var connection = await CreateConnectionAsync())
-                using (var cmd = CreateSqlCommand(connection, sql, args))
-                    return await cmd.ExecuteNonQueryAsync() > 0;
+                using (var connection = await CreateConnectionAsync()) {
+					DbTransaction trans = connection.BeginTransaction( IsolationLevel.ReadCommitted );
+					try 
+					{
+						using (var cmd = CreateSqlCommand(connection, sql, args)) {
+							bool ret = await cmd.ExecuteNonQueryAsync() > 0;
+							if( ret )
+								trans.Commit();
+
+							return ret;
+						}
+					}
+					catch {
+						trans.Rollback();
+						return false;
+					}	
+				}
+                
             }
             catch (Exception ex)
             {
@@ -136,15 +151,24 @@ namespace Lappa.ORM
 
         internal async Task<DbDataReader> SelectAsync(string sql, params object[] args)
         {
+			var connection = await CreateConnectionAsync();
+
+			DbTransaction trans = connection.BeginTransaction( IsolationLevel.ReadCommitted );
             try
             {
                 // Usage of an 'using' statement closes the connection too early.
                 // Let the calling method dispose the command for us and close the connection with the correct CommandBehavior.
-                return await CreateSqlCommand(await CreateConnectionAsync(), sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
+                DbDataReader dbDataReader = await CreateSqlCommand(connection, sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
+
+				trans.Commit();
+
+				return dbDataReader;
             }
             catch (Exception ex)
             {
                 Log.Message(LogTypes.Error, ex.ToString());
+
+				trans.Rollback();
 
                 return null;
             }

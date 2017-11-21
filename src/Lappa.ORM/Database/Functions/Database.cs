@@ -121,22 +121,21 @@ namespace Lappa.ORM
             try
             {
                 using (var connection = await CreateConnectionAsync()) {
-					DbTransaction trans = connection.BeginTransaction( IsolationLevel.ReadCommitted );
-					try 
-					{
-						using (var cmd = CreateSqlCommand(connection, sql, args)) {
-							bool ret = await cmd.ExecuteNonQueryAsync() > 0;
-							if( ret )
-								trans.Commit();
-
-							return ret;
-						}
-					}
-					catch {
-						trans.Rollback();
-						return false;
-					}	
-				}
+		    DbTransaction trans = connection.BeginTransaction( IsolationLevel.ReadCommitted );
+		    try 
+		    {
+		        using (var cmd = CreateSqlCommand(connection, sql, args)) {
+			    bool ret = await cmd.ExecuteNonQueryAsync() > 0;
+			    if( ret )
+				trans.Commit();
+				return ret;
+			}
+		    }
+		    catch {
+		        trans.Rollback();
+			return false;
+		    }	
+		}
                 
             }
             catch (Exception ex)
@@ -151,24 +150,24 @@ namespace Lappa.ORM
 
         internal async Task<DbDataReader> SelectAsync(string sql, params object[] args)
         {
-			var connection = await CreateConnectionAsync();
+	    var connection = await CreateConnectionAsync();
 
-			DbTransaction trans = connection.BeginTransaction( IsolationLevel.ReadCommitted );
+	    DbTransaction trans = connection.BeginTransaction( IsolationLevel.ReadCommitted );
             try
             {
                 // Usage of an 'using' statement closes the connection too early.
                 // Let the calling method dispose the command for us and close the connection with the correct CommandBehavior.
                 DbDataReader dbDataReader = await CreateSqlCommand(connection, sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
 
-				trans.Commit();
+		trans.Commit();
 
-				return dbDataReader;
+		return dbDataReader;
             }
             catch (Exception ex)
             {
                 Log.Message(LogTypes.Error, ex.ToString());
 
-				trans.Rollback();
+		trans.Rollback();
 
                 return null;
             }

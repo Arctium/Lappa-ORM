@@ -207,6 +207,28 @@ namespace Lappa.ORM
             }
         }
 
+        public long Round<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
+        {
+            return 
+        }
+
+        public async Task<long> RoundAsync<TEntity>(Expression<Func<TEntity, object>> condition = null, int decimal_places = 0) where TEntity : Entity, new()
+        {
+            var properties = typeof(TEntity).GetReadWriteProperties();
+            var builder = new QueryBuilder<TEntity>(connectorQuery, properties);
+            var query = condition != null ? builder.BuildWhereRound(condition.Body, decimal_places) : builder.BuildSelectRound(decimal_places)
+
+
+            using (var dataReader = await SelectAsync(query))
+            {
+                // Read the first row.
+                await dataReader?.ReadAsync();
+
+                // Return -1 if row data are null.
+                return Convert.ToInt64(dataReader?[0] ?? -1);
+            }
+        }
+
 
         #endregion
     }

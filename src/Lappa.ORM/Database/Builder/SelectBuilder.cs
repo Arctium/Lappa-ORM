@@ -60,6 +60,14 @@ namespace Lappa.ORM
             return sqlQuery.ToString();
         }
 
+        internal string BuildSelectRound(int decimal_places)
+        {
+            sqlQuery.AppendFormat(numberFormat, "SELECT ROUND(*, " + decimal_places + ") FROM " + connectorQuery.Part0 +
+                                    " WHERE ", Pluralize<T>());
+
+            return sqlQuery.ToString();
+        }
+
         internal string BuildWhereAll(Expression expression)
         {
             // ToDo: Add support for query more than 1 table
@@ -117,6 +125,16 @@ namespace Lappa.ORM
         internal string BuildWhereSum(Expression expression)
         {
             sqlQuery.AppendFormat(numberFormat, "SELECT SUM(*) FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
+
+            Visit(expression);
+
+            return sqlQuery.ToString();
+        }
+
+        internal string BuildWhereRound(Expression expression, int decimal_places)
+        {
+            sqlQuery.AppendFormat(numberFormat, "SELECT ROUND(*, " + decimal_places + ") FROM " + connectorQuery.Part0 +
+                                    " WHERE ", Pluralize<T>());
 
             Visit(expression);
 

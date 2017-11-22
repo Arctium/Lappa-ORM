@@ -174,7 +174,28 @@ namespace Lappa.ORM
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var builder = new QueryBuilder<TEntity>(connectorQuery, properties);
-            var query = condition != null ? builder.BuildWhereMax(condition.Body) : builder.BuildSelectMax();
+            var query = condition != null ? builder.BuildWhereMin(condition.Body) : builder.BuildSelectMin();
+
+            using (var dataReader = await SelectAsync(query))
+            {
+                // Read the first row.
+                await dataReader?.ReadAsync();
+
+                // Return -1 if row data are null.
+                return Convert.ToInt64(dataReader?[0] ?? -1);
+            }
+        }
+
+        public long Sum<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
+        {
+            return SumAsync(condition).GetAwaiter().GetResult();
+        }
+
+        public async Task<long> SumAsync<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
+        {
+            var properties = typeof(TEntity).GetReadWriteProperties();
+            var builder = new QueryBuilder<TEntity>(connectorQuery, properties);
+            var query = condition != null ? builder.BuildWhereSum(condition.Body) : builder.BuildSelectSum();
 
             using (var dataReader = await SelectAsync(query))
             {

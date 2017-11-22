@@ -53,6 +53,13 @@ namespace Lappa.ORM
             return sqlQuery.ToString();
         }
 
+        internal string BuildSelectSum()
+        {
+            sqlQuery.AppendFormat(numberFormat, "SELECT SUM(*) FROM " + connectorQuery.Part0, Pluralize<T>());
+
+            return sqlQuery.ToString();
+        }
+
         internal string BuildWhereAll(Expression expression)
         {
             // ToDo: Add support for query more than 1 table
@@ -101,6 +108,15 @@ namespace Lappa.ORM
         internal string BuildWhereMin(Expression expression)
         {
             sqlQuery.AppendFormat(numberFormat, "SELECT MIN(*) FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
+
+            Visit(expression);
+
+            return sqlQuery.ToString();
+        }
+
+        internal string BuildWhereSum(Expression expression)
+        {
+            sqlQuery.AppendFormat(numberFormat, "SELECT SUM(*) FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
 
             Visit(expression);
 

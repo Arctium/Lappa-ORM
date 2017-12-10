@@ -35,12 +35,12 @@ namespace Lappa.ORM
             connector = new Connector();
         }
 
-        public bool Initialize(string connString, DatabaseType type, bool useTransactions = false, bool loadConnectorFromFile = true)
+        public bool Initialize(string connString, DatabaseType type, bool useTransactions, bool loadConnectorFromFile)
         {
             return InitializeAsync(connString, type, useTransactions, loadConnectorFromFile).GetAwaiter().GetResult();
         }
 
-        public async Task<bool> InitializeAsync(string connString, DatabaseType type, bool useTransactions = false, bool loadConnectorFromFile = true)
+        public async Task<bool> InitializeAsync(string connString, DatabaseType type, bool useTransactions, bool loadConnectorFromFile)
         {
             Type = type;
 

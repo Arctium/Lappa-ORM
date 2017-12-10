@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 
-namespace LapapORM.Misc
+namespace Lappa.ORM.Misc
 {
     public abstract class Singleton<T> where T : class
     {

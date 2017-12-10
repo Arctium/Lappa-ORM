@@ -4,7 +4,6 @@
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Lappa.ORM.Constants;
 using Lappa.ORM.Logging;
@@ -124,11 +123,11 @@ namespace Lappa.ORM
 
         internal async Task<bool> ExecuteAsync(string sql, params object[] args)
         {
-            using (var connection = await CreateConnectionAsync()) 
+            using (var connection = await CreateConnectionAsync())
             {
                 DbTransaction transaction = transactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null;
 
-                try 
+                try
                 {
                     using (var cmd = CreateSqlCommand(connection, transaction, sql, args))
                     {
@@ -142,7 +141,7 @@ namespace Lappa.ORM
                 catch (Exception ex)
                 {
                     transaction?.Rollback();
-                    
+
                     Log.Message(LogTypes.Error, ex.ToString());
 
                     return false;
@@ -157,7 +156,7 @@ namespace Lappa.ORM
             var connection = await CreateConnectionAsync();
 
             DbTransaction transaction = transactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null;
-            
+
             try
             {
                 // Usage of an 'using' statement closes the connection too early.

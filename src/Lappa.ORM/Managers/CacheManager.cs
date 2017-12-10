@@ -4,7 +4,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
-using LapapORM.Misc;
+using Lappa.ORM.Misc;
 using Microsoft.Extensions.DependencyModel;
 
 namespace Lappa.ORM.Managers

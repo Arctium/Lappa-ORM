@@ -6,27 +6,33 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <AssemblyName>Lappa.ORM</AssemblyName>
     <RootNamespace>Lappa.ORM</RootNamespace>
-    <Version>1.0.1-dev1-2</Version>
+    <Version>1.0.1-dev1-4</Version>
     <Company>Arctium Software</Company>
     <Product>Lappa ORM</Product>
     <Description>Lappa ORM is a object relational mapper for .NET Core (MySQL/MSSQL/SQLite) written in C# (.NET Core) released under the MIT License.</Description>
-    <Copyright>Copyright 2015-2017 Arctium Software</Copyright>
+    <Copyright>Copyright 2015-2018 Arctium Software</Copyright>
     <PackageProjectUrl>https://github.com/Arctium-Software/LappaORM</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Arctium-Software/LappaORM</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseUrl>https://github.com/Arctium-Software/LappaORM/blob/master/LICENSE</PackageLicenseUrl>
     <PackageTags>lappa-orm, orm, mysql, mssql, sqlite</PackageTags>
-    <PackageReleaseNotes>Updated to netstandard2.0</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated package references.
+Replace AssemblyLoader with Assembly.LoadFrom.
+Added first xunit test.
+Fixed https://github.com/Arctium-Software/LappaORM/issues/17
+Fixed array properties.
+Added basic transaction support.
+useTransactions &amp; loadConnectorFromFile are required parameters now.</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LappaPluralization" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\deps\src\Lappa.Pluralization\src\Lappa.Pluralization.csproj" />
+    <ProjectReference Include="..\..\deps\src\Lappa.Pluralization\src\Lappa.Pluralization.csproj" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

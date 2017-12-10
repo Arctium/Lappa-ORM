@@ -9,7 +9,7 @@ namespace Lappa.ORM.Tests
         public void SQLiteDatabaseConnection()
         {
             var db = new Database();
-            var initSuccess = db.Initialize("Data Source=:memory:", DatabaseType.SQLite);
+            var initSuccess = db.Initialize("Data Source=:memory:", DatabaseType.SQLite, false, false);
 
             Assert.True(initSuccess);
         }

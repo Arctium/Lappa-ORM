@@ -19,6 +19,7 @@ namespace Lappa.ORM
 
         string connectionString;
         bool transactions;
+
         Connector connector;
         ConnectorQuery connectorQuery;
         EntityBuilder entityBuilder;
@@ -90,14 +91,14 @@ namespace Lappa.ORM
             return connection;
         }
 
-        internal DbCommand CreateSqlCommand(DbConnection connection, DbTransaction trans, string sql, params object[] args)
+        internal DbCommand CreateSqlCommand(DbConnection connection, DbTransaction transaction, string sql, params object[] args)
         {
             var sqlCommand = connector.CreateCommandObject();
 
             sqlCommand.Connection = connection;
             sqlCommand.CommandText = sql;
             sqlCommand.CommandTimeout = 2147483;
-            sqlCommand.Transaction = trans;
+            sqlCommand.Transaction = transaction;
 
             if (args.Length > 0)
             {
@@ -125,21 +126,25 @@ namespace Lappa.ORM
         {
             using (var connection = await CreateConnectionAsync()) 
             {
-                DbTransaction trans = transactions ? connection.BeginTransaction( IsolationLevel.ReadCommitted ) : null;
+                DbTransaction transaction = transactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null;
+
                 try 
                 {
-                    using (var cmd = CreateSqlCommand(connection, trans, sql, args)) {
+                    using (var cmd = CreateSqlCommand(connection, transaction, sql, args))
+                    {
                         bool ret = await cmd.ExecuteNonQueryAsync() > 0;
 
-                        trans?.Commit();
+                        transaction?.Commit();
 
                         return ret;
                     }
                 }
                 catch (Exception ex)
                 {
+                    transaction?.Rollback();
+                    
                     Log.Message(LogTypes.Error, ex.ToString());
-                    trans?.Rollback();
+
                     return false;
                 }
             }
@@ -151,22 +156,23 @@ namespace Lappa.ORM
         {
             var connection = await CreateConnectionAsync();
 
-            DbTransaction trans = transactions ? connection.BeginTransaction( IsolationLevel.ReadCommitted ) : null;
+            DbTransaction transaction = transactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null;
+            
             try
             {
                 // Usage of an 'using' statement closes the connection too early.
                 // Let the calling method dispose the command for us and close the connection with the correct CommandBehavior.
-                DbDataReader dbDataReader = await CreateSqlCommand(connection, trans, sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
+                DbDataReader dbDataReader = await CreateSqlCommand(connection, transaction, sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
 
-                trans?.Commit();
+                transaction?.Commit();
 
                 return dbDataReader;
             }
             catch (Exception ex)
             {
-                Log.Message(LogTypes.Error, ex.ToString());
+                transaction?.Rollback();
 
-                trans?.Rollback();
+                Log.Message(LogTypes.Error, ex.ToString());
 
                 return null;
             }

@@ -1,6 +1,6 @@
 # LappaORM
 
-[![Join the chat at https://gitter.im/Arctium-Software/LappaORM](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Arctium-Software/LappaORM?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join Discord](https://img.shields.io/badge/discord-join-7289DA.svg)](https://discord.gg/3wcx5rK)
 
 ### What is Lappa ORM?
 Lappa ORM is a object relational mapper for .NET Core (MySQL/MSSQL/SQLite) written in C# (.NET Core) released under the MIT License.

@@ -9,13 +9,14 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using Lappa.ORM.Caching;
 using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T> : ExpressionVisitor where T : Entity, new()
     {
-        public PropertyInfo[] Properties { get; }
+        public List<(PropertyInfo Info, TypeInfoCache InfoCache)> Properties { get; }
         public Func<T, object>[] PropertyGetter { get; }
         public Action<T, object>[] PropertySetter { get; }
 
@@ -53,7 +54,18 @@ namespace Lappa.ORM
                 properties = props;
             }
 
-            Properties = properties;
+            // Cache the most used type info.
+            Properties = new List<(PropertyInfo Info, TypeInfoCache InfoCache)>(properties.Length);
+
+            foreach (var p in properties)
+            {
+                Properties.Add((p, new TypeInfoCache
+                {
+                    IsArray = p.PropertyType.IsArray,
+                    IsCustomClass = p.PropertyType.IsCustomClass(),
+                    IsCustomStruct = p.PropertyType.IsCustomStruct()
+                }));
+            }
 
             PropertyGetter = new Func<T, object>[properties.Length];
             PropertySetter = new Action<T, object>[properties.Length];

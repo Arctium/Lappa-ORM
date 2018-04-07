@@ -7,7 +7,7 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using Lappa.ORM.Constants;
 using Lappa.ORM.Logging;
-using Lappa.ORM.Managers;
+using Lappa.ORM.Caching;
 
 namespace Lappa.ORM
 {

@@ -34,18 +34,18 @@ namespace Lappa.ORM
 
             var pluralizedEntityName = Pluralize<TEntity>();
 
-            for (var i = 0; i < builder.Properties.Length; i++)
+            for (var i = 0; i < builder.Properties.Count; i++)
             {
-                if (builder.Properties[i].PropertyType.IsArray)
+                if (builder.Properties[i].InfoCache.IsArray)
                 {
-                    var arr = builder.Properties[i].GetValue(new TEntity()) as Array;
+                    var arr = builder.Properties[i].Info.GetValue(new TEntity()) as Array;
 
                     arrayFieldCount += arr.Length - 1;
                 }
-                else if (builder.Properties[i].PropertyType.IsCustomClass())
-                    classFieldCount += builder.Properties[i].PropertyType.GetReadWriteProperties().Length - 1;
-                else if (builder.Properties[i].PropertyType.IsCustomStruct())
-                    structFieldCount += builder.Properties[i].PropertyType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length - 1;
+                else if (builder.Properties[i].InfoCache.IsCustomClass)
+                    classFieldCount += builder.Properties[i].Info.PropertyType.GetReadWriteProperties().Length - 1;
+                else if (builder.Properties[i].InfoCache.IsCustomStruct)
+                    structFieldCount += builder.Properties[i].Info.PropertyType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length - 1;
             }
 
             // Workaround for types like Datetime.
@@ -102,7 +102,7 @@ namespace Lappa.ORM
             // Get Groups
             for (var i = 0; i < fieldCount; i++)
             {
-                var group = builder.Properties[i].GetCustomAttribute<GroupAttribute>();
+                var group = builder.Properties[i].Info.GetCustomAttribute<GroupAttribute>();
 
                 if (group != null)
                 {
@@ -130,37 +130,37 @@ namespace Lappa.ORM
 
                 for (int j = 0, a = 0; j < fieldCount; j++)
                 {
-                    if (!builder.Properties[j].PropertyType.IsArray)
+                    if (!builder.Properties[j].InfoCache.IsArray)
                     {
-                        if (builder.Properties[j].PropertyType.IsCustomClass())
+                        if (builder.Properties[j].InfoCache.IsCustomClass)
                         {
-                            var instanceFields = builder.Properties[j].PropertyType.GetReadWriteProperties();
-                            var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
+                            var instanceFields = builder.Properties[j].Info.PropertyType.GetReadWriteProperties();
+                            var instance = Activator.CreateInstance(builder.Properties[j].Info.PropertyType);
 
                             for (var f = 0; f < instanceFields.Length; f++)
                                 instanceFields[f].SetValue(instance, dataReader.IsDBNull(j + f) ? "" : row[j + f]);
 
                             builder.PropertySetter[j](entity, instance);
                         }
-                        else if (builder.Properties[j].PropertyType.IsCustomStruct())
+                        else if (builder.Properties[j].InfoCache.IsCustomStruct)
                         {
-                            var instanceFields = builder.Properties[j].PropertyType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
+                            var instanceFields = builder.Properties[j].Info.PropertyType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToArray();
 
                             // Workaround for types like Datetime.
                             if (instanceFields.Length > 0)
                             {
-                                var instance = Activator.CreateInstance(builder.Properties[j].PropertyType);
+                                var instance = Activator.CreateInstance(builder.Properties[j].Info.PropertyType);
 
                                 for (var f = 0; f < instanceFields.Length; f++)
-                                    instanceFields[f].SetValue(instance, dataReader.IsDBNull(j + f) ? "" : row[j + f].ChangeTypeGet(builder.Properties[j + f].PropertyType));
+                                    instanceFields[f].SetValue(instance, dataReader.IsDBNull(j + f) ? "" : row[j + f].ChangeTypeGet(builder.Properties[j + f].Info.PropertyType));
 
                                 builder.PropertySetter[j](entity, instance);
                             }
                             else
-                                builder.PropertySetter[j](entity, dataReader.IsDBNull(j) ? "" : row[j].ChangeTypeGet(builder.Properties[j].PropertyType));
+                                builder.PropertySetter[j](entity, dataReader.IsDBNull(j) ? "" : row[j].ChangeTypeGet(builder.Properties[j].Info.PropertyType));
                         }
                         else
-                            builder.PropertySetter[j](entity, dataReader.IsDBNull(j) ? "" : row[j].ChangeTypeGet(builder.Properties[j].PropertyType));
+                            builder.PropertySetter[j](entity, dataReader.IsDBNull(j) ? "" : row[j]);
                     }
                     else
                     {
@@ -168,7 +168,7 @@ namespace Lappa.ORM
                         {
                             for (var c = 0; c < groupCount; c++, j++)
                             {
-                                var arr = builder.Properties[j].GetValue(entity) as Array;
+                                var arr = builder.Properties[j].Info.GetValue(entity) as Array;
 
                                 for (var k = 0; k < arr.Length; k++, a++)
                                     arr.SetValue(row[j + (k * groupCount)], k);
@@ -182,7 +182,7 @@ namespace Lappa.ORM
                         }
                         else
                         {
-                            var arr = builder.Properties[j].GetValue(entity) as Array;
+                            var arr = builder.Properties[j].Info.GetValue(entity) as Array;
 
                             for (var k = 0; k < arr.Length; k++, a++)
                                 arr.SetValue(row[j + a], k);

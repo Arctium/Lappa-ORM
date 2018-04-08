@@ -9,7 +9,10 @@ namespace Lappa.ORM.Logging
     {
         public void Message(Enum logTypes, string message)
         {
-            // Dummy logging.
+            // Use the default logger when no custom logger is assigned.
+#if DEBUG
+            Console.WriteLine(message);
+#endif
         }
     }
 }

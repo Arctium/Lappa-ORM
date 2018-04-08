@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Linq;
 using System.Reflection;
+using Lappa.ORM.Constants;
 using Lappa.ORM.Logging;
 using Lappa.ORM.Misc;
 using static Lappa.ORM.Misc.Helper;
@@ -66,28 +67,36 @@ namespace Lappa.ORM
             // - Fix array field type checks.
             // - Optimize?!
             // Strict types (signed/unsigned) only used in MySql databases.
-            /*
             if (database.Type == DatabaseType.MySql)
             {
+                var hasMismatches = false;
+
                 for (var i = 0; i < fieldCount; i++)
                 {
-                    if (builder.Properties[i].PropertyType == typeof(bool) || builder.Properties[i].PropertyType.IsArray ||
-                        builder.Properties[i].PropertyType.IsCustomClass() || builder.Properties[i].PropertyType.IsCustomStruct())
+                    if (builder.Properties[i].Info.PropertyType == typeof(bool) || builder.Properties[i].InfoCache.IsArray ||
+                        builder.Properties[i].InfoCache.IsCustomClass || builder.Properties[i].InfoCache.IsCustomStruct)
                         continue;
 
-                    // Return an empty list if any column/property type mismatches
-                    if (!dataReader.GetFieldType(i).GetTypeInfo().IsEquivalentTo(builder.Properties[i].PropertyType.GetTypeInfo().IsEnum ?
-                        builder.Properties[i].PropertyType.GetTypeInfo().GetEnumUnderlyingType() : builder.Properties[i].PropertyType))
+                    if (!dataReader.GetFieldType(i).GetTypeInfo().IsEquivalentTo(builder.Properties[i].Info.PropertyType.GetTypeInfo().IsEnum ?
+                        builder.Properties[i].Info.PropertyType.GetTypeInfo().GetEnumUnderlyingType() : builder.Properties[i].Info.PropertyType))
                     {
-                        var propertyType = builder.Properties[i].PropertyType.GetTypeInfo().IsEnum ? builder.Properties[i].PropertyType.GetTypeInfo().GetEnumUnderlyingType() : builder.Properties[i].PropertyType;
+                        var propertyType = builder.Properties[i].Info.PropertyType.GetTypeInfo().IsEnum ? builder.Properties[i].Info.PropertyType.GetTypeInfo().GetEnumUnderlyingType() : builder.Properties[i].Info.PropertyType;
 
                         database.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property type mismatch)");
                         database.Log.Message(LogTypes.Error, $"{dataReader.GetName(i)}: {dataReader.GetFieldType(i)}/{propertyType}");
 
-                        return new TEntity[0];
+                        hasMismatches = true;
                     }
                 }
-            }*/
+
+                // Return an empty list if any column/property type mismatches
+                if (hasMismatches)
+                {
+                    database.Log.Message(LogTypes.Warning, $"Returning no data for table {pluralizedEntityName}.");
+
+                    return new TEntity[0];
+                }
+            }
 
             var entities = new ConcurrentBag<TEntity>();
 

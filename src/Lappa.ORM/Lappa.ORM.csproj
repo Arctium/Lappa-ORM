@@ -11,11 +11,11 @@
     <Product>Lappa ORM</Product>
     <Description>Lappa ORM is a object relational mapper for .NET Core (MySQL/MSSQL/SQLite) written in C# (.NET Core) released under the MIT License.</Description>
     <Copyright>Copyright 2015-2018 Arctium Software</Copyright>
-    <PackageProjectUrl>https://github.com/Arctium-Software/LappaORM</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Arctium-Software/LappaORM</RepositoryUrl>
+    <PackageProjectUrl>https://gitlab.com/Arctium/Lappa/ORM</PackageProjectUrl>
+    <RepositoryUrl>https://gitlab.com/Arctium/Lappa/ORM</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseUrl>https://github.com/Arctium-Software/LappaORM/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseUrl>https://gitlab.com/Arctium/Lappa/ORM/blob/master/LICENSE</PackageLicenseUrl>
     <PackageTags>lappa-orm, orm, mysql, mssql, sqlite</PackageTags>
     <PackageReleaseNotes>Updated package references.
 Replace AssemblyLoader with Assembly.LoadFrom.
@@ -28,7 +28,7 @@ useTransactions &amp; loadConnectorFromFile are required parameters now.</Packag
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.3" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview1-26716-02" />
   </ItemGroup>
 
   <ItemGroup>

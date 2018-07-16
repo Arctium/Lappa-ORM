@@ -29,7 +29,7 @@ namespace Lappa.ORM
             {
                 case DatabaseType.MSSql:
                 {
-                    assembly = Assembly.Load(new AssemblyName("System.Data.SqlClient, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"));
+                    assembly = Assembly.Load(new AssemblyName("System.Data.SqlClient, Version=4.5.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"));
                     break;
                 }
                 case DatabaseType.MySql:
@@ -57,7 +57,7 @@ namespace Lappa.ORM
                 case DatabaseType.SQLite:
                 {
                     typeBase = "Microsoft.Data.Sqlite.Sqlite";
-                    assembly = Assembly.Load(new AssemblyName("Microsoft.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60"));
+                    assembly = Assembly.Load(new AssemblyName("Microsoft.Data.Sqlite, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60"));
 
                     break;                    
                 }

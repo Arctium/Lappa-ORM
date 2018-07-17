@@ -7,16 +7,17 @@
     <AssemblyName>Lappa.ORM</AssemblyName>
     <RootNamespace>Lappa.ORM</RootNamespace>
     <Version>1.0.1-dev1-4</Version>
-    <Company>Arctium Software</Company>
+    <Company>Arctium</Company>
     <Product>Lappa ORM</Product>
-    <Description>Lappa ORM is a object relational mapper for .NET Core (MySQL/MSSQL/SQLite) written in C# (.NET Core) released under the MIT License.</Description>
-    <Copyright>Copyright 2015-2018 Arctium Software</Copyright>
+    <Description>Lappa ORM is a object relational mapper for .NET written in C# (.NET Standard) released under the MIT License.
+Supported databases are MySQL/MSSQL/SQLite/PostgreSql.</Description>
+    <Copyright>Copyright 2015-2018 Arctium</Copyright>
     <PackageProjectUrl>https://gitlab.com/Arctium/Lappa/ORM</PackageProjectUrl>
     <RepositoryUrl>https://gitlab.com/Arctium/Lappa/ORM</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageLicenseUrl>https://gitlab.com/Arctium/Lappa/ORM/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageTags>lappa-orm, orm, mysql, mssql, sqlite</PackageTags>
+    <PackageTags>lappa-orm, orm, mysql, mssql, sqlite, postgre, sql</PackageTags>
     <PackageReleaseNotes>Updated package references.
 Replace AssemblyLoader with Assembly.LoadFrom.
 Added first xunit test.

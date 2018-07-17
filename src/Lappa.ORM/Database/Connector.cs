@@ -64,7 +64,25 @@ namespace Lappa.ORM
                 case DatabaseType.Oracle:
                     throw new NotSupportedException("Oracle is not supported.");
                 case DatabaseType.PostgreSql:
-                    throw new NotSupportedException("PostgreSql is not supported.");
+                    typeBase = "Npgsql";
+
+                    if (loadFromFile)
+                        assembly = Assembly.LoadFrom($"{FilePath ?? AppContext.BaseDirectory}/{FileName ?? "Npgsql.dll"}");
+                    else
+                    {
+                        var mysqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames().Where(asm => asm.Name.StartsWith("Npgsql"));
+
+                        // Let's throw a type load exception if no supported Npgsql lib is found.
+                        if (mysqlAssemblyNames.Count() == 0)
+                            throw new TypeLoadException("No assembly referencing 'Npgsql' found.");
+
+                        if (mysqlAssemblyNames.Count() > 1)
+                            throw new NotSupportedException("Multiple assemblies referencing 'Npgsql' found.");
+
+                        assembly = Assembly.Load(mysqlAssemblyNames.First());
+                    }
+
+                    break;
                 default:
                     break;
             }

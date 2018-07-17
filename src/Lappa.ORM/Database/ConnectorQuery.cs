@@ -68,7 +68,19 @@ namespace Lappa.ORM
                 case DatabaseType.Oracle:
                     throw new NotSupportedException("Oracle is not supported.");
                 case DatabaseType.PostgreSql:
-                    throw new NotSupportedException("PostgreSql is not supported.");
+                {
+                    UpdateQuery = "UPDATE \"{0}\" SET ";
+                    UpdateQueryEnd = "WHERE ";
+                    DeleteQuery = "DELETE FROM \"{0}\" WHERE ";
+                    Equal = "\"{0}\" = '{1}'";
+                    AndEqual = " AND \"{0}\" = '{1}'";
+
+                    Part0 = "\"{0}\"";
+                    Part1 = "\"{1}\"";
+                    Part2 = "\"{2}\"";
+
+                    break;
+                }
                 default:
                     throw new NotSupportedException($"{dbType} is not supported.");
             }

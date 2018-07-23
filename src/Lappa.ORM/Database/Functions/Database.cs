@@ -161,11 +161,7 @@ namespace Lappa.ORM
             {
                 // Usage of an 'using' statement closes the connection too early.
                 // Let the calling method dispose the command for us and close the connection with the correct CommandBehavior.
-                DbDataReader dbDataReader = await CreateSqlCommand(connection, transaction, sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
-
-                transaction?.Commit();
-
-                return dbDataReader;
+                return await CreateSqlCommand(connection, null, sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
             }
             catch (Exception ex)
             {

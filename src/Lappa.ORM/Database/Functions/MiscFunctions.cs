@@ -11,7 +11,7 @@ namespace Lappa.ORM
 {
     public partial class Database
     {
-        public TReturn GetAutoIncrementValue<TEntity, TReturn>() => GetAutoIncrementValueAsync<TEntity, TReturn>().GetAwaiter().GetResult();
+        public TReturn GetAutoIncrementValue<TEntity, TReturn>() => RunSync(() => GetAutoIncrementValueAsync<TEntity, TReturn>());
 
         // MySql only.
         // TODO: Fix for MSSql & SQLite
@@ -32,7 +32,7 @@ namespace Lappa.ORM
             }
         }
 
-        public bool Exists<TEntity>() => ExistsAsync<TEntity>().GetAwaiter().GetResult();
+        public bool Exists<TEntity>() => RunSync(() => ExistsAsync<TEntity>());
 
         // MySql only.
         // TODO: Fix for MSSql & SQLite

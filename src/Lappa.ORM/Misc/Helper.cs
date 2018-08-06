@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Lappa.Pluralization;
 
 namespace Lappa.ORM.Misc
@@ -64,5 +65,8 @@ namespace Lappa.ORM.Misc
 
             return f.GetMethodInfo().GetGenericMethodDefinition().MakeGenericMethod(t).Invoke(null, null);
         }
+
+        public static TResult RunSync<TResult>(Func<Task<TResult>> func) => func().ConfigureAwait(false).GetAwaiter().GetResult();
+        public static void RunSync(Func<Task> func) => func().ConfigureAwait(false).GetAwaiter().GetResult();
     }
 }

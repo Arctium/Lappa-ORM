@@ -56,7 +56,7 @@ namespace Lappa.ORM
             return sqlQuery.ToString();
         }
 
-        internal List<string> BuildBulkInsert(PropertyInfo[] properties, T[] entities)
+        internal List<string> BuildBulkInsert(PropertyInfo[] properties, IReadOnlyList<T> entities)
         {
             var queries = new List<string>();
             var values = new Dictionary<string, object>(properties.Length);

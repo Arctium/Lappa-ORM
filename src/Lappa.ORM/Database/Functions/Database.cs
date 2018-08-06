@@ -7,7 +7,9 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using Lappa.ORM.Constants;
 using Lappa.ORM.Logging;
+using Lappa.ORM.Misc;
 using Lappa.ORM.Caching;
+using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
@@ -36,7 +38,7 @@ namespace Lappa.ORM
 
         public bool Initialize(string connString, DatabaseType type, bool useTransactions, bool loadConnectorFromFile)
         {
-            return InitializeAsync(connString, type, useTransactions, loadConnectorFromFile).GetAwaiter().GetResult();
+            return RunSync(() => InitializeAsync(connString, type, useTransactions, loadConnectorFromFile));
         }
 
         public async Task<bool> InitializeAsync(string connString, DatabaseType type, bool useTransactions, bool loadConnectorFromFile)
@@ -119,37 +121,36 @@ namespace Lappa.ORM
             return sqlCommand;
         }
 
-        internal bool Execute(string sql, params object[] args) => ExecuteAsync(sql, args).GetAwaiter().GetResult();
+        internal bool Execute(string sql, params object[] args) => RunSync(() => ExecuteAsync(sql, args));
 
         internal async Task<bool> ExecuteAsync(string sql, params object[] args)
         {
             using (var connection = await CreateConnectionAsync())
+            using (var transaction = transactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null)
             {
-                DbTransaction transaction = transactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null;
-
                 try
                 {
                     using (var cmd = CreateSqlCommand(connection, transaction, sql, args))
                     {
-                        bool ret = await cmd.ExecuteNonQueryAsync() > 0;
+                        var affectedRows = await cmd.ExecuteNonQueryAsync();
 
                         transaction?.Commit();
 
-                        return ret;
+                        return affectedRows > 0;
                     }
                 }
                 catch (Exception ex)
                 {
-                    transaction?.Rollback();
-
                     Log.Message(LogTypes.Error, ex.ToString());
+
+                    transaction?.Rollback();
 
                     return false;
                 }
             }
         }
 
-        internal DbDataReader Select(string sql, params object[] args) => SelectAsync(sql, args).GetAwaiter().GetResult();
+        internal DbDataReader Select(string sql, params object[] args) => RunSync(() => SelectAsync(sql, args));
 
         internal async Task<DbDataReader> SelectAsync(string sql, params object[] args)
         {
@@ -161,13 +162,16 @@ namespace Lappa.ORM
             {
                 // Usage of an 'using' statement closes the connection too early.
                 // Let the calling method dispose the command for us and close the connection with the correct CommandBehavior.
-                return await CreateSqlCommand(connection, null, sql, args).ExecuteReaderAsync(CommandBehavior.CloseConnection);
+                var sqlCommand = CreateSqlCommand(connection, null, sql, args);
+
+                return await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection);
             }
             catch (Exception ex)
             {
-                transaction?.Rollback();
-
                 Log.Message(LogTypes.Error, ex.ToString());
+
+                // Let the caller deal with the exception if this call fails.
+                transaction?.Rollback();
 
                 return null;
             }

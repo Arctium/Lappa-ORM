@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Lappa.ORM.Constants;
 using Lappa.ORM.Misc;
+using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
@@ -15,7 +16,7 @@ namespace Lappa.ORM
     {
         public bool Create<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
         {
-            return CreateAsync<TEntity>(dbEngine, replaceTable).GetAwaiter().GetResult();
+            return RunSync(() => CreateAsync<TEntity>(dbEngine, replaceTable));
         }
 
         // MySql only.

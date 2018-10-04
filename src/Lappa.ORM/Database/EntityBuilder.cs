@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Lappa.ORM.Constants;
 using Lappa.ORM.Logging;
 using Lappa.ORM.Misc;
-using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
@@ -23,27 +22,32 @@ namespace Lappa.ORM
             this.database = database;
         }
 
-        public object[][] VerifyDatabaseSchema<TEntity>(DbDataReader dataReader, QueryBuilder<TEntity> builder) where TEntity : Entity, new()
+        public object[][] VerifyDatabaseSchema(DbDataReader dataReader, IQueryBuilder builder)
         {
-            // Return false if the used DbDataReader is null or doesn't contain any rows.
+            // Return a null row if the used DbDataReader is null or doesn't contain any rows.
             if (dataReader?.Read() == false)
-                return new object[1][];
+            {
+                // Send affected rows for non select queries.
+                if (dataReader?.RecordsAffected > 0)
+                    return new object[1][] { new object[] { dataReader.RecordsAffected } };
+                else
+                    return new object[1][];
+            }
 
             // Some custom queries do not use a query builder.
             // This results in no column/property verification.
             if (builder != null)
             {
-                var fieldCount = builder.PropertySetter.Length;
+                var fieldCount = builder.Properties.Count;
                 var arrayFieldCount = 0;
                 var classFieldCount = 0;
                 var structFieldCount = 0;
-                var pluralizedEntityName = Pluralize<TEntity>();
 
                 for (var i = 0; i < builder.Properties.Count; i++)
                 {
                     if (builder.Properties[i].InfoCache.IsArray)
                     {
-                        var arr = builder.Properties[i].Info.GetValue(new TEntity()) as Array;
+                        var arr = builder.Properties[i].Info.GetValue(builder.EntityDummy) as Array;
 
                         arrayFieldCount += arr.Length - 1;
                     }
@@ -61,7 +65,7 @@ namespace Lappa.ORM
 
                 if (dataReader.FieldCount != totalFieldCount)
                 {
-                    database.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property count mismatch)\nColumns '{dataReader.FieldCount}'\nProperties '{totalFieldCount}'");
+                    database.Log.Message(LogTypes.Error, $"Table '{builder.PluralizedEntityName}' (Column/Property count mismatch)\nColumns '{dataReader.FieldCount}'\nProperties '{totalFieldCount}'");
 
                     return new object[1][];
                 }
@@ -86,7 +90,7 @@ namespace Lappa.ORM
                         {
                             var propertyType = builder.Properties[i].Info.PropertyType.GetTypeInfo().IsEnum ? builder.Properties[i].Info.PropertyType.GetTypeInfo().GetEnumUnderlyingType() : builder.Properties[i].Info.PropertyType;
 
-                            database.Log.Message(LogTypes.Error, $"Table '{pluralizedEntityName}' (Column/Property type mismatch)");
+                            database.Log.Message(LogTypes.Error, $"Table '{builder.PluralizedEntityName}' (Column/Property type mismatch)");
                             database.Log.Message(LogTypes.Error, $"{dataReader.GetName(i)}: {dataReader.GetFieldType(i)}/{propertyType}");
 
                             hasMismatches = true;
@@ -96,7 +100,7 @@ namespace Lappa.ORM
                     // Return an empty list if any column/property type mismatches
                     if (hasMismatches)
                     {
-                        database.Log.Message(LogTypes.Warning, $"Returning no data for table {pluralizedEntityName}.");
+                        database.Log.Message(LogTypes.Warning, $"Returning no data for table {builder.PluralizedEntityName}.");
 
                         return new object[1][];
                     }
@@ -115,7 +119,7 @@ namespace Lappa.ORM
                 entities.Add(row);
             } while (dataReader.Read());
 
-            return new object[1][];
+            return entities.ToArray();
         }
 
         public TEntity[] CreateEntities<TEntity>(object[][] data, QueryBuilder<TEntity> builder) where TEntity : Entity, new()

@@ -18,7 +18,7 @@ namespace Lappa.ORM
         public async Task<TReturn> GetAutoIncrementValueAsync<TEntity, TReturn>() where TEntity : Entity, new()
         {
             var tableName = Pluralize<TEntity>();
-            var rowData = await SelectAsync<TEntity>($"SHOW TABLE STATUS LIKE ?", null, tableName);
+            var rowData = await SelectAsync($"SHOW TABLE STATUS LIKE ?", null, tableName);
 
             if (rowData.Length == 0)
             {
@@ -38,7 +38,7 @@ namespace Lappa.ORM
         public async Task<bool> ExistsAsync<TEntity>() where TEntity : Entity, new()
         {
             var tableName = Pluralize<TEntity>();
-            var rowData = await SelectAsync<TEntity>("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", null, Connector.Settings.DatabaseName, tableName);
+            var rowData = await SelectAsync("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", null, Connector.Settings.DatabaseName, tableName);
 
             if (rowData.Length == 0)
             {

@@ -1,7 +1,10 @@
 ﻿// Copyright (C) Arctium.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Lappa.ORM.Misc;
@@ -12,10 +15,12 @@ namespace Lappa.ORM.Caching
     internal class CacheManager : Singleton<CacheManager>
     {
         readonly ConcurrentDictionary<MemberInfo, DBFieldAttribute> dbFieldCache;
+        readonly Dictionary<string, IQueryBuilder> queryBuilderCache;
 
         CacheManager()
         {
             dbFieldCache = new ConcurrentDictionary<MemberInfo, DBFieldAttribute>();
+            queryBuilderCache = new Dictionary<string, IQueryBuilder>();
 
             CacheDBFieldAttributes();
         }
@@ -52,12 +57,38 @@ namespace Lappa.ORM.Caching
             }
         }
 
+        public void CacheQueryBuilders(Connector connector)
+        {
+            var assemblyNames = DependencyContext.Default.GetDefaultAssemblyNames();
+
+            foreach (var asm in assemblyNames)
+            {
+                var entityTypes = Assembly.Load(asm).DefinedTypes.Where(t => t.IsSubclassOf(typeof(Entity)));
+
+                foreach (var t in entityTypes)
+                {
+                    var builderType = typeof(QueryBuilder<>).MakeGenericType(t);
+                    var parameters = new object[] { connector.Query, t.GetReadWriteProperties(), null };
+                    var builderInstance = Activator.CreateInstance(builderType, BindingFlags.NonPublic | BindingFlags.Instance, null, parameters, CultureInfo.InvariantCulture);
+
+                    queryBuilderCache.Add(t.Name, builderInstance as IQueryBuilder);
+                }
+            }
+        }
+
         public DBFieldAttribute GetDBField(MemberInfo memberInfo)
         {
             if (dbFieldCache.TryGetValue(memberInfo, out DBFieldAttribute dbFieldAttribute))
                 return dbFieldAttribute;
 
             return new DBFieldAttribute { Name = memberInfo.Name };
+        }
+
+        public IQueryBuilder GetQueryBuilder(string entityName)
+        {
+            queryBuilderCache.TryGetValue(entityName, out var queryBuilder);
+
+            return queryBuilder;
         }
     }
 }

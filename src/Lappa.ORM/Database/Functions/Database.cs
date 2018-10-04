@@ -39,7 +39,11 @@ namespace Lappa.ORM
 
             try
             {
+
                 Connector.Load();
+
+                // Extended caching that requires connector info.
+                CacheManager.Instance.CacheQueryBuilders(Connector);
 
                 if (connectorSettings.ConnectionMode == ConnectionMode.Database)
                 {
@@ -162,12 +166,12 @@ namespace Lappa.ORM
             }
         }
 
-        internal object[][] Select<T>(string sql, QueryBuilder<T> queryBuilder = null, params object[] args) where T : Entity, new()
+        internal object[][] Select(string sql, IQueryBuilder queryBuilder = null, params object[] args)
         {
             return RunSync(() => SelectAsync(sql, queryBuilder, args));
         }
 
-        internal async Task<object[][]> SelectAsync<T>(string sql, QueryBuilder<T> queryBuilder = null, params object[] args) where T : Entity, new()
+        internal async Task<object[][]> SelectAsync(string sql, IQueryBuilder queryBuilder = null, params object[] args)
         {
             try
             {
@@ -193,5 +197,10 @@ namespace Lappa.ORM
                 return null;
             }
         }
+
+        // Used for select queries from api clients only.
+        public object[][] ProcessApiRequest(string sql, string entityName) => RunSync(() => ProcessApiRequestAsync(sql, entityName));
+
+        public async Task<object[][]> ProcessApiRequestAsync(string sql, string entityName) => await SelectAsync(sql, CacheManager.Instance.GetQueryBuilder(entityName));
     }
 }

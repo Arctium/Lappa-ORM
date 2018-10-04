@@ -15,9 +15,12 @@ using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
-    internal partial class QueryBuilder<T> : ExpressionVisitor where T : Entity, new()
+    internal partial class QueryBuilder<T> : ExpressionVisitor, IQueryBuilder where T : Entity, new()
     {
+        public object EntityDummy { get; }
         public string EntityName { get; }
+        public string PluralizedEntityName { get; }
+
         public List<(PropertyInfo Info, TypeInfoCache InfoCache)> Properties { get; }
         public Func<T, object>[] PropertyGetter { get; }
         public Action<T, object>[] PropertySetter { get; }
@@ -32,14 +35,18 @@ namespace Lappa.ORM
         {
             this.connectorQuery = connectorQuery;
 
-            EntityName = Pluralize<T>();
+            EntityDummy = new T();
+            EntityName = typeof(T).Name;
+            PluralizedEntityName = Pluralize<T>();
         }
 
         internal QueryBuilder(ConnectorQuery connectorQuery, PropertyInfo[] properties, IReadOnlyList<MemberInfo> members = null)
         {
             this.connectorQuery = connectorQuery;
 
-            EntityName = Pluralize<T>();
+            EntityDummy = new T();
+            EntityName = typeof(T).Name;
+            PluralizedEntityName = Pluralize<T>();
 
             if (members != null)
             {

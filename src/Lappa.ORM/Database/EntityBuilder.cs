@@ -190,7 +190,7 @@ namespace Lappa.ORM
                                 builder.PropertySetter[j](entity, row[j].ChangeTypeGet(builder.Properties[j].Info.PropertyType));
                         }
                         else
-                            builder.PropertySetter[j](entity, row[j]);
+                            builder.PropertySetter[j](entity, row[j].ChangeTypeGet(builder.Properties[j].Info.PropertyType));
                     }
                     else
                     {

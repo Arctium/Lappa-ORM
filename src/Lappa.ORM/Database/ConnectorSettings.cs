@@ -17,6 +17,7 @@ namespace Lappa.ORM
 
         // Api related
         public string ApiHost { get; set; }
+        public Func<object, string> ApiSerializeFunction { get; set; }
         public Func<string, object[][]> ApiDeserializeFunction { get; set; }
     }
 }

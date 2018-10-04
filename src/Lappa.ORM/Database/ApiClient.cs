@@ -22,9 +22,9 @@ namespace Lappa.ORM
         }
 
         // sql query
-        Task<HttpResponseMessage> SendRequest(string entityName, string content)
+        Task<HttpResponseMessage> SendRequest(string entityName, string content, Func<object, string> serializeFunction)
         {
-            var stringContent = new StringContent(content, Encoding.UTF8, "application/json");
+            var stringContent = new StringContent(serializeFunction(content), Encoding.UTF8, "application/json");
 
             // Pluralized entity name.
             stringContent.Headers.Add("Entity", entityName);
@@ -32,9 +32,9 @@ namespace Lappa.ORM
             return client.PostAsync(Host, stringContent);
         }
 
-        public async Task<object[][]> GetResponse(string entityName, string content, Func<string, object[][]> deserializeFunction)
+        public async Task<object[][]> GetResponse(string entityName, string content, Func<object, string> serializeFunction, Func<string, object[][]> deserializeFunction)
         {
-            using (var response = await SendRequest(entityName, content))
+            using (var response = await SendRequest(entityName, content, serializeFunction))
             {
                 var jsonContent = await response.Content.ReadAsStringAsync();
 

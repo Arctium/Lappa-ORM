@@ -131,7 +131,7 @@ namespace Lappa.ORM
                 {
                     using (var sqlCommand = CreateSqlCommand(null, null, sql, args))
                     {
-                        var affectedRows = await apiClient.GetResponse(null, sqlCommand.CommandText, Connector.Settings.ApiDeserializeFunction);
+                        var affectedRows = await apiClient.GetResponse(null, sqlCommand.CommandText, Connector.Settings.ApiSerializeFunction, Connector.Settings.ApiDeserializeFunction);
 
                         return Convert.ToInt32(affectedRows[0]?[0]) > 0;
                     }
@@ -175,7 +175,7 @@ namespace Lappa.ORM
                 {
                     var sqlCommand = CreateSqlCommand(null, null, sql, args);
 
-                    return await apiClient.GetResponse(queryBuilder.EntityName, sqlCommand.CommandText, Connector.Settings.ApiDeserializeFunction);
+                    return await apiClient.GetResponse(queryBuilder.EntityName, sqlCommand.CommandText, Connector.Settings.ApiSerializeFunction, Connector.Settings.ApiDeserializeFunction);
                 }
                 else
                 {

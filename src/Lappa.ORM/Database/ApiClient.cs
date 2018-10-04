@@ -26,7 +26,7 @@ namespace Lappa.ORM
         {
             var stringContent = new StringContent(content, Encoding.UTF8, "application/json");
 
-            // Combine entity name and method id.
+            // Pluralized entity name.
             stringContent.Headers.Add("Entity", entityName);
 
             return client.PostAsync(Host, stringContent);

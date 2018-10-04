@@ -27,68 +27,92 @@ namespace Lappa.ORM
             // Use MSSql as default.
             var typeBase = "System.Data.SqlClient.Sql";
 
-            switch (Settings.DatabaseType)
+            if (Settings.ConnectionMode == ConnectionMode.Api)
             {
-                case DatabaseType.MSSql:
+                switch (Settings.DatabaseType)
                 {
-                    assembly = Assembly.Load(new AssemblyName("System.Data.SqlClient, Version=4.5.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"));
-                    break;
+                    case DatabaseType.MSSql:
+                        break;
+                    case DatabaseType.MySql:
+                        typeBase = "MySql.Data.MySqlClient.MySql";
+                        break;
+                    case DatabaseType.SQLite:
+                        typeBase = "Microsoft.Data.Sqlite.Sqlite";
+                        break;
+                    case DatabaseType.Oracle:
+                        throw new NotSupportedException("Oracle is not supported.");
+                    case DatabaseType.PostgreSql:
+                        typeBase = "Npgsql";
+                        break;
+                    default:
+                        break;
                 }
-                case DatabaseType.MySql:
+            }
+            else
+            {
+                switch (Settings.DatabaseType)
                 {
-                    typeBase = "MySql.Data.MySqlClient.MySql";
-
-                    if (Settings.ConnectorPath != "")
-                        assembly = Assembly.LoadFrom(Settings.ConnectorPath);
-                    else
+                    case DatabaseType.MSSql:
                     {
-                        var mysqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames().Where(asm => asm.Name.StartsWith("MySql.Data") ||
-                                                                                                                       asm.Name.StartsWith("MySqlConnector"));
-                        // Let's throw a type load exception if no supported MySql lib is found.
-                        if (mysqlAssemblyNames.Count() == 0)
-                            throw new TypeLoadException("No assembly referencing 'MySql' found.");
-
-                        if (mysqlAssemblyNames.Count() > 1)
-                            throw new NotSupportedException("Multiple assemblies referencing 'MySql' found.");
-
-                        assembly = Assembly.Load(mysqlAssemblyNames.First());
+                        assembly = Assembly.Load(new AssemblyName("System.Data.SqlClient, Version=4.5.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"));
+                        break;
                     }
-
-                    break;
-                }
-                case DatabaseType.SQLite:
-                {
-                    typeBase = "Microsoft.Data.Sqlite.Sqlite";
-                    assembly = Assembly.Load(new AssemblyName("Microsoft.Data.Sqlite, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60"));
-
-                    break;                    
-                }
-                case DatabaseType.Oracle:
-                    throw new NotSupportedException("Oracle is not supported.");
-                case DatabaseType.PostgreSql:
-                {
-                    typeBase = "Npgsql";
-
-                    if (Settings.ConnectorPath != "")
-                        assembly = Assembly.LoadFrom(Settings.ConnectorPath);
-                    else
+                    case DatabaseType.MySql:
                     {
-                        var npgsqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames().Where(asm => asm.Name.StartsWith("Npgsql"));
+                        typeBase = "MySql.Data.MySqlClient.MySql";
 
-                        // Let's throw a type load exception if no supported Npgsql lib is found.
-                        if (npgsqlAssemblyNames.Count() == 0)
-                            throw new TypeLoadException("No assembly referencing 'Npgsql' found.");
+                        if (Settings.ConnectorPath != "")
+                            assembly = Assembly.LoadFrom(Settings.ConnectorPath);
+                        else
+                        {
+                            var mysqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames().Where(asm => asm.Name.StartsWith("MySql.Data") ||
+                                                                                                                           asm.Name.StartsWith("MySqlConnector"));
+                            // Let's throw a type load exception if no supported MySql lib is found.
+                            if (mysqlAssemblyNames.Count() == 0)
+                                throw new TypeLoadException("No assembly referencing 'MySql' found.");
 
-                        if (npgsqlAssemblyNames.Count() > 1)
-                            throw new NotSupportedException("Multiple assemblies referencing 'Npgsql' found.");
+                            if (mysqlAssemblyNames.Count() > 1)
+                                throw new NotSupportedException("Multiple assemblies referencing 'MySql' found.");
 
-                        assembly = Assembly.Load(npgsqlAssemblyNames.First());
+                            assembly = Assembly.Load(mysqlAssemblyNames.First());
+                        }
+
+                        break;
                     }
+                    case DatabaseType.SQLite:
+                    {
+                        typeBase = "Microsoft.Data.Sqlite.Sqlite";
+                        assembly = Assembly.Load(new AssemblyName("Microsoft.Data.Sqlite, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60"));
 
-                    break;
+                        break;
+                    }
+                    case DatabaseType.Oracle:
+                        throw new NotSupportedException("Oracle is not supported.");
+                    case DatabaseType.PostgreSql:
+                    {
+                        typeBase = "Npgsql";
+
+                        if (Settings.ConnectorPath != "")
+                            assembly = Assembly.LoadFrom(Settings.ConnectorPath);
+                        else
+                        {
+                            var npgsqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames().Where(asm => asm.Name.StartsWith("Npgsql"));
+
+                            // Let's throw a type load exception if no supported Npgsql lib is found.
+                            if (npgsqlAssemblyNames.Count() == 0)
+                                throw new TypeLoadException("No assembly referencing 'Npgsql' found.");
+
+                            if (npgsqlAssemblyNames.Count() > 1)
+                                throw new NotSupportedException("Multiple assemblies referencing 'Npgsql' found.");
+
+                            assembly = Assembly.Load(npgsqlAssemblyNames.First());
+                        }
+
+                        break;
+                    }
+                    default:
+                        break;
                 }
-                default:
-                    break;
             }
 
             connectionType = assembly.GetType($"{typeBase}Connection");

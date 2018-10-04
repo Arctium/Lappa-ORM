@@ -36,12 +36,13 @@ namespace Lappa.ORM
             Connector = new Connector { Settings = connectorSettings };
             entityBuilder = new EntityBuilder(this);
 
-            if (connectorSettings.ConnectionMode == ConnectionMode.Database)
-            {
-                try
-                {
-                    Connector.Load();
 
+            try
+            {
+                Connector.Load();
+
+                if (connectorSettings.ConnectionMode == ConnectionMode.Database)
+                {
                     using (var connection = await CreateConnectionAsync())
                     {
                         // Set the database name.
@@ -50,17 +51,17 @@ namespace Lappa.ORM
                         return connection.State == ConnectionState.Open;
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    Log.Message(LogTypes.Error, ex.ToString());
-
-                    return false;
+                    apiClient = new ApiClient(connectorSettings.ApiHost);
+                    ApiMode = true;
                 }
             }
-            else
+            catch (Exception ex)
             {
-                apiClient = new ApiClient(connectorSettings.ApiHost);
-                ApiMode = true;
+                Log.Message(LogTypes.Error, ex.ToString());
+
+                return false;
             }
 
             // Always return true for ConnectionMode.Api

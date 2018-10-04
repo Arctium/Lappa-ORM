@@ -11,11 +11,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Lappa.ORM.Caching;
 using Lappa.ORM.Misc;
+using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T> : ExpressionVisitor where T : Entity, new()
     {
+        public string EntityName { get; }
         public List<(PropertyInfo Info, TypeInfoCache InfoCache)> Properties { get; }
         public Func<T, object>[] PropertyGetter { get; }
         public Action<T, object>[] PropertySetter { get; }
@@ -29,11 +31,15 @@ namespace Lappa.ORM
         internal QueryBuilder(ConnectorQuery connectorQuery)
         {
             this.connectorQuery = connectorQuery;
+
+            EntityName = Pluralize<T>();
         }
 
         internal QueryBuilder(ConnectorQuery connectorQuery, PropertyInfo[] properties, IReadOnlyList<MemberInfo> members = null)
         {
             this.connectorQuery = connectorQuery;
+
+            EntityName = Pluralize<T>();
 
             if (members != null)
             {

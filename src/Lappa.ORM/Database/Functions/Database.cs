@@ -7,7 +7,6 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using Lappa.ORM.Constants;
 using Lappa.ORM.Logging;
-using Lappa.ORM.Misc;
 using Lappa.ORM.Caching;
 using static Lappa.ORM.Misc.Helper;
 
@@ -15,15 +14,13 @@ namespace Lappa.ORM
 {
     public partial class Database
     {
-        public DatabaseType Type { get; private set; }
+        public bool ApiMode { get; private set; }
         public ILog Log { get; private set; }
 
-        string connectionString;
-        bool transactions;
+        internal Connector Connector { get; private set; }
 
-        Connector connector;
-        ConnectorQuery connectorQuery;
         EntityBuilder entityBuilder;
+        ApiClient apiClient;
 
         public Database()
         {
@@ -32,60 +29,60 @@ namespace Lappa.ORM
 
             // Initialize dummy logger.
             Log = new Log();
-
-            connector = new Connector();
         }
 
-        public bool Initialize(string connString, DatabaseType type, bool useTransactions, bool loadConnectorFromFile)
+        public async Task<bool> InitializeAsync(ConnectorSettings connectorSettings)
         {
-            return RunSync(() => InitializeAsync(connString, type, useTransactions, loadConnectorFromFile));
-        }
-
-        public async Task<bool> InitializeAsync(string connString, DatabaseType type, bool useTransactions, bool loadConnectorFromFile)
-        {
-            Type = type;
-
-            transactions = useTransactions;
-
-            connectionString = connString;
-            connectorQuery = new ConnectorQuery(type);
-
+            Connector = new Connector { Settings = connectorSettings };
             entityBuilder = new EntityBuilder(this);
 
-            try
+            if (connectorSettings.ConnectionMode == ConnectionMode.Database)
             {
-                connector.Load(type, loadConnectorFromFile);
+                try
+                {
+                    Connector.Load();
 
-                using (var connection = await CreateConnectionAsync())
-                    return connection.State == ConnectionState.Open;
+                    using (var connection = await CreateConnectionAsync())
+                    {
+                        // Set the database name.
+                        Connector.Settings.DatabaseName = connection.Database;
+
+                        return connection.State == ConnectionState.Open;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Message(LogTypes.Error, ex.ToString());
+
+                    return false;
+                }
             }
-            catch (Exception ex)
+            else
             {
-                Log.Message(LogTypes.Error, ex.ToString());
-
-                return false;
+                apiClient = new ApiClient(connectorSettings.ApiHost);
+                ApiMode = true;
             }
+
+            // Always return true for ConnectionMode.Api
+            return true;
+        }
+
+        public bool Initialize(ConnectorSettings connectorSettings)
+        {
+            return RunSync(() => InitializeAsync(connectorSettings));
         }
 
         // Overwrite dummy logger.
         // Can be called at any time.
         public void SetLogger(ILog logger) => Log = logger;
 
-        // Default for MySql is the current assembly directory.
-        // Must be called before Initialize.
-        public void SetConnectorFilePath(string connectorFilePath) => connector.FilePath = connectorFilePath;
-
-        // Default for MySql is "MySql.Data.dll".
-        // Must be called before Initialize.
-        public void SetConnectorFileName(string connectorFileName) => connector.FileName = connectorFileName;
-
         DbConnection CreateConnection() => CreateConnectionAsync().GetAwaiter().GetResult();
 
         internal async Task<DbConnection> CreateConnectionAsync()
         {
-            var connection = connector.CreateConnectionObject();
+            var connection = Connector.CreateConnectionObject();
 
-            connection.ConnectionString = connectionString;
+            connection.ConnectionString = Connector.Settings.ConnectionString;
 
             await connection.OpenAsync();
 
@@ -94,7 +91,7 @@ namespace Lappa.ORM
 
         internal DbCommand CreateSqlCommand(DbConnection connection, DbTransaction transaction, string sql, params object[] args)
         {
-            var sqlCommand = connector.CreateCommandObject();
+            var sqlCommand = Connector.CreateCommandObject();
 
             sqlCommand.Connection = connection;
             sqlCommand.CommandText = sql;
@@ -107,7 +104,7 @@ namespace Lappa.ORM
 
                 for (var i = 0; i < args.Length; i++)
                 {
-                    var param = connector.CreateParameterObject();
+                    var param = Connector.CreateParameterObject();
 
                     param.ParameterName = "";
                     param.Value = args[i];
@@ -125,53 +122,72 @@ namespace Lappa.ORM
 
         internal async Task<bool> ExecuteAsync(string sql, params object[] args)
         {
-            using (var connection = await CreateConnectionAsync())
-            using (var transaction = transactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null)
-            {
-                try
-                {
-                    using (var cmd = CreateSqlCommand(connection, transaction, sql, args))
-                    {
-                        var affectedRows = await cmd.ExecuteNonQueryAsync();
-
-                        transaction?.Commit();
-
-                        return affectedRows > 0;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Message(LogTypes.Error, ex.ToString());
-
-                    transaction?.Rollback();
-
-                    return false;
-                }
-            }
-        }
-
-        internal DbDataReader Select(string sql, params object[] args) => RunSync(() => SelectAsync(sql, args));
-
-        internal async Task<DbDataReader> SelectAsync(string sql, params object[] args)
-        {
-            var connection = await CreateConnectionAsync();
-
-            DbTransaction transaction = transactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null;
+            DbTransaction transaction = null;
 
             try
             {
-                // Usage of an 'using' statement closes the connection too early.
-                // Let the calling method dispose the command for us and close the connection with the correct CommandBehavior.
-                var sqlCommand = CreateSqlCommand(connection, null, sql, args);
+                if (ApiMode)
+                {
+                    using (var sqlCommand = CreateSqlCommand(null, null, sql, args))
+                    {
+                        var affectedRows = await apiClient.GetResponse(null, sqlCommand.CommandText, Connector.Settings.ApiDeserializeFunction);
 
-                return await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection);
+                        return Convert.ToInt32(affectedRows[0]?[0]) > 0;
+                    }
+                }
+                else
+                {
+                    using (var connection = await CreateConnectionAsync())
+                    using (transaction = Connector.Settings.UseTransactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null)
+                    {
+                        using (var cmd = CreateSqlCommand(connection, transaction, sql, args))
+                        {
+                            var affectedRows = await cmd.ExecuteNonQueryAsync();
+
+                            transaction?.Commit();
+
+                            return affectedRows > 0;
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
                 Log.Message(LogTypes.Error, ex.ToString());
 
-                // Let the caller deal with the exception if this call fails.
                 transaction?.Rollback();
+
+                return false;
+            }
+        }
+
+        internal object[][] Select<T>(string sql, QueryBuilder<T> queryBuilder = null, params object[] args) where T : Entity, new()
+        {
+            return RunSync(() => SelectAsync(sql, queryBuilder, args));
+        }
+
+        internal async Task<object[][]> SelectAsync<T>(string sql, QueryBuilder<T> queryBuilder = null, params object[] args) where T : Entity, new()
+        {
+            try
+            {
+                if (ApiMode)
+                {
+                    var sqlCommand = CreateSqlCommand(null, null, sql, args);
+
+                    return await apiClient.GetResponse(queryBuilder.EntityName, sqlCommand.CommandText, Connector.Settings.ApiDeserializeFunction);
+                }
+                else
+                {
+                    var connection = await CreateConnectionAsync();
+                    var sqlCommand = CreateSqlCommand(connection, null, sql, args);
+
+                    using (var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        return entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Message(LogTypes.Error, ex.ToString());
 
                 return null;
             }

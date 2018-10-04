@@ -27,7 +27,7 @@ namespace Lappa.ORM
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var values = new Dictionary<string, object>(properties.Length);
-            var query = new QueryBuilder<TEntity>(connectorQuery, properties);
+            var query = new QueryBuilder<TEntity>(Connector.Query, properties);
 
             for (var i = 0; i < properties.Length; i++)
             {
@@ -58,7 +58,7 @@ namespace Lappa.ORM
         public async Task<bool> InsertAsync<TEntity>(IReadOnlyList<TEntity> entities) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
-            var query = new QueryBuilder<TEntity>(connectorQuery, properties);
+            var query = new QueryBuilder<TEntity>(Connector.Query, properties);
             var queries = query.BuildBulkInsert(properties, entities);
 
             for (var i = 0; i < queries.Count; i++)
@@ -83,7 +83,7 @@ namespace Lappa.ORM
             var type = typeof(TEntity);
             var properties = type.GetReadWriteProperties();
             var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.GetName() == "Id" || p.GetName() == type.Name + "Id").ToArray();
-            var builder = new QueryBuilder<TEntity>(connectorQuery);
+            var builder = new QueryBuilder<TEntity>(Connector.Query);
             var query = builder.BuildUpdate(entity, properties, primaryKeys);
 
             return ExecuteAsync(query);
@@ -99,7 +99,7 @@ namespace Lappa.ORM
 
         public Task<bool> UpdateAllAsync<TEntity>(params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new()
         {
-            var builder = new QueryBuilder<TEntity>(connectorQuery);
+            var builder = new QueryBuilder<TEntity>(Connector.Query);
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
             var query = builder.BuildUpdate(expressions.ToArray(), false);
 
@@ -117,7 +117,7 @@ namespace Lappa.ORM
 
         public Task<bool> UpdateAsync<TEntity>(Expression<Func<TEntity, bool>> condition, params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new()
         {
-            var builder = new QueryBuilder<TEntity>(connectorQuery);
+            var builder = new QueryBuilder<TEntity>(Connector.Query);
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
             var query = builder.BuildUpdate(expressions.ToArray(), true);
 
@@ -140,7 +140,7 @@ namespace Lappa.ORM
         {
             var type = typeof(TEntity);
             var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.GetName() == "Id" || p.GetName() == type.Name + "Id").ToArray();
-            var builder = new QueryBuilder<TEntity>(connectorQuery);
+            var builder = new QueryBuilder<TEntity>(Connector.Query);
             var query = builder.BuildDelete(entity, primaryKeys);
 
             return ExecuteAsync(query);
@@ -156,7 +156,7 @@ namespace Lappa.ORM
 
         public Task<bool> DeleteAsync<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
         {
-            var builder = new QueryBuilder<TEntity>(connectorQuery);
+            var builder = new QueryBuilder<TEntity>(Connector.Query);
             var query = builder.BuildDelete(condition.Body);
 
             return ExecuteAsync(query);

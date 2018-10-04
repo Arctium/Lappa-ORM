@@ -12,20 +12,22 @@ namespace Lappa.ORM
 {
     internal sealed class Connector
     {
-        public string FilePath { get; set; } = null;
-        public string FileName { get; set; } = null;
+        internal ConnectorSettings Settings { get; set; }
+        internal ConnectorQuery Query { get; private set; }
 
         Assembly assembly;
         Type connectionType;
         Type commandType;
         Type parameterType;
 
-        internal void Load(DatabaseType dbType, bool loadFromFile)
+        internal void Load()
         {
+            Query = new ConnectorQuery(Settings.DatabaseType);
+
             // Use MSSql as default.
             var typeBase = "System.Data.SqlClient.Sql";
 
-            switch (dbType)
+            switch (Settings.DatabaseType)
             {
                 case DatabaseType.MSSql:
                 {
@@ -36,12 +38,12 @@ namespace Lappa.ORM
                 {
                     typeBase = "MySql.Data.MySqlClient.MySql";
 
-                    if (loadFromFile)
-                        assembly = Assembly.LoadFrom($"{FilePath ?? AppContext.BaseDirectory}/{FileName ?? "MySqlConnector.dll"}");
+                    if (Settings.ConnectorPath != "")
+                        assembly = Assembly.LoadFrom(Settings.ConnectorPath);
                     else
                     {
                         var mysqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames().Where(asm => asm.Name.StartsWith("MySql.Data") ||
-                                                                                                                  asm.Name.StartsWith("MySqlConnector"));
+                                                                                                                       asm.Name.StartsWith("MySqlConnector"));
                         // Let's throw a type load exception if no supported MySql lib is found.
                         if (mysqlAssemblyNames.Count() == 0)
                             throw new TypeLoadException("No assembly referencing 'MySql' found.");
@@ -64,25 +66,27 @@ namespace Lappa.ORM
                 case DatabaseType.Oracle:
                     throw new NotSupportedException("Oracle is not supported.");
                 case DatabaseType.PostgreSql:
+                {
                     typeBase = "Npgsql";
 
-                    if (loadFromFile)
-                        assembly = Assembly.LoadFrom($"{FilePath ?? AppContext.BaseDirectory}/{FileName ?? "Npgsql.dll"}");
+                    if (Settings.ConnectorPath != "")
+                        assembly = Assembly.LoadFrom(Settings.ConnectorPath);
                     else
                     {
-                        var mysqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames().Where(asm => asm.Name.StartsWith("Npgsql"));
+                        var npgsqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames().Where(asm => asm.Name.StartsWith("Npgsql"));
 
                         // Let's throw a type load exception if no supported Npgsql lib is found.
-                        if (mysqlAssemblyNames.Count() == 0)
+                        if (npgsqlAssemblyNames.Count() == 0)
                             throw new TypeLoadException("No assembly referencing 'Npgsql' found.");
 
-                        if (mysqlAssemblyNames.Count() > 1)
+                        if (npgsqlAssemblyNames.Count() > 1)
                             throw new NotSupportedException("Multiple assemblies referencing 'Npgsql' found.");
 
-                        assembly = Assembly.Load(mysqlAssemblyNames.First());
+                        assembly = Assembly.Load(npgsqlAssemblyNames.First());
                     }
 
                     break;
+                }
                 default:
                     break;
             }

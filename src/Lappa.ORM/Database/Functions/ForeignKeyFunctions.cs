@@ -7,7 +7,6 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
@@ -67,14 +66,18 @@ namespace Lappa.ORM
             return fkNameByPk == null ? null : Tuple.Create(fkNameByPk, typeName + fkNameByPk);
         }
 
-        // TODO Rewrite...
+        // TODO Rewrite.
+        // This function is disabled until it's rewritten. absolutly not compatible with the api connection mode.
         internal IList WhereForeignKey(Type entityType, string name, string fkName, object value, ConcurrentDictionary<int, int> groups)
         {
+            return null;
+
+            /*
             var entityLock = new object();
             var query = new StringBuilder();
 
-            query.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Part0 + " WHERE ", name);
-            query.AppendFormat(numberFormat, connectorQuery.Equal, fkName, value);
+            query.AppendFormat(numberFormat, "SELECT * FROM " + Connector.Query.Part0 + " WHERE ", name);
+            query.AppendFormat(numberFormat, Connector.Query.Equal, fkName, value);
 
             var entities = entityType.CreateList();
 
@@ -104,7 +107,7 @@ namespace Lappa.ORM
                 }
             }
 
-            return entities;
+            return entities;*/
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Lappa.ORM
         // TODO: Fix for MSSql & SQLite
         public async Task<bool> CreateAsync<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
         {
-            if (Type != DatabaseType.MySql)
+            if (Connector.Settings.DatabaseType != DatabaseType.MySql)
                 return false;
 
             // Check if table exists or is allowed to be replaced.
@@ -32,7 +32,7 @@ namespace Lappa.ORM
                 // Exclude foreign key and non db related properties.
                 var properties = typeof(TEntity).GetReadWriteProperties();
                 var fields = new Dictionary<string, PropertyInfo>();
-                var query = new QueryBuilder<TEntity>(connectorQuery, properties);
+                var query = new QueryBuilder<TEntity>(Connector.Query, properties);
                 var entity = new TEntity();
 
                 // Key: GroupStartIndex, Value: GroupCount

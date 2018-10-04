@@ -11,47 +11,44 @@ namespace Lappa.ORM
 {
     public partial class Database
     {
-        public TReturn GetAutoIncrementValue<TEntity, TReturn>() => RunSync(() => GetAutoIncrementValueAsync<TEntity, TReturn>());
+        public TReturn GetAutoIncrementValue<TEntity, TReturn>() where TEntity : Entity, new() => RunSync(() => GetAutoIncrementValueAsync<TEntity, TReturn>());
 
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public async Task<TReturn> GetAutoIncrementValueAsync<TEntity, TReturn>()
+        public async Task<TReturn> GetAutoIncrementValueAsync<TEntity, TReturn>() where TEntity : Entity, new()
         {
             var tableName = Pluralize<TEntity>();
+            var rowData = await SelectAsync<TEntity>($"SHOW TABLE STATUS LIKE ?", null, tableName);
 
-            using (var dataReader = await SelectAsync($"SHOW TABLE STATUS LIKE ?", tableName))
+            if (rowData.Length == 0)
             {
-                if (!await dataReader.ReadAsync())
-                {
-                    Log.Message(LogTypes.Warning, $"Can't get auto increment value for '{tableName}' table.");
+                Log.Message(LogTypes.Warning, $"Can't get auto increment value for '{tableName}' table.");
 
-                    return default(TReturn);
-                }
-
-                return dataReader["Auto_increment"].ChangeTypeGet<TReturn>();
+                return default(TReturn);
             }
+
+            // Row: 0, Column: 10 (Auto_increment)
+            return rowData[0][10].ChangeTypeGet<TReturn>();
         }
 
-        public bool Exists<TEntity>() => RunSync(() => ExistsAsync<TEntity>());
+        public bool Exists<TEntity>()  where TEntity : Entity, new()=> RunSync(() => ExistsAsync<TEntity>());
 
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public async Task<bool> ExistsAsync<TEntity>()
+        public async Task<bool> ExistsAsync<TEntity>() where TEntity : Entity, new()
         {
             var tableName = Pluralize<TEntity>();
+            var rowData = await SelectAsync<TEntity>("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", null, Connector.Settings.DatabaseName, tableName);
 
-            using (var connection = await CreateConnectionAsync())
-            using (var dataReader = await SelectAsync("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", connection.Database, tableName))
+            if (rowData.Length == 0)
             {
-                if (!await dataReader.ReadAsync())
-                {
-                    Log.Message(LogTypes.Warning, $"Can't check if '{tableName}' table exists, no schema info.");
+                Log.Message(LogTypes.Warning, $"Can't check if '{tableName}' table exists, no schema info.");
 
-                    return false;
-                }
-
-                return Convert.ToBoolean(dataReader["ct"]);
+                return false;
             }
+
+            // Row: 0, Column: 0 (ct)
+            return Convert.ToBoolean(rowData[0][0]);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Lappa.ORM
 {
     public abstract class Entity
     {
-        public bool LoadForeignKeys { get; } = true;
+        public bool LoadForeignKeys { get; } = false;
 
         public virtual void InitializeNonTableProperties()
         {

@@ -124,6 +124,9 @@ namespace Lappa.ORM
 
         public TEntity[] CreateEntities<TEntity>(object[][] data, QueryBuilder<TEntity> builder) where TEntity : Entity, new()
         {
+            if (data[0] == null)
+                return new TEntity[0];
+
             var fieldCount = builder.PropertySetter.Length;
             var entities = new ConcurrentBag<TEntity>();
 

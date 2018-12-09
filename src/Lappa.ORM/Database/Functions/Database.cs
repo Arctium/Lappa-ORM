@@ -190,7 +190,7 @@ namespace Lappa.ORM
             {
                 if (ApiMode)
                 {
-                    var sqlCommand = CreateSqlCommand(null, null, queryBuilder);
+                    queryBuilder.IsSelectQuery = true;
 
                     return await apiClient.GetResponse(queryBuilder, Connector.Settings.ApiSerializeFunction, Connector.Settings.ApiDeserializeFunction);
                 }

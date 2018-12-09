@@ -21,14 +21,13 @@ namespace Lappa.ORM
             if (Connector.Settings.DatabaseType != DatabaseType.MySql)
                 throw new NotImplementedException($"GetAutoIncrementValue not implemented for {Connector.Settings.DatabaseType}.");
 
-            Connector.Settings.DatabaseName = "AuthDB";
-
+            // TODO: Fix for api mode.
             var tableInfo = await GetTableInfoAsync(t => t.TableSchema == Connector.Settings.DatabaseName && t.TableName == Pluralize<TEntity>());
 
             return tableInfo?.AutoIncrement ?? -1;
         }
 
-        public bool Exists<TEntity>() where TEntity : Entity, new()=> RunSync(() => ExistsAsync<TEntity>());
+        public bool Exists<TEntity>() where TEntity : Entity, new() => RunSync(() => ExistsAsync<TEntity>());
 
         // MySql only.
         // TODO: Fix for MSSql & SQLite

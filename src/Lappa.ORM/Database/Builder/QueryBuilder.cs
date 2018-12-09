@@ -256,16 +256,20 @@ namespace Lappa.ORM
 
                 var constExpression = (memberExp.Expression as ConstantExpression);
 
-                FieldInfo info;
-                object objReference;
+                object objReference = null;
 
                 if (constExpression == null)
                     // TODO: Fix if memberExp.Member comes from an object.
                     objReference = (memberExp.Member as FieldInfo)?.GetValue(null) ?? (memberExp.Member as PropertyInfo)?.GetValue(null);
                 else
                 {
-                    info = constExpression.Value.GetType().GetRuntimeFields().SingleOrDefault(fi => fi.GetName() == memberExp.Member.GetName());
-                    objReference = info?.GetValue(constExpression.Value);
+                    var memberName = memberExp.Member.GetName();
+                    MemberInfo memberInfo;
+
+                    if ((memberInfo = constExpression.Value.GetType().GetRuntimeFields().SingleOrDefault(p => p.Name == memberName)) != null)
+                        objReference = (memberInfo as FieldInfo).GetValue(constExpression.Value);
+                    else if ((memberInfo = constExpression.Value.GetType().GetRuntimeProperties().SingleOrDefault(p => p.Name == memberName)) != null)
+                        objReference = (memberInfo as PropertyInfo).GetValue(constExpression.Value);
                 }
 
                 if (objReference != null)

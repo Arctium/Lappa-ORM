@@ -93,7 +93,7 @@ namespace Lappa.ORM
                     }
                 }
 
-                return await ExecuteAsync(query.BuildTableCreate(fields, dbEngine));
+                return await ExecuteAsync(null);// query.BuildTableCreate(fields, dbEngine));
             }
 
             return false;

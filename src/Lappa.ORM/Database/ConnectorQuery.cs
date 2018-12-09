@@ -30,8 +30,8 @@ namespace Lappa.ORM
                     UpdateQuery    = "UPDATE [{0}] SET ";
                     UpdateQueryEnd = "FROM [{0}] WHERE ";
                     DeleteQuery    = "DELETE FROM [{0}] WHERE ";
-                    Equal          = "[{0}] = '{1}'";
-                    AndEqual       = " AND [{0}] = '{1}'";
+                    Equal          = "[{0}] = @{0}";
+                    AndEqual       = " AND [{0}] = @{0}";
 
                     Part0 = "[{0}]";
                     Part1 = "[{1}]";
@@ -43,8 +43,8 @@ namespace Lappa.ORM
                     UpdateQuery    = "UPDATE `{0}` SET ";
                     UpdateQueryEnd = "WHERE ";
                     DeleteQuery    = "DELETE FROM `{0}` WHERE ";
-                    Equal          = "`{0}` = '{1}'";
-                    AndEqual       = " AND `{0}` = '{1}'";
+                    Equal          = "`{0}` = @{0}";
+                    AndEqual       = " AND `{0}` = @{0}";
 
                     Part0 = "`{0}`";
                     Part1 = "`{1}`";
@@ -57,8 +57,8 @@ namespace Lappa.ORM
                     UpdateQuery    = "UPDATE \"{0}\" SET ";
                     UpdateQueryEnd = "WHERE ";
                     DeleteQuery    = "DELETE FROM \"{0}\" WHERE ";
-                    Equal          = "\"{0}\" = '{1}'";
-                    AndEqual       = " AND \"{0}\" = '{1}'";
+                    Equal          = "\"{0}\" = @{0}";
+                    AndEqual       = " AND \"{0}\" = @{0}";
 
                     Part0 = "\"{0}\"";
                     Part1 = "\"{1}\"";
@@ -72,8 +72,8 @@ namespace Lappa.ORM
                     UpdateQuery = "UPDATE \"{0}\" SET ";
                     UpdateQueryEnd = "WHERE ";
                     DeleteQuery = "DELETE FROM \"{0}\" WHERE ";
-                    Equal = "\"{0}\" = '{1}'";
-                    AndEqual = " AND \"{0}\" = '{1}'";
+                    Equal = "\"{0}\" = @{0}";
+                    AndEqual = " AND \"{0}\" = @{0}";
 
                     Part0 = "\"{0}\"";
                     Part1 = "\"{1}\"";

@@ -121,6 +121,5 @@ namespace Lappa.ORM.Misc
 
             return dic;
         }
-
     }
 }

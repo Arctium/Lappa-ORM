@@ -3,52 +3,61 @@
 
 using System;
 using System.Threading.Tasks;
-using Lappa.ORM.Logging;
 using Lappa.ORM.Misc;
 using static Lappa.ORM.Misc.Helper;
+using System.Linq.Expressions;
+using Lappa.ORM.Constants;
 
 namespace Lappa.ORM
 {
     public partial class Database
     {
-        public TReturn GetAutoIncrementValue<TEntity, TReturn>() where TEntity : Entity, new() => RunSync(() => GetAutoIncrementValueAsync<TEntity, TReturn>());
+        public int GetAutoIncrementValue<TEntity>() where TEntity : Entity, new() => RunSync(() => GetAutoIncrementValueAsync<TEntity>());
 
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public async Task<TReturn> GetAutoIncrementValueAsync<TEntity, TReturn>() where TEntity : Entity, new()
+        public async Task<int> GetAutoIncrementValueAsync<TEntity>() where TEntity : Entity, new()
         {
-            var tableName = Pluralize<TEntity>();
-            var rowData = await SelectAsync($"SHOW TABLE STATUS LIKE ?", null, tableName);
+            if (Connector.Settings.DatabaseType != DatabaseType.MySql)
+                throw new NotImplementedException($"GetAutoIncrementValue not implemented for {Connector.Settings.DatabaseType}.");
 
-            if (rowData.Length == 0)
-            {
-                Log.Message(LogTypes.Warning, $"Can't get auto increment value for '{tableName}' table.");
+            Connector.Settings.DatabaseName = "AuthDB";
 
-                return default(TReturn);
-            }
+            var tableInfo = await GetTableInfoAsync(t => t.TableSchema == Connector.Settings.DatabaseName && t.TableName == Pluralize<TEntity>());
 
-            // Row: 0, Column: 10 (Auto_increment)
-            return rowData[0][10].ChangeTypeGet<TReturn>();
+            return tableInfo?.AutoIncrement ?? -1;
         }
 
-        public bool Exists<TEntity>()  where TEntity : Entity, new()=> RunSync(() => ExistsAsync<TEntity>());
+        public bool Exists<TEntity>() where TEntity : Entity, new()=> RunSync(() => ExistsAsync<TEntity>());
 
         // MySql only.
         // TODO: Fix for MSSql & SQLite
         public async Task<bool> ExistsAsync<TEntity>() where TEntity : Entity, new()
         {
-            var tableName = Pluralize<TEntity>();
-            var rowData = await SelectAsync("SELECT COUNT(*) as ct FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", null, Connector.Settings.DatabaseName, tableName);
+            if (Connector.Settings.DatabaseType != DatabaseType.MySql)
+                throw new NotImplementedException($"Exists not implemented for {Connector.Settings.DatabaseType}.");
 
-            if (rowData.Length == 0)
-            {
-                Log.Message(LogTypes.Warning, $"Can't check if '{tableName}' table exists, no schema info.");
+            var tableInfo = await GetTableInfoAsync(t => t.TableSchema == Connector.Settings.DatabaseName && t.TableName == Pluralize<TEntity>());
 
-                return false;
-            }
+            return tableInfo != null;
+        }
 
-            // Row: 0, Column: 0 (ct)
-            return Convert.ToBoolean(rowData[0][0]);
+        public InformationSchemaTable GetTableInfo(Expression<Func<InformationSchemaTable, object>> condition) => RunSync(() => GetTableInfoAsync(condition));
+
+        async Task<InformationSchemaTable> GetTableInfoAsync(Expression<Func<InformationSchemaTable, object>> condition)
+        {
+            var properties = typeof(InformationSchemaTable).GetReadWriteProperties();
+            var builder = new QueryBuilder<InformationSchemaTable>(Connector.Query, properties);
+
+            builder.BuildWhereAll(condition.Body);
+
+            // Add the database name for this query.
+            builder.SqlQuery.Replace($"FROM `{builder.PluralizedEntityName}`", $"FROM `information_schema`.`tables`");
+
+            var rowData = await SelectAsync(builder);
+            var entityList = entityBuilder.CreateEntities(rowData, builder);
+
+            return entityList.Length == 0 ? null : entityList[0];
         }
     }
 }

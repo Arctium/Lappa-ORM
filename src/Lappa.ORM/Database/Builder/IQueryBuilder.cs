@@ -3,12 +3,18 @@
 
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 using Lappa.ORM.Caching;
 
 namespace Lappa.ORM
 {
     interface IQueryBuilder
     {
+        bool IsSelectQuery { get; set; }
+
+        StringBuilder SqlQuery { get; }
+        Dictionary<string, object> SqlParameters { get; }
+
         object EntityDummy { get; }
         string EntityName { get; }
         string PluralizedEntityName { get; }

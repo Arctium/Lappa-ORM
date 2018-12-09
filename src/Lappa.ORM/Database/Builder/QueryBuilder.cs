@@ -17,6 +17,11 @@ namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T> : ExpressionVisitor, IQueryBuilder where T : Entity, new()
     {
+        public bool IsSelectQuery { get; set; }
+
+        public StringBuilder SqlQuery { get; }
+        public Dictionary<string, object> SqlParameters { get; }
+
         public object EntityDummy { get; }
         public string EntityName { get; }
         public string PluralizedEntityName { get; }
@@ -25,7 +30,6 @@ namespace Lappa.ORM
         public Func<T, object>[] PropertyGetter { get; }
         public Action<T, object>[] PropertySetter { get; }
 
-        StringBuilder sqlQuery = new StringBuilder();
         ConnectorQuery connectorQuery;
 
         // Use en-US as number format for all languages.
@@ -35,6 +39,9 @@ namespace Lappa.ORM
         {
             this.connectorQuery = connectorQuery;
 
+            SqlQuery = new StringBuilder();
+            SqlParameters = new Dictionary<string, object>();
+
             EntityDummy = new T();
             EntityName = typeof(T).Name;
             PluralizedEntityName = Pluralize<T>();
@@ -43,6 +50,9 @@ namespace Lappa.ORM
         internal QueryBuilder(ConnectorQuery connectorQuery, PropertyInfo[] properties, IReadOnlyList<MemberInfo> members = null)
         {
             this.connectorQuery = connectorQuery;
+
+            SqlQuery = new StringBuilder();
+            SqlParameters = new Dictionary<string, object>();
 
             EntityDummy = new T();
             EntityName = typeof(T).Name;
@@ -106,7 +116,7 @@ namespace Lappa.ORM
                     count++;
                 }
 
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", memberExpression.Member.GetName(), " = ", count % 2 == 0 ? "1" : "0");
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", memberExpression.Member.GetName(), " = ", count % 2 == 0 ? "1" : "0");
             }
 
             return memberExpression;
@@ -114,7 +124,7 @@ namespace Lappa.ORM
 
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
         {
-            sqlQuery.Append("(");
+            SqlQuery.Append("(");
 
             string condition;
 
@@ -152,7 +162,7 @@ namespace Lappa.ORM
             {
                 Visit(binaryExpression.Left);
 
-                sqlQuery.Append(condition);
+                SqlQuery.Append(condition);
             }
             else
             {
@@ -176,13 +186,15 @@ namespace Lappa.ORM
 
                 var finalVal = exVal ?? Regex.Replace(Regex.Replace(binaryExpression.Right.ToString(), "^\"|\"$", ""), @"^Convert\(|\)$", "");
                 var left = (binaryExpression.Left as MemberExpression)?.Member ?? ((binaryExpression.Left as UnaryExpression).Operand as MemberExpression).Member;
+                var name = left.GetName();
 
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", left.GetName(), condition, finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}@{0}", name, condition, name);
+                SqlParameters.Add($"@{name}", finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
             }
 
             Visit(binaryExpression.Right);
 
-            sqlQuery.Append(")");
+            SqlQuery.Append(")");
 
             return binaryExpression;
         }
@@ -248,6 +260,7 @@ namespace Lappa.ORM
                 object objReference;
 
                 if (constExpression == null)
+                    // TODO: Fix if memberExp.Member comes from an object.
                     objReference = (memberExp.Member as FieldInfo)?.GetValue(null) ?? (memberExp.Member as PropertyInfo)?.GetValue(null);
                 else
                 {

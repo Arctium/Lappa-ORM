@@ -78,7 +78,7 @@ namespace Lappa.ORM.Caching
 
         public DBFieldAttribute GetDBField(MemberInfo memberInfo)
         {
-            if (dbFieldCache.TryGetValue(memberInfo, out DBFieldAttribute dbFieldAttribute))
+            if (dbFieldCache.TryGetValue(memberInfo, out var dbFieldAttribute))
                 return dbFieldAttribute;
 
             return new DBFieldAttribute { Name = memberInfo.Name };

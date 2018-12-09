@@ -5,74 +5,61 @@ using Lappa.ORM.Misc;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T>
     {
-        internal string BuildSelectAll()
+        internal void BuildSelectAll()
         {
-            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Part0, Pluralize<T>());
-
-            return sqlQuery.ToString();
+            SqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Part0, PluralizedEntityName);
         }
 
-        internal string BuildSelect(IReadOnlyList<MemberInfo> members)
+        internal void BuildSelect(IReadOnlyList<MemberInfo> members)
         {
-            sqlQuery.Append("SELECT ");
+            SqlQuery.Append("SELECT ");
 
             for (var i = 0; i < members.Count; i++)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].GetName());
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].GetName());
 
-            sqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Part0, Pluralize<T>());
+            SqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Part0, PluralizedEntityName);
 
-            sqlQuery.Replace(", FROM", " FROM");
-
-            return sqlQuery.ToString();
+            SqlQuery.Replace(", FROM", " FROM");
         }
 
-        internal string BuildSelectCount()
+        internal void BuildSelectCount()
         {
-            sqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Part0, Pluralize<T>());
-
-            return sqlQuery.ToString();
+            SqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Part0, PluralizedEntityName);
         }
 
-        internal string BuildWhereAll(Expression expression)
+        internal void BuildWhereAll(Expression expression)
         {
             // ToDo: Add support for query more than 1 table
-            sqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
+            SqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Part0 + " WHERE ", PluralizedEntityName);
 
             Visit(expression);
-
-            return sqlQuery.ToString();
         }
 
-        internal string BuildWhere(Expression expression, IReadOnlyList<MemberInfo> members)
+        internal void BuildWhere(Expression expression, IReadOnlyList<MemberInfo> members)
         {
-            sqlQuery.Append("SELECT ");
+            SqlQuery.Append("SELECT ");
 
             for (var i = 0; i < members.Count; i++)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].GetName());
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].GetName());
 
-            sqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
+            SqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Part0 + " WHERE ", PluralizedEntityName);
 
             // Fix query
-            sqlQuery.Replace(", FROM", " FROM");
+            SqlQuery.Replace(", FROM", " FROM");
 
             Visit(expression);
-
-            return sqlQuery.ToString();
         }
 
-        internal string BuildWhereCount(Expression expression)
+        internal void BuildWhereCount(Expression expression)
         {
-            sqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Part0 + " WHERE ", Pluralize<T>());
+            SqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Part0 + " WHERE ", PluralizedEntityName);
 
             Visit(expression);
-
-            return sqlQuery.ToString();
         }
     }
 }

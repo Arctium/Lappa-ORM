@@ -4,30 +4,35 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using Lappa.ORM.Misc;
-using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T>
     {
-        internal string BuildDelete(T entity, PropertyInfo[] primaryKeys)
+        internal void BuildDelete(T entity, PropertyInfo[] primaryKeys)
         {
-            sqlQuery.AppendFormat(numberFormat, connectorQuery.DeleteQuery, Pluralize<T>(), typeof(T).Name[0]);
-            sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, primaryKeys[0].GetName(), primaryKeys[0].GetGetter<T>().GetValue(entity));
+            SqlQuery.AppendFormat(numberFormat, connectorQuery.DeleteQuery, PluralizedEntityName, PluralizedEntityName[0]);
+
+            var mainPrimaryKeyName = primaryKeys[0].GetName();
+
+            // Append first primary key condition.
+            SqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, mainPrimaryKeyName);
+            SqlParameters.Add($"{mainPrimaryKeyName}", primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.AndEqual, primaryKeys[i].GetName(), primaryKeys[i].GetGetter<T>().GetValue(entity));
+            {
+                var primaryKeyName = primaryKeys[i].GetName();
 
-            return sqlQuery.ToString();
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.AndEqual, primaryKeyName);
+                SqlParameters.Add($"{primaryKeyName}", primaryKeys[i].GetGetter<T>().GetValue(entity));
+            }
         }
 
-        internal string BuildDelete(Expression expression)
+        internal void BuildDelete(Expression expression)
         {
-            sqlQuery.AppendFormat(numberFormat, connectorQuery.DeleteQuery, Pluralize<T>());
+            SqlQuery.AppendFormat(numberFormat, connectorQuery.DeleteQuery, PluralizedEntityName);
 
             Visit(expression);
-
-            return sqlQuery.ToString();
         }
     }
 }

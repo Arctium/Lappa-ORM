@@ -1,12 +1,9 @@
 ﻿// Copyright (C) Arctium.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Lappa.ORM.Constants;
-using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
 {
@@ -14,6 +11,7 @@ namespace Lappa.ORM
     {
         internal string BuildTableCreate(Dictionary<string, PropertyInfo> fields, MySqlEngine dbEngine)
         {
+            /*
             var pluralized = Helper.Pluralize<T>();
 
             sqlQuery.Append($"DROP TABLE IF EXISTS `{pluralized}`;");
@@ -105,7 +103,8 @@ namespace Lappa.ORM
             sqlQuery.Replace("', );", "');");
             sqlQuery.Replace("',)", "')");
 
-            return sqlQuery.ToString();
+            return sqlQuery.ToString();*/
+            return null;
         }
     }
 }

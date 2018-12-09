@@ -11,11 +11,9 @@ namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T>
     {
-        internal string BuildUpdate(T entity, PropertyInfo[] properties, PropertyInfo[] primaryKeys)
+        internal void BuildUpdate(T entity, PropertyInfo[] properties, PropertyInfo[] primaryKeys)
         {
-            var typeName = Pluralize<T>();
-
-            sqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQuery, typeName, typeName[0]);
+            SqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQuery, PluralizedEntityName, PluralizedEntityName[0]);
 
             for (var i = 0; i < properties.Length; i++)
             {
@@ -23,61 +21,68 @@ namespace Lappa.ORM
                 if (properties[i].HasAttribute<PrimaryKeyAttribute>())
                     continue;
 
+                var name = properties[i].GetName();
                 var value = properties[i].GetGetter<T>().GetValue(entity);
 
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal + ", ", properties[i].GetName(), value is bool ? Convert.ToByte(value) : value);
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Equal + ", ", name);
+                SqlParameters.Add($"@{name}", value is bool ? Convert.ToByte(value) : value);
             }
 
-            sqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQueryEnd, typeName, typeName[0]);
-            sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, primaryKeys[0].GetName(), primaryKeys[0].GetGetter<T>().GetValue(entity));
+            SqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQueryEnd, PluralizedEntityName, PluralizedEntityName[0]);
+
+            var mainPrimaryKeyName = primaryKeys[0].GetName();
+
+            // Append first primary key condition.
+            SqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, mainPrimaryKeyName);
+            SqlParameters.Add($"@{mainPrimaryKeyName}", primaryKeys[0].GetGetter<T>().GetValue(entity));
 
             for (var i = 1; i < primaryKeys.Length; i++)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.AndEqual, primaryKeys[i].GetName(), primaryKeys[i].GetGetter<T>().GetValue(entity));
+            {
+                var primaryKeyName = primaryKeys[i].GetName();
 
-            sqlQuery.Replace(", WHERE", " WHERE");
-            sqlQuery.Replace(", FROM", " FROM");
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.AndEqual, primaryKeyName);
+                SqlParameters.Add($"{primaryKeyName}", primaryKeys[i].GetGetter<T>().GetValue(entity));
+            }
 
-            return sqlQuery.ToString();
+            SqlQuery.Replace(", WHERE", " WHERE");
+            SqlQuery.Replace(", FROM", " FROM");
         }
 
-        internal string BuildUpdate(MethodCallExpression[] expression, bool preSql)
+        internal void BuildUpdate(MethodCallExpression[] expression, Expression condition)
         {
-            sqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQuery, Pluralize<T>());
+            SqlQuery.AppendFormat(numberFormat, connectorQuery.UpdateQuery, Pluralize<T>());
 
             for (var i = 0; i < expression.Length; i++)
             {
-                var member = (expression[i].Arguments[0] as MemberExpression).Member.GetName();
-                MemberExpression memberExp = null;
-                object value = null;
+                var memberName = (expression[i].Arguments[0] as MemberExpression).Member.GetName();
+
+                MemberExpression memberExpression = null;
+                object memberValue = null;
 
                 if (expression[i].Arguments[1].NodeType == ExpressionType.MemberAccess)
-                    memberExp = expression[i].Arguments[1] as MemberExpression;
+                    memberExpression = expression[i].Arguments[1] as MemberExpression;
                 else if (expression[i].Arguments[1].NodeType == ExpressionType.Convert)
-                    memberExp = (expression[i].Arguments[1] as UnaryExpression).Operand as MemberExpression;
+                    memberExpression = (expression[i].Arguments[1] as UnaryExpression).Operand as MemberExpression;
                 else if (expression[i].Arguments[1].NodeType == ExpressionType.Constant)
-                    value = (expression[i].Arguments[1] as ConstantExpression).Value;
+                    memberValue = (expression[i].Arguments[1] as ConstantExpression).Value;
 
-                value = value ?? GetExpressionValue(memberExp);
+                memberValue = memberValue ?? GetExpressionValue(memberExpression);
 
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Equal + ", ", member, value is bool ? Convert.ToByte(value) : value);
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Equal + ", ", memberName);
+                SqlParameters.Add($"@{memberName}", memberValue);
             }
 
-            if (!preSql)
-                sqlQuery.Remove(sqlQuery.Length - 2, 2);
+            if (condition != null)
+            {
+                SqlQuery.Append("WHERE ");
 
-            return sqlQuery.ToString();
-        }
+                Visit(condition);
 
-        internal string BuildUpdate(Expression expression)
-        {
-            sqlQuery.Append("WHERE ");
-
-            Visit(expression);
-
-            sqlQuery.Replace(", WHERE", " WHERE");
-            sqlQuery.Replace(", FROM", " FROM");
-
-            return sqlQuery.ToString();
+                SqlQuery.Replace(", WHERE", " WHERE");
+                SqlQuery.Replace(", FROM", " FROM");
+            }
+            else
+                SqlQuery.Remove(SqlQuery.Length - 2, 2);
         }
     }
 }

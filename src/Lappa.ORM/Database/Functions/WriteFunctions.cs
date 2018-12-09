@@ -27,13 +27,13 @@ namespace Lappa.ORM
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var values = new Dictionary<string, object>(properties.Length);
-            var query = new QueryBuilder<TEntity>(Connector.Query, properties);
+            var builder = new QueryBuilder<TEntity>(Connector.Query, properties);
 
             for (var i = 0; i < properties.Length; i++)
             {
                 if (properties[i].PropertyType.IsArray)
                 {
-                    var arr = (query.PropertyGetter[i](entity) as Array);
+                    var arr = (builder.PropertyGetter[i](entity) as Array);
                     var arrElementType = arr.GetType().GetElementType();
 
                     for (var j = 0; j < arr.Length; j++)
@@ -41,11 +41,13 @@ namespace Lappa.ORM
                 }
                 else if (!properties[i].HasAttribute<AutoIncrementAttribute>())
                 {
-                    values.Add(properties[i].GetName(), query.PropertyGetter[i](entity));
+                    values.Add(properties[i].GetName(), builder.PropertyGetter[i](entity));
                 }
             }
 
-            return ExecuteAsync(query.BuildInsert(values));
+            builder.BuildInsert(values);
+
+            return ExecuteAsync(builder);
         }
 
         /// <summary>
@@ -58,11 +60,11 @@ namespace Lappa.ORM
         public async Task<bool> InsertAsync<TEntity>(IReadOnlyList<TEntity> entities) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
-            var query = new QueryBuilder<TEntity>(Connector.Query, properties);
-            var queries = query.BuildBulkInsert(properties, entities);
+            var builder = new QueryBuilder<TEntity>(Connector.Query, properties);
+            var queries = builder.BuildBulkInsert(properties, entities);
 
             for (var i = 0; i < queries.Count; i++)
-                if (!await ExecuteAsync(queries[i]))
+                if (!await ExecuteAsync(builder))
                     return false;
 
             return true;
@@ -84,9 +86,10 @@ namespace Lappa.ORM
             var properties = type.GetReadWriteProperties();
             var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.GetName() == "Id" || p.GetName() == type.Name + "Id").ToArray();
             var builder = new QueryBuilder<TEntity>(Connector.Query);
-            var query = builder.BuildUpdate(entity, properties, primaryKeys);
 
-            return ExecuteAsync(query);
+            builder.BuildUpdate(entity, properties, primaryKeys);
+
+            return ExecuteAsync(builder);
         }
 
         /// <summary>
@@ -101,9 +104,10 @@ namespace Lappa.ORM
         {
             var builder = new QueryBuilder<TEntity>(Connector.Query);
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
-            var query = builder.BuildUpdate(expressions.ToArray(), false);
 
-            return ExecuteAsync(query);
+            builder.BuildUpdate(expressions.ToArray(), null);
+
+            return ExecuteAsync(builder);
         }
 
         /// <summary>
@@ -119,11 +123,10 @@ namespace Lappa.ORM
         {
             var builder = new QueryBuilder<TEntity>(Connector.Query);
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
-            var query = builder.BuildUpdate(expressions.ToArray(), true);
 
-            query = builder.BuildUpdate(condition);
+            builder.BuildUpdate(expressions.ToArray(), condition);
 
-            return ExecuteAsync(query);
+            return ExecuteAsync(builder);
         }
         #endregion
 
@@ -141,9 +144,10 @@ namespace Lappa.ORM
             var type = typeof(TEntity);
             var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.GetName() == "Id" || p.GetName() == type.Name + "Id").ToArray();
             var builder = new QueryBuilder<TEntity>(Connector.Query);
-            var query = builder.BuildDelete(entity, primaryKeys);
 
-            return ExecuteAsync(query);
+            builder.BuildDelete(entity, primaryKeys);
+
+            return ExecuteAsync(builder);
         }
 
         /// <summary>
@@ -157,9 +161,10 @@ namespace Lappa.ORM
         public Task<bool> DeleteAsync<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
         {
             var builder = new QueryBuilder<TEntity>(Connector.Query);
-            var query = builder.BuildDelete(condition.Body);
 
-            return ExecuteAsync(query);
+            builder.BuildDelete(condition.Body);
+
+            return ExecuteAsync(builder);
         }
         #endregion
     }

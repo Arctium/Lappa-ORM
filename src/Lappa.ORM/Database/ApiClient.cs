@@ -22,19 +22,25 @@ namespace Lappa.ORM
         }
 
         // sql query
-        Task<HttpResponseMessage> SendRequest(string entityName, string content, Func<object, string> serializeFunction)
+        Task<HttpResponseMessage> SendRequest(IQueryBuilder queryBuilder, Func<object, string> serializeFunction)
         {
-            var stringContent = new StringContent(serializeFunction(content), Encoding.UTF8, "application/json");
+            var serializedRequest = serializeFunction(new ApiRequest
+            {
+                // Pluralized entity name.
+                EntityName = queryBuilder.EntityName,
+                IsSelectQuery = queryBuilder.IsSelectQuery,
+                SqlQuery = queryBuilder.SqlQuery.ToString(),
+                SqlParameters = queryBuilder.SqlParameters
+            });
 
-            // Pluralized entity name.
-            stringContent.Headers.Add("Entity", entityName);
+            var stringContent = new StringContent(serializedRequest, Encoding.UTF8, "application/json");
 
             return client.PostAsync(Host, stringContent);
         }
 
-        public async Task<object[][]> GetResponse(string entityName, string content, Func<object, string> serializeFunction, Func<string, object[][]> deserializeFunction)
+        public async Task<object[][]> GetResponse(IQueryBuilder queryBuilder, Func<object, string> serializeFunction, Func<string, object[][]> deserializeFunction)
         {
-            using (var response = await SendRequest(entityName, content, serializeFunction))
+            using (var response = await SendRequest(queryBuilder, serializeFunction))
             {
                 var jsonContent = await response.Content.ReadAsStringAsync();
 

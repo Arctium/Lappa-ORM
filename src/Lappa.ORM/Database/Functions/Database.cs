@@ -36,7 +36,6 @@ namespace Lappa.ORM
             Connector = new Connector { Settings = connectorSettings };
             entityBuilder = new EntityBuilder(this);
 
-
             try
             {
 
@@ -94,38 +93,55 @@ namespace Lappa.ORM
             return connection;
         }
 
-        internal DbCommand CreateSqlCommand(DbConnection connection, DbTransaction transaction, string sql, params object[] args)
+        internal DbCommand CreateSqlCommand(DbConnection connection, DbTransaction transaction, IQueryBuilder queryBuilder)
         {
             var sqlCommand = Connector.CreateCommandObject();
 
             sqlCommand.Connection = connection;
-            sqlCommand.CommandText = sql;
+            sqlCommand.CommandText = queryBuilder.SqlQuery.ToString();
             sqlCommand.CommandTimeout = 2147483;
             sqlCommand.Transaction = transaction;
 
-            if (args.Length > 0)
+            foreach (var p in queryBuilder.SqlParameters)
             {
-                var mParams = new DbParameter[args.Length];
+                var param = sqlCommand.CreateParameter();
 
-                for (var i = 0; i < args.Length; i++)
-                {
-                    var param = Connector.CreateParameterObject();
+                param.ParameterName = p.Key;
+                param.Value = p.Value;
 
-                    param.ParameterName = "";
-                    param.Value = args[i];
-
-                    mParams[i] = param;
-                }
-
-                sqlCommand.Parameters.AddRange(mParams);
+                sqlCommand.Parameters.Add(param);
             }
 
             return sqlCommand;
         }
 
-        internal bool Execute(string sql, params object[] args) => RunSync(() => ExecuteAsync(sql, args));
+        internal DbCommand CreateSqlCommand(DbConnection connection, DbTransaction transaction, ApiRequest apiRequest)
+        {
+            var sqlCommand = Connector.CreateCommandObject();
 
-        internal async Task<bool> ExecuteAsync(string sql, params object[] args)
+            sqlCommand.Connection = connection;
+            sqlCommand.CommandText = apiRequest.SqlQuery;
+            sqlCommand.CommandTimeout = 2147483;
+            sqlCommand.Transaction = transaction;
+            sqlCommand.CommandType = CommandType.Text;
+            sqlCommand.Prepare();
+
+            foreach (var p in apiRequest.SqlParameters)
+            {
+                var param = sqlCommand.CreateParameter();
+
+                param.ParameterName = p.Key;
+                param.Value = p.Value;
+
+                sqlCommand.Parameters.Add(param);
+            }
+
+            return sqlCommand;
+        }
+
+        internal bool Execute(IQueryBuilder queryBuilder) => RunSync(() => ExecuteAsync(queryBuilder));
+
+        internal async Task<bool> ExecuteAsync(IQueryBuilder queryBuilder)
         {
             DbTransaction transaction = null;
 
@@ -133,19 +149,16 @@ namespace Lappa.ORM
             {
                 if (ApiMode)
                 {
-                    using (var sqlCommand = CreateSqlCommand(null, null, sql, args))
-                    {
-                        var affectedRows = await apiClient.GetResponse(null, sqlCommand.CommandText, Connector.Settings.ApiSerializeFunction, Connector.Settings.ApiDeserializeFunction);
+                    var affectedRows = await apiClient.GetResponse(queryBuilder, Connector.Settings.ApiSerializeFunction, Connector.Settings.ApiDeserializeFunction);
 
-                        return Convert.ToInt32(affectedRows[0]?[0]) > 0;
-                    }
+                    return Convert.ToInt32(affectedRows[0]?[0]) > 0;
                 }
                 else
                 {
                     using (var connection = await CreateConnectionAsync())
                     using (transaction = Connector.Settings.UseTransactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null)
                     {
-                        using (var cmd = CreateSqlCommand(connection, transaction, sql, args))
+                        using (var cmd = CreateSqlCommand(connection, transaction, queryBuilder))
                         {
                             var affectedRows = await cmd.ExecuteNonQueryAsync();
 
@@ -166,25 +179,25 @@ namespace Lappa.ORM
             }
         }
 
-        internal object[][] Select(string sql, IQueryBuilder queryBuilder = null, params object[] args)
+        internal object[][] Select(IQueryBuilder queryBuilder)
         {
-            return RunSync(() => SelectAsync(sql, queryBuilder, args));
+            return RunSync(() => SelectAsync(queryBuilder));
         }
 
-        internal async Task<object[][]> SelectAsync(string sql, IQueryBuilder queryBuilder = null, params object[] args)
+        internal async Task<object[][]> SelectAsync(IQueryBuilder queryBuilder)
         {
             try
             {
                 if (ApiMode)
                 {
-                    var sqlCommand = CreateSqlCommand(null, null, sql, args);
+                    var sqlCommand = CreateSqlCommand(null, null, queryBuilder);
 
-                    return await apiClient.GetResponse(queryBuilder.EntityName, sqlCommand.CommandText, Connector.Settings.ApiSerializeFunction, Connector.Settings.ApiDeserializeFunction);
+                    return await apiClient.GetResponse(queryBuilder, Connector.Settings.ApiSerializeFunction, Connector.Settings.ApiDeserializeFunction);
                 }
                 else
                 {
                     var connection = await CreateConnectionAsync();
-                    var sqlCommand = CreateSqlCommand(connection, null, sql, args);
+                    var sqlCommand = CreateSqlCommand(connection, null, queryBuilder);
 
                     using (var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                         return entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
@@ -198,9 +211,62 @@ namespace Lappa.ORM
             }
         }
 
-        // Used for select queries from api clients only.
-        public object[][] ProcessApiRequest(string sql, string entityName) => RunSync(() => ProcessApiRequestAsync(sql, entityName));
+        async Task<object[][]> ExecuteFromApiAsync(IQueryBuilder queryBuilder, ApiRequest apiRequest)
+        {
+            DbTransaction transaction = null;
 
-        public async Task<object[][]> ProcessApiRequestAsync(string sql, string entityName) => await SelectAsync(sql, CacheManager.Instance.GetQueryBuilder(entityName));
+            try
+            {
+                using (var connection = await CreateConnectionAsync())
+                using (transaction = Connector.Settings.UseTransactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null)
+                {
+                    using (var cmd = CreateSqlCommand(connection, transaction, apiRequest))
+                    {
+                        var affectedRows = await cmd.ExecuteNonQueryAsync();
+
+                        transaction?.Commit();
+
+                        return new object[1][] { new object[] { affectedRows } };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Message(LogTypes.Error, ex.ToString());
+
+                transaction?.Rollback();
+
+                return null;
+            }
+        }
+
+        async Task<object[][]> SelectFromApiAsync(IQueryBuilder queryBuilder, ApiRequest apiRequest)
+        {
+            try
+            {
+                var connection = await CreateConnectionAsync();
+                var sqlCommand = CreateSqlCommand(connection, null, apiRequest);
+
+                using (var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                    return entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
+            }
+            catch (Exception ex)
+            {
+                Log.Message(LogTypes.Error, ex.ToString());
+
+                return null;
+            }
+        }
+
+        // Used for select queries from api clients only.
+        public object[][] ProcessApiRequest(ApiRequest apiRequest) => RunSync(() => ProcessApiRequestAsync(apiRequest));
+
+        public async Task<object[][]> ProcessApiRequestAsync(ApiRequest apiRequest)
+        {
+            if (apiRequest.IsSelectQuery)
+                return await SelectFromApiAsync(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
+            else
+                return await ExecuteFromApiAsync(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
+        }
     }
 }

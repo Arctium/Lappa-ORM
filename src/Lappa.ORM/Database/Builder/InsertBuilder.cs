@@ -4,61 +4,59 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using Lappa.ORM.Misc;
-using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T>
     {
-        internal string BuildInsert(Dictionary<string, object> values)
+        internal void BuildInsert(Dictionary<string, object> values)
         {
-            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Part0 + " (", Pluralize<T>());
+            SqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Part0 + " (", PluralizedEntityName);
 
             foreach (var name in values.Keys)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ",", name);
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ",", name);
 
-            sqlQuery.Append(") VALUES (");
+            SqlQuery.Append(") VALUES (");
 
-            foreach (var val in values.Values)
+            foreach (var kp in values)
             {
-                if (val != null)
+                if (kp.Value != null)
                 {
                     Type valType;
 
-                    if ((valType = val.GetType()).IsArray)
+                    if ((valType = kp.Value.GetType()).IsArray)
                     {
                         valType = valType.GetElementType();
 
-                        var arr = val as Array;
+                        var arr = kp.Value as Array;
 
                         for (var i = 0; i < arr.Length; i++)
-                            sqlQuery.AppendFormat(numberFormat, "'{0}',", arr.GetValue(i).ChangeTypeSet(valType));
+                        {
+                            SqlQuery.AppendFormat(numberFormat, $"@{kp.Key},");
+                            SqlParameters.Add($"@{kp.Key}", arr.GetValue(i).ChangeTypeSet(valType));
+                        }
                     }
                     else
                     {
-                        var value = val.ChangeTypeSet(valType);
-
-                        if (value is string)
-                            value = ((string)value).Replace("\"", "\"\"").Replace("'", @"\'");
-
-                        sqlQuery.AppendFormat(numberFormat, "'{0}',", value);
+                        SqlQuery.AppendFormat(numberFormat, $"@{kp.Key},");
+                        SqlParameters.Add($"@{kp.Key}", kp.Value.ChangeTypeSet(valType));
                     }
                 }
                 else
-                    sqlQuery.AppendFormat("'',");
+                {
+                    SqlQuery.AppendFormat(numberFormat, $"@{kp.Key},");
+                    SqlParameters.Add($"@{kp.Key}", "");
+                }
             }
 
-            sqlQuery.Append(")");
-            sqlQuery.Replace(",)", ")");
-
-            return sqlQuery.ToString();
+            SqlQuery.Append(")");
+            SqlQuery.Replace(",)", ")");
         }
 
         internal List<string> BuildBulkInsert(PropertyInfo[] properties, IReadOnlyList<T> entities)
         {
-            var queries = new List<string>();
+            /*var queries = new List<string>();
             var values = new Dictionary<string, object>(properties.Length);
             var typeName = Pluralize<T>();
 
@@ -158,7 +156,8 @@ namespace Lappa.ORM
 
             queries.Add(sqlQuery.ToString());
 
-            return queries;
+            return queries;*/
+            return null;
         }
     }
 }

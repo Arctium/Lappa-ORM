@@ -1,4 +1,7 @@
-﻿using Xunit;
+﻿// Copyright (C) Arctium.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Xunit;
 using Lappa.ORM.Constants;
 
 namespace Lappa.ORM.Tests

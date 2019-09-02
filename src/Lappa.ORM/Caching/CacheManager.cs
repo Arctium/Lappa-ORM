@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Lappa.ORM.Misc;
-using Microsoft.Extensions.DependencyModel;
 
 namespace Lappa.ORM.Caching
 {
@@ -27,51 +26,61 @@ namespace Lappa.ORM.Caching
 
         void CacheDBFieldAttributes()
         {
-            var assemblyNames = DependencyContext.Default.GetDefaultAssemblyNames();
-
-            foreach (var asm in assemblyNames)
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
-                var entityTypes = Assembly.Load(asm).DefinedTypes.Where(t => t.IsSubclassOf(typeof(Entity)));
-
-                foreach (var t in entityTypes)
+                try
                 {
-                    foreach (var p in t.DeclaredProperties)
+                    var entityTypes = asm.DefinedTypes.Where(t => t.IsSubclassOf(typeof(Entity)));
+
+                    foreach (var t in entityTypes)
                     {
-                        var dbFieldAttribute = p.GetCustomAttribute<DBFieldAttribute>();
-
-                        if (dbFieldAttribute != null)
+                        foreach (var p in t.GetTypeInfo().DeclaredProperties)
                         {
-                            // Use the property name if no DBField name is set.
-                            if (string.IsNullOrEmpty(dbFieldAttribute.Name))
-                                dbFieldAttribute.Name = p.Name;
+                            var dbFieldAttribute = p.GetCustomAttribute<DBFieldAttribute>();
 
-                            dbFieldCache.TryAdd(p, dbFieldAttribute);
-                        }
-                        else
-                        {
-                            // Also add a default DBFieldAttribute for all properties.
-                            dbFieldCache.TryAdd(p, p.GetCustomAttribute<DBFieldAttribute>() ?? new DBFieldAttribute { Name = p.Name });
+                            if (dbFieldAttribute != null)
+                            {
+                                // Use the property name if no DBField name is set.
+                                if (string.IsNullOrEmpty(dbFieldAttribute.Name))
+                                    dbFieldAttribute.Name = p.Name;
+
+                                dbFieldCache.TryAdd(p, dbFieldAttribute);
+                            }
+                            else
+                            {
+                                // Also add a default DBFieldAttribute for all properties.
+                                dbFieldCache.TryAdd(p, p.GetCustomAttribute<DBFieldAttribute>() ?? new DBFieldAttribute { Name = p.Name });
+                            }
                         }
                     }
+                }
+                catch (ReflectionTypeLoadException)
+                {
+                    // Just swallow the exception. No special handling required.
                 }
             }
         }
 
         public void CacheQueryBuilders(Connector connector)
         {
-            var assemblyNames = DependencyContext.Default.GetDefaultAssemblyNames();
-
-            foreach (var asm in assemblyNames)
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
-                var entityTypes = Assembly.Load(asm).DefinedTypes.Where(t => t.IsSubclassOf(typeof(Entity)));
-
-                foreach (var t in entityTypes)
+                try
                 {
-                    var builderType = typeof(QueryBuilder<>).MakeGenericType(t);
-                    var parameters = new object[] { connector.Query, t.GetReadWriteProperties(), null };
-                    var builderInstance = Activator.CreateInstance(builderType, BindingFlags.NonPublic | BindingFlags.Instance, null, parameters, CultureInfo.InvariantCulture);
+                    var entityTypes = asm.DefinedTypes.Where(t => t.IsSubclassOf(typeof(Entity)));
 
-                    queryBuilderCache.Add(t.Name, builderInstance as IQueryBuilder);
+                    foreach (var t in entityTypes)
+                    {
+                        var builderType = typeof(QueryBuilder<>).MakeGenericType(t);
+                        var parameters = new object[] { connector.Query, t.GetReadWriteProperties(), null };
+                        var builderInstance = Activator.CreateInstance(builderType, BindingFlags.NonPublic | BindingFlags.Instance, null, parameters, CultureInfo.InvariantCulture);
+
+                        queryBuilderCache.Add(t.Name, builderInstance as IQueryBuilder);
+                    }
+                }
+                catch (ReflectionTypeLoadException)
+                {
+                    // Just swallow the exception. No special handling required.
                 }
             }
         }

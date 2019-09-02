@@ -4,6 +4,7 @@
 using System;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Lappa.ORM
@@ -21,31 +22,27 @@ namespace Lappa.ORM
             client = new HttpClient();
         }
 
-        // sql query
-        Task<HttpResponseMessage> SendRequest(IQueryBuilder queryBuilder, Func<object, string> serializeFunction)
+        Task<HttpResponseMessage> SendRequest(IQueryBuilder queryBuilder)
         {
-            var serializedRequest = serializeFunction(new ApiRequest
+            var serializedRequest = JsonSerializer.Serialize(new ApiRequest
             {
                 // Pluralized entity name.
                 EntityName = queryBuilder.EntityName,
                 IsSelectQuery = queryBuilder.IsSelectQuery,
                 SqlQuery = queryBuilder.SqlQuery.ToString(),
                 SqlParameters = queryBuilder.SqlParameters
-            });
+            }, new JsonSerializerOptions { WriteIndented = false });
 
             var stringContent = new StringContent(serializedRequest, Encoding.UTF8, "application/json");
 
             return client.PostAsync(Host, stringContent);
         }
 
-        public async Task<object[][]> GetResponse(IQueryBuilder queryBuilder, Func<object, string> serializeFunction, Func<string, object[][]> deserializeFunction)
+        public async Task<object[][]> GetResponse(IQueryBuilder queryBuilder)
         {
-            using (var response = await SendRequest(queryBuilder, serializeFunction))
-            {
-                var jsonContent = await response.Content.ReadAsStringAsync();
-
-                return deserializeFunction(jsonContent);
-            }
+            using (var response = await SendRequest(queryBuilder))
+            using (var jsonContent = await response.Content.ReadAsStreamAsync())
+                return await JsonSerializer.DeserializeAsync<object[][]>(jsonContent);
         }
     }
 }

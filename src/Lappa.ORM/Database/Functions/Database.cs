@@ -38,7 +38,6 @@ namespace Lappa.ORM
 
             try
             {
-
                 Connector.Load();
 
                 // Extended caching that requires connector info.
@@ -79,8 +78,6 @@ namespace Lappa.ORM
         // Overwrite dummy logger.
         // Can be called at any time.
         public void SetLogger(ILog logger) => Log = logger;
-
-        DbConnection CreateConnection() => CreateConnectionAsync().GetAwaiter().GetResult();
 
         internal async Task<DbConnection> CreateConnectionAsync()
         {
@@ -149,7 +146,7 @@ namespace Lappa.ORM
             {
                 if (ApiMode)
                 {
-                    var affectedRows = await apiClient.GetResponse(queryBuilder, Connector.Settings.ApiSerializeFunction, Connector.Settings.ApiDeserializeFunction);
+                    var affectedRows = await apiClient.GetResponse(queryBuilder);
 
                     return Convert.ToInt32(affectedRows[0]?[0]) > 0;
                 }
@@ -192,7 +189,7 @@ namespace Lappa.ORM
                 {
                     queryBuilder.IsSelectQuery = true;
 
-                    return await apiClient.GetResponse(queryBuilder, Connector.Settings.ApiSerializeFunction, Connector.Settings.ApiDeserializeFunction);
+                    return await apiClient.GetResponse(queryBuilder);
                 }
                 else
                 {

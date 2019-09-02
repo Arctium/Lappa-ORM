@@ -6,7 +6,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using Lappa.ORM.Constants;
-using Microsoft.Extensions.DependencyModel;
 
 namespace Lappa.ORM
 {
@@ -42,8 +41,10 @@ namespace Lappa.ORM
                         assembly = Assembly.LoadFrom(Settings.ConnectorPath);
                     else
                     {
-                        var mysqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames().Where(asm => asm.Name.StartsWith("MySql.Data") ||
-                                                                                                                       asm.Name.StartsWith("MySqlConnector"));
+                        var mysqlAssemblyNames = AppDomain.CurrentDomain.GetAssemblies().Where(asm => asm.DefinedTypes.Any(
+                                                                                               t => t.Name.StartsWith("MySql.Data") ||
+                                                                                               t.Name.StartsWith("MySqlConnector")));
+
                         // Let's throw a type load exception if no supported MySql lib is found.
                         if (mysqlAssemblyNames.Count() == 0)
                             throw new TypeLoadException("No assembly referencing 'MySql' found.");
@@ -51,7 +52,7 @@ namespace Lappa.ORM
                         if (mysqlAssemblyNames.Count() > 1)
                             throw new NotSupportedException("Multiple assemblies referencing 'MySql' found.");
 
-                        assembly = Assembly.Load(mysqlAssemblyNames.First());
+                        assembly = Assembly.Load(mysqlAssemblyNames.First().FullName);
                     }
 
                     break;
@@ -73,7 +74,7 @@ namespace Lappa.ORM
                         assembly = Assembly.LoadFrom(Settings.ConnectorPath);
                     else
                     {
-                        var npgsqlAssemblyNames = DependencyContext.Default.GetDefaultAssemblyNames().Where(asm => asm.Name.StartsWith("Npgsql"));
+                        var npgsqlAssemblyNames = AppDomain.CurrentDomain.GetAssemblies().Where(asm => asm.DefinedTypes.Any(t => t.Name.StartsWith("Npgsql")));
 
                         // Let's throw a type load exception if no supported Npgsql lib is found.
                         if (npgsqlAssemblyNames.Count() == 0)
@@ -82,7 +83,7 @@ namespace Lappa.ORM
                         if (npgsqlAssemblyNames.Count() > 1)
                             throw new NotSupportedException("Multiple assemblies referencing 'Npgsql' found.");
 
-                        assembly = Assembly.Load(npgsqlAssemblyNames.First());
+                        assembly = Assembly.Load(npgsqlAssemblyNames.First().FullName);
                     }
 
                     break;

@@ -15,9 +15,6 @@ namespace Lappa.ORM
         public string ConnectorPath { get; set; }
         public bool UseTransactions { get; set; }
 
-        // Api related
         public string ApiHost { get; set; }
-        public Func<object, string> ApiSerializeFunction { get; set; }
-        public Func<string, object[][]> ApiDeserializeFunction { get; set; }
     }
 }

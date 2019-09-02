@@ -31,11 +31,10 @@ namespace Lappa.ORM
         {
             return Type switch
             {
-                DatabaseType.MySql => $"Server={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.HasValue};Min Pool Size={Pooling.Value.Min};Max Pool Size={Pooling.Value.Max};CharSet={CharSet};{ExtraOptions}",
-                DatabaseType.MSSql => $"Data Source={Host}; Initial Catalog = {Database}; User ID = {User}; Password = {Password};Pooling={Pooling.HasValue};Min Pool Size={Pooling.Value.Min};Max Pool Size={Pooling.Value.Max};{ExtraOptions}",
-                DatabaseType.SQLite => $"Data Source={Host};Password={Password};Database={Database};Pooling={Pooling.HasValue};Min Pool Size={Pooling.Value.Min};Max Pool Size={Pooling.Value.Max};{ExtraOptions}",
-                DatabaseType.Oracle => $"Data Source={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.HasValue};Min Pool Size={Pooling.Value.Min};Max Pool Size={Pooling.Value.Max};{ExtraOptions}",
-                DatabaseType.PostgreSql => $"Server={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.HasValue};Min Pool Size={Pooling.Value.Min};Max Pool Size={Pooling.Value.Max};{ExtraOptions}",
+                DatabaseType.MySql => $"Server={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.HasValue};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};CharSet={CharSet};{ExtraOptions}",
+                DatabaseType.MSSql => $"Data Source={Host}; Initial Catalog = {Database}; User ID = {User}; Password = {Password};Pooling={Pooling.HasValue};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};{ExtraOptions}",
+                DatabaseType.SQLite => $"Data Source={Host};Password={Password};Database={Database};Pooling={Pooling.HasValue};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};{ExtraOptions}",
+                DatabaseType.PostgreSql => $"Server={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.HasValue};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};{ExtraOptions}",
                 _ => throw new NotSupportedException($"{Type}")
             };
         }

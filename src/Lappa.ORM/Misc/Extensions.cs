@@ -121,5 +121,17 @@ namespace Lappa.ORM.Misc
 
             return dic;
         }
+
+        internal static Type[] GetValidTypes(this Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                return ex.Types.Where(t => t != null).ToArray();
+            }
+        }
     }
 }

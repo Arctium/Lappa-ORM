@@ -6,6 +6,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using Lappa.ORM.Constants;
+using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
 {
@@ -41,18 +42,15 @@ namespace Lappa.ORM
                         assembly = Assembly.LoadFrom(Settings.ConnectorPath);
                     else
                     {
-                        var mysqlAssemblyNames = AppDomain.CurrentDomain.GetAssemblies().Where(asm => asm.DefinedTypes.Any(
-                                                                                               t => t.Name.StartsWith("MySql.Data") ||
-                                                                                               t.Name.StartsWith("MySqlConnector")));
+                        var mysqlAssemblyName = AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(asm => asm.GetValidTypes().
+                                                                                                               Any(t => t.Name.StartsWith("MySql.Data") ||
+                                                                                                                        t.Name.StartsWith("MySqlConnector")));
 
                         // Let's throw a type load exception if no supported MySql lib is found.
-                        if (mysqlAssemblyNames.Count() == 0)
+                        if (mysqlAssemblyName == null)
                             throw new TypeLoadException("No assembly referencing 'MySql' found.");
 
-                        if (mysqlAssemblyNames.Count() > 1)
-                            throw new NotSupportedException("Multiple assemblies referencing 'MySql' found.");
-
-                        assembly = Assembly.Load(mysqlAssemblyNames.First().FullName);
+                        assembly = Assembly.Load(mysqlAssemblyName.FullName);
                     }
 
                     break;
@@ -74,16 +72,13 @@ namespace Lappa.ORM
                         assembly = Assembly.LoadFrom(Settings.ConnectorPath);
                     else
                     {
-                        var npgsqlAssemblyNames = AppDomain.CurrentDomain.GetAssemblies().Where(asm => asm.DefinedTypes.Any(t => t.Name.StartsWith("Npgsql")));
+                        var npgsqlAssemblyName = AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(asm => asm.GetValidTypes().Any(t => t.Name.StartsWith("Npgsql")));
 
-                        // Let's throw a type load exception if no supported Npgsql lib is found.
-                        if (npgsqlAssemblyNames.Count() == 0)
+                        // Let's throw a type load exception if no supported MySql lib is found.
+                        if (npgsqlAssemblyName == null)
                             throw new TypeLoadException("No assembly referencing 'Npgsql' found.");
 
-                        if (npgsqlAssemblyNames.Count() > 1)
-                            throw new NotSupportedException("Multiple assemblies referencing 'Npgsql' found.");
-
-                        assembly = Assembly.Load(npgsqlAssemblyNames.First().FullName);
+                        assembly = Assembly.Load(npgsqlAssemblyName.FullName);
                     }
 
                     break;

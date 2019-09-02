@@ -28,35 +28,28 @@ namespace Lappa.ORM.Caching
         {
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
-                try
+                var entityTypes = asm.GetValidTypes().Where(t => t.IsSubclassOf(typeof(Entity)));
+
+                foreach (var t in entityTypes)
                 {
-                    var entityTypes = asm.DefinedTypes.Where(t => t.IsSubclassOf(typeof(Entity)));
-
-                    foreach (var t in entityTypes)
+                    foreach (var p in t.GetTypeInfo().DeclaredProperties)
                     {
-                        foreach (var p in t.GetTypeInfo().DeclaredProperties)
+                        var dbFieldAttribute = p.GetCustomAttribute<DBFieldAttribute>();
+
+                        if (dbFieldAttribute != null)
                         {
-                            var dbFieldAttribute = p.GetCustomAttribute<DBFieldAttribute>();
+                            // Use the property name if no DBField name is set.
+                            if (string.IsNullOrEmpty(dbFieldAttribute.Name))
+                                dbFieldAttribute.Name = p.Name;
 
-                            if (dbFieldAttribute != null)
-                            {
-                                // Use the property name if no DBField name is set.
-                                if (string.IsNullOrEmpty(dbFieldAttribute.Name))
-                                    dbFieldAttribute.Name = p.Name;
-
-                                dbFieldCache.TryAdd(p, dbFieldAttribute);
-                            }
-                            else
-                            {
-                                // Also add a default DBFieldAttribute for all properties.
-                                dbFieldCache.TryAdd(p, p.GetCustomAttribute<DBFieldAttribute>() ?? new DBFieldAttribute { Name = p.Name });
-                            }
+                            dbFieldCache.TryAdd(p, dbFieldAttribute);
+                        }
+                        else
+                        {
+                            // Also add a default DBFieldAttribute for all properties.
+                            dbFieldCache.TryAdd(p, p.GetCustomAttribute<DBFieldAttribute>() ?? new DBFieldAttribute { Name = p.Name });
                         }
                     }
-                }
-                catch (ReflectionTypeLoadException)
-                {
-                    // Just swallow the exception. No special handling required.
                 }
             }
         }
@@ -65,22 +58,15 @@ namespace Lappa.ORM.Caching
         {
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
-                try
-                {
-                    var entityTypes = asm.DefinedTypes.Where(t => t.IsSubclassOf(typeof(Entity)));
+                var entityTypes = asm.GetValidTypes().Where(t => t.IsSubclassOf(typeof(Entity)));
 
-                    foreach (var t in entityTypes)
-                    {
-                        var builderType = typeof(QueryBuilder<>).MakeGenericType(t);
-                        var parameters = new object[] { connector.Query, t.GetReadWriteProperties(), null };
-                        var builderInstance = Activator.CreateInstance(builderType, BindingFlags.NonPublic | BindingFlags.Instance, null, parameters, CultureInfo.InvariantCulture);
-
-                        queryBuilderCache.Add(t.Name, builderInstance as IQueryBuilder);
-                    }
-                }
-                catch (ReflectionTypeLoadException)
+                foreach (var t in entityTypes)
                 {
-                    // Just swallow the exception. No special handling required.
+                    var builderType = typeof(QueryBuilder<>).MakeGenericType(t);
+                    var parameters = new object[] { connector.Query, t.GetReadWriteProperties(), null };
+                    var builderInstance = Activator.CreateInstance(builderType, BindingFlags.NonPublic | BindingFlags.Instance, null, parameters, CultureInfo.InvariantCulture);
+
+                    queryBuilderCache.Add(t.Name, builderInstance as IQueryBuilder);
                 }
             }
         }

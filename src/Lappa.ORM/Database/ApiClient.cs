@@ -16,6 +16,7 @@ namespace Lappa.ORM
 
         readonly HttpClient client;
         readonly JsonSerializerOptions jsonSerializerOptions;
+        readonly JsonSerializerOptions jsonDeserializerOptions;
 
         public ApiClient(string hostAddress)
         {
@@ -28,7 +29,9 @@ namespace Lappa.ORM
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
 
-            jsonSerializerOptions.Converters.Add(new JsonObjectConverter());
+            jsonDeserializerOptions = new JsonSerializerOptions();
+
+            jsonDeserializerOptions.Converters.Add(new JsonObjectConverter());
         }
 
         Task<HttpResponseMessage> SendRequest(IQueryBuilder queryBuilder)
@@ -52,7 +55,7 @@ namespace Lappa.ORM
             using var response = await SendRequest(queryBuilder);
             using var jsonStream = await response.Content.ReadAsStreamAsync();
 
-            return await JsonSerializer.DeserializeAsync<object[][]>(jsonStream);
+            return await JsonSerializer.DeserializeAsync<object[][]>(jsonStream, jsonDeserializerOptions);
         }
     }
 }

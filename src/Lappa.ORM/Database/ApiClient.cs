@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -30,7 +31,7 @@ namespace Lappa.ORM
                 IsSelectQuery = queryBuilder.IsSelectQuery,
                 SqlQuery = queryBuilder.SqlQuery.ToString(),
                 SqlParameters = queryBuilder.SqlParameters
-            }, new JsonSerializerOptions { WriteIndented = false });
+            }, new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
 
             var stringContent = new StringContent(serializedRequest, Encoding.UTF8, "application/json");
 
@@ -39,9 +40,10 @@ namespace Lappa.ORM
 
         public async Task<object[][]> GetResponse(IQueryBuilder queryBuilder)
         {
-            using (var response = await SendRequest(queryBuilder))
-            using (var jsonContent = await response.Content.ReadAsStreamAsync())
-                return await JsonSerializer.DeserializeAsync<object[][]>(jsonContent);
+            using var response = await SendRequest(queryBuilder);
+            using var jsonStream = await response.Content.ReadAsStreamAsync();
+
+            return await JsonSerializer.DeserializeAsync<object[][]>(jsonStream);
         }
     }
 }

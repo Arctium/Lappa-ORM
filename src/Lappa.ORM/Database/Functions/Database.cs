@@ -4,6 +4,7 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Lappa.ORM.Constants;
 using Lappa.ORM.Logging;
@@ -128,7 +129,10 @@ namespace Lappa.ORM
                 var param = sqlCommand.CreateParameter();
 
                 param.ParameterName = p.Key;
-                param.Value = p.Value;
+
+                var jsonElement = (JsonElement)p.Value;
+
+                param.Value = jsonElement.ValueKind == JsonValueKind.String ? jsonElement.GetString() : jsonElement.GetRawText();
 
                 sqlCommand.Parameters.Add(param);
             }

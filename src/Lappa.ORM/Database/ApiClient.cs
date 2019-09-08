@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
 {
@@ -14,12 +15,20 @@ namespace Lappa.ORM
         public string Host { get; }
 
         readonly HttpClient client;
+        readonly JsonSerializerOptions jsonSerializerOptions;
 
         public ApiClient(string hostAddress)
         {
             Host = hostAddress;
 
             client = new HttpClient();
+            jsonSerializerOptions = new JsonSerializerOptions
+            {
+                WriteIndented = false,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+
+            jsonSerializerOptions.Converters.Add(new JsonObjectConverter());
         }
 
         Task<HttpResponseMessage> SendRequest(IQueryBuilder queryBuilder)
@@ -31,7 +40,7 @@ namespace Lappa.ORM
                 IsSelectQuery = queryBuilder.IsSelectQuery,
                 SqlQuery = queryBuilder.SqlQuery.ToString(),
                 SqlParameters = queryBuilder.SqlParameters
-            }, new JsonSerializerOptions { WriteIndented = false, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+            }, jsonSerializerOptions);
 
             var stringContent = new StringContent(serializedRequest, Encoding.UTF8, "application/json");
 

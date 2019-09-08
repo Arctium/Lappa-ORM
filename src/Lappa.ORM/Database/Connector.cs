@@ -4,10 +4,7 @@
 using System;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Reflection;
 using Lappa.ORM.Constants;
-using Lappa.ORM.Misc;
 using Microsoft.Data.Sqlite;
 using MySql.Data.MySqlClient;
 using Npgsql;

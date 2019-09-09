@@ -110,7 +110,7 @@ namespace Lappa.ORM
 
             var rowData = await SelectAsync(builder);
 
-            return rowData.Length > 0;
+            return rowData[0]?.Length > 0;
         }
 
         public long Count<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()

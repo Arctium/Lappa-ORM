@@ -32,7 +32,7 @@ namespace Lappa.ORM
             Log = new Log();
         }
 
-        public async Task<bool> InitializeAsync(ConnectorSettings connectorSettings)
+        public async ValueTask<bool> InitializeAsync(ConnectorSettings connectorSettings)
         {
             Connector = new Connector { Settings = connectorSettings };
             entityBuilder = new EntityBuilder(this);
@@ -46,13 +46,12 @@ namespace Lappa.ORM
 
                 if (connectorSettings.ConnectionMode == ConnectionMode.Database)
                 {
-                    using (var connection = await CreateConnectionAsync())
-                    {
-                        // Set the database name.
-                        Connector.Settings.DatabaseName = connection.Database;
+                    using var connection = await CreateConnectionAsync();
 
-                        return connection.State == ConnectionState.Open;
-                    }
+                    // Set the database name.
+                    Connector.Settings.DatabaseName = connection.Database;
+
+                    return connection.State == ConnectionState.Open;
                 }
                 else
                 {
@@ -80,7 +79,7 @@ namespace Lappa.ORM
         // Can be called at any time.
         public void SetLogger(ILog logger) => Log = logger;
 
-        internal async Task<DbConnection> CreateConnectionAsync()
+        internal async ValueTask<DbConnection> CreateConnectionAsync()
         {
             var connection = Connector.CreateConnectionObject();
 
@@ -142,7 +141,7 @@ namespace Lappa.ORM
 
         internal bool Execute(IQueryBuilder queryBuilder) => RunSync(() => ExecuteAsync(queryBuilder));
 
-        internal async Task<bool> ExecuteAsync(IQueryBuilder queryBuilder)
+        internal async ValueTask<bool> ExecuteAsync(IQueryBuilder queryBuilder)
         {
             DbTransaction transaction = null;
 
@@ -159,14 +158,12 @@ namespace Lappa.ORM
                     using (var connection = await CreateConnectionAsync())
                     using (transaction = Connector.Settings.UseTransactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null)
                     {
-                        using (var cmd = CreateSqlCommand(connection, transaction, queryBuilder))
-                        {
-                            var affectedRows = await cmd.ExecuteNonQueryAsync();
+                        using var cmd = CreateSqlCommand(connection, transaction, queryBuilder);
+                        var affectedRows = await cmd.ExecuteNonQueryAsync();
 
-                            transaction?.Commit();
+                        transaction?.Commit();
 
-                            return affectedRows > 0;
-                        }
+                        return affectedRows > 0;
                     }
                 }
             }
@@ -185,7 +182,7 @@ namespace Lappa.ORM
             return RunSync(() => SelectAsync(queryBuilder));
         }
 
-        internal async Task<object[][]> SelectAsync(IQueryBuilder queryBuilder)
+        internal async ValueTask<object[][]> SelectAsync(IQueryBuilder queryBuilder)
         {
             try
             {
@@ -200,8 +197,9 @@ namespace Lappa.ORM
                     var connection = await CreateConnectionAsync();
                     var sqlCommand = CreateSqlCommand(connection, null, queryBuilder);
 
-                    using (var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection))
-                        return entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
+                    using var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection);
+
+                    return entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
                 }
             }
             catch (Exception ex)
@@ -212,7 +210,7 @@ namespace Lappa.ORM
             }
         }
 
-        async Task<object[][]> ExecuteFromApiAsync(IQueryBuilder queryBuilder, ApiRequest apiRequest)
+        async ValueTask<object[][]> ExecuteFromApiAsync(IQueryBuilder queryBuilder, ApiRequest apiRequest)
         {
             DbTransaction transaction = null;
 
@@ -221,14 +219,12 @@ namespace Lappa.ORM
                 using (var connection = await CreateConnectionAsync())
                 using (transaction = Connector.Settings.UseTransactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null)
                 {
-                    using (var cmd = CreateSqlCommand(connection, transaction, apiRequest))
-                    {
-                        var affectedRows = await cmd.ExecuteNonQueryAsync();
+                    using var cmd = CreateSqlCommand(connection, transaction, apiRequest);
+                    var affectedRows = await cmd.ExecuteNonQueryAsync();
 
-                        transaction?.Commit();
+                    transaction?.Commit();
 
-                        return new object[1][] { new object[] { affectedRows } };
-                    }
+                    return new object[1][] { new object[] { affectedRows } };
                 }
             }
             catch (Exception ex)
@@ -241,15 +237,16 @@ namespace Lappa.ORM
             }
         }
 
-        async Task<object[][]> SelectFromApiAsync(IQueryBuilder queryBuilder, ApiRequest apiRequest)
+        async ValueTask<object[][]> SelectFromApiAsync(IQueryBuilder queryBuilder, ApiRequest apiRequest)
         {
             try
             {
                 var connection = await CreateConnectionAsync();
                 var sqlCommand = CreateSqlCommand(connection, null, apiRequest);
 
-                using (var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection))
-                    return entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
+                using var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection);
+
+                return entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
             }
             catch (Exception ex)
             {
@@ -262,12 +259,12 @@ namespace Lappa.ORM
         // Used for select queries from api clients only.
         public object[][] ProcessApiRequest(ApiRequest apiRequest) => RunSync(() => ProcessApiRequestAsync(apiRequest));
 
-        public async Task<object[][]> ProcessApiRequestAsync(ApiRequest apiRequest)
+        public ValueTask<object[][]> ProcessApiRequestAsync(ApiRequest apiRequest)
         {
             if (apiRequest.IsSelectQuery)
-                return await SelectFromApiAsync(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
+                return SelectFromApiAsync(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
             else
-                return await ExecuteFromApiAsync(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
+                return ExecuteFromApiAsync(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
         }
     }
 }

@@ -68,5 +68,7 @@ namespace Lappa.ORM.Misc
 
         public static TResult RunSync<TResult>(Func<Task<TResult>> func) => func().ConfigureAwait(false).GetAwaiter().GetResult();
         public static void RunSync(Func<Task> func) => func().ConfigureAwait(false).GetAwaiter().GetResult();
+        public static TResult RunSync<TResult>(Func<ValueTask<TResult>> func) => func().GetAwaiter().GetResult();
+        public static void RunSync(Func<ValueTask> func) => func().GetAwaiter().GetResult();
     }
 }

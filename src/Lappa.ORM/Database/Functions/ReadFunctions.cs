@@ -19,7 +19,7 @@ namespace Lappa.ORM
             return RunSync(() => SelectAsync(newExpression));
         }
 
-        public async Task<TEntity[]> SelectAsync<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
+        public async ValueTask<TEntity[]> SelectAsync<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
@@ -40,7 +40,7 @@ namespace Lappa.ORM
             return RunSync(() => SelectAsync(func, newExpression));
         }
 
-        public async Task<Dictionary<TKey, TEntity>> SelectAsync<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
+        public async ValueTask<Dictionary<TKey, TEntity>> SelectAsync<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             return (await SelectAsync(newExpression)).AsDictionary(func);
         }
@@ -52,7 +52,7 @@ namespace Lappa.ORM
             return RunSync(() => WhereAsync(condition, newExpression));
         }
 
-        public async Task<TEntity[]> WhereAsync<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
+        public async ValueTask<TEntity[]> WhereAsync<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
@@ -75,7 +75,7 @@ namespace Lappa.ORM
             return RunSync(() => SingleAsync(condition, newExpression));
         }
 
-        public async Task<TEntity> SingleAsync<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
+        public async ValueTask<TEntity> SingleAsync<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
@@ -102,7 +102,7 @@ namespace Lappa.ORM
             return RunSync(() => AnyAsync(condition));
         }
 
-        public async Task<bool> AnyAsync<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
+        public async ValueTask<bool> AnyAsync<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
         {
             var builder = new QueryBuilder<TEntity>(Connector.Query);
 
@@ -118,7 +118,7 @@ namespace Lappa.ORM
             return RunSync(() => CountAsync(condition));
         }
 
-        public async Task<long> CountAsync<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
+        public async ValueTask<long> CountAsync<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var builder = new QueryBuilder<TEntity>(Connector.Query, properties);

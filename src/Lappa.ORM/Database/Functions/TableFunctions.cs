@@ -21,7 +21,7 @@ namespace Lappa.ORM
 
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public async Task<bool> CreateAsync<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
+        public async ValueTask<bool> CreateAsync<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
         {
             if (Connector.Settings.DatabaseType != DatabaseType.MySql)
                 return false;

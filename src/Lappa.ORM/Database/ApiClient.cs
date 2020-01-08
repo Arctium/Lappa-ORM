@@ -50,7 +50,7 @@ namespace Lappa.ORM
             return client.PostAsync(Host, stringContent);
         }
 
-        public async Task<object[][]> GetResponse(IQueryBuilder queryBuilder)
+        public async ValueTask<object[][]> GetResponse(IQueryBuilder queryBuilder)
         {
             using var response = await SendRequest(queryBuilder);
             using var jsonStream = await response.Content.ReadAsStreamAsync();

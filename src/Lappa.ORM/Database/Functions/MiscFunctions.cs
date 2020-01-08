@@ -16,7 +16,7 @@ namespace Lappa.ORM
 
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public async Task<int> GetAutoIncrementValueAsync<TEntity>() where TEntity : Entity, new()
+        public async ValueTask<int> GetAutoIncrementValueAsync<TEntity>() where TEntity : Entity, new()
         {
             if (Connector.Settings.DatabaseType != DatabaseType.MySql)
                 throw new NotImplementedException($"GetAutoIncrementValue not implemented for {Connector.Settings.DatabaseType}.");
@@ -31,7 +31,7 @@ namespace Lappa.ORM
 
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public async Task<bool> ExistsAsync<TEntity>() where TEntity : Entity, new()
+        public async ValueTask<bool> ExistsAsync<TEntity>() where TEntity : Entity, new()
         {
             if (Connector.Settings.DatabaseType != DatabaseType.MySql)
                 throw new NotImplementedException($"Exists not implemented for {Connector.Settings.DatabaseType}.");
@@ -43,7 +43,7 @@ namespace Lappa.ORM
 
         public InformationSchemaTable GetTableInfo(Expression<Func<InformationSchemaTable, object>> condition) => RunSync(() => GetTableInfoAsync(condition));
 
-        async Task<InformationSchemaTable> GetTableInfoAsync(Expression<Func<InformationSchemaTable, object>> condition)
+        async ValueTask<InformationSchemaTable> GetTableInfoAsync(Expression<Func<InformationSchemaTable, object>> condition)
         {
             var properties = typeof(InformationSchemaTable).GetReadWriteProperties();
             var builder = new QueryBuilder<InformationSchemaTable>(Connector.Query, properties);

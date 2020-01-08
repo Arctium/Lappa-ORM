@@ -1,8 +1,9 @@
 ﻿// Copyright (C) Arctium.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.IO;
 using System.Net.Http;
-using System.Text;
+using System.Net.Http.Headers;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace Lappa.ORM
         readonly HttpClient client;
         readonly JsonSerializerOptions jsonSerializerOptions;
         readonly JsonSerializerOptions jsonDeserializerOptions;
+        readonly MediaTypeHeaderValue mediaType;
 
         public ApiClient(string hostAddress)
         {
@@ -32,11 +34,15 @@ namespace Lappa.ORM
             jsonDeserializerOptions = new JsonSerializerOptions();
 
             jsonDeserializerOptions.Converters.Add(new JsonObjectConverter());
+
+            mediaType = new MediaTypeHeaderValue("application/json");
         }
 
-        Task<HttpResponseMessage> SendRequest(IQueryBuilder queryBuilder)
+        async ValueTask<HttpResponseMessage> SendRequest(IQueryBuilder queryBuilder)
         {
-            var serializedRequest = JsonSerializer.Serialize(new ApiRequest
+            using var jsonStream = new MemoryStream();
+
+            await JsonSerializer.SerializeAsync(jsonStream, new ApiRequest
             {
                 // Pluralized entity name.
                 EntityName = queryBuilder.EntityName,
@@ -45,9 +51,12 @@ namespace Lappa.ORM
                 SqlParameters = queryBuilder.SqlParameters
             }, jsonSerializerOptions);
 
-            var stringContent = new StringContent(serializedRequest, Encoding.UTF8, "application/json");
+            using var jsonContent = new StreamContent(jsonStream);
 
-            return client.PostAsync(Host, stringContent);
+            // Set the media type to json.
+            jsonContent.Headers.ContentType = mediaType;
+
+            return await client.PostAsync(Host, jsonContent);
         }
 
         public async ValueTask<object[][]> GetResponse(IQueryBuilder queryBuilder)

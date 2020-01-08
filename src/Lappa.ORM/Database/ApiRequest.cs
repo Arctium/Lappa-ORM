@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Lappa.ORM
 {
-    public class ApiRequest
+    public struct ApiRequest
     {
         public string EntityName { get; set; }
         public bool IsSelectQuery { get; set; }

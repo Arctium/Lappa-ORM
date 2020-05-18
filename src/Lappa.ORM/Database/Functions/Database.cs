@@ -79,7 +79,7 @@ namespace Lappa.ORM
         // Can be called at any time.
         public void SetLogger(ILog logger) => Log = logger;
 
-        internal async ValueTask<DbConnection> CreateConnectionAsync()
+        internal async Task<DbConnection> CreateConnectionAsync()
         {
             var connection = Connector.CreateConnectionObject();
 
@@ -198,6 +198,8 @@ namespace Lappa.ORM
                     var sqlCommand = CreateSqlCommand(connection, null, queryBuilder);
 
                     using var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection);
+
+                    queryBuilder.IsSelectQuery = true;
 
                     return entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
                 }

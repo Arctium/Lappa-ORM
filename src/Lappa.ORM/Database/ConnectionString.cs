@@ -34,7 +34,7 @@ namespace Lappa.ORM
                 DatabaseType.MySql => $"Server={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.HasValue};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};CharSet={CharSet};{ExtraOptions}",
                 DatabaseType.MSSql => $"Data Source={Host}; Initial Catalog = {Database}; User ID = {User}; Password = {Password};Pooling={Pooling.HasValue};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};{ExtraOptions}",
                 DatabaseType.SQLite => $"Data Source={Host};Password={Password};Database={Database};Pooling={Pooling.HasValue};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};{ExtraOptions}",
-                DatabaseType.PostgreSql => $"Server={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.HasValue};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};{ExtraOptions}",
+                DatabaseType.PostgreSql => $"Server={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.HasValue};Minimum Pool Size={Pooling?.Min};Maximum Pool Size={Pooling?.Max};{ExtraOptions}",
                 _ => throw new NotSupportedException($"{Type}")
             };
         }

@@ -104,7 +104,8 @@ namespace Lappa.ORM
 
         public async ValueTask<bool> AnyAsync<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
         {
-            var builder = new QueryBuilder<TEntity>(Connector.Query);
+            var properties = typeof(TEntity).GetReadWriteProperties();
+            var builder = new QueryBuilder<TEntity>(Connector.Query, properties);
 
             builder.BuildWhereAll(condition.Body);
 

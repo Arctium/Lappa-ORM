@@ -12,7 +12,7 @@ namespace Lappa.ORM
     {
         internal void BuildSelectAll()
         {
-            SqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Part0, PluralizedEntityName);
+            SqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Table, PluralizedEntityName);
         }
 
         internal void BuildSelect(IReadOnlyList<MemberInfo> members)
@@ -20,22 +20,22 @@ namespace Lappa.ORM
             SqlQuery.Append("SELECT ");
 
             for (var i = 0; i < members.Count; i++)
-                SqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].GetName());
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Table + ", ", members[i].GetName());
 
-            SqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Part0, PluralizedEntityName);
+            SqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Table, PluralizedEntityName);
 
             SqlQuery.Replace(", FROM", " FROM");
         }
 
         internal void BuildSelectCount()
         {
-            SqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Part0, PluralizedEntityName);
+            SqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Table, PluralizedEntityName);
         }
 
         internal void BuildWhereAll(Expression expression)
         {
             // ToDo: Add support for query more than 1 table
-            SqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Part0 + " WHERE ", PluralizedEntityName);
+            SqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Table + " WHERE ", PluralizedEntityName);
 
             Visit(expression);
         }
@@ -45,9 +45,9 @@ namespace Lappa.ORM
             SqlQuery.Append("SELECT ");
 
             for (var i = 0; i < members.Count; i++)
-                SqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ", ", members[i].GetName());
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Table + ", ", members[i].GetName());
 
-            SqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Part0 + " WHERE ", PluralizedEntityName);
+            SqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Table + " WHERE ", PluralizedEntityName);
 
             // Fix query
             SqlQuery.Replace(", FROM", " FROM");
@@ -57,7 +57,7 @@ namespace Lappa.ORM
 
         internal void BuildWhereCount(Expression expression)
         {
-            SqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Part0 + " WHERE ", PluralizedEntityName);
+            SqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Table + " WHERE ", PluralizedEntityName);
 
             Visit(expression);
         }

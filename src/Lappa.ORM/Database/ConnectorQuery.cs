@@ -3,87 +3,40 @@
 
 using Lappa.ORM.Constants;
 using System;
+using System.Collections.Generic;
 
 namespace Lappa.ORM
 {
     // Use if db engines need different versions for base queries
     internal class ConnectorQuery
     {
-        public string InsertQuery { get; private set; }
-        public string SelectQuery { get; private set; }
-        public string UpdateQuery { get; private set; }
-        public string UpdateQueryEnd { get; private set; }
-        public string DeleteQuery { get; private set; }
-        public string Equal { get; private set; }
-        public string AndEqual { get; private set; }
+        public string UpdateQuery { get; }
+        public string UpdateQueryEnd { get; }
+        public string DeleteQuery { get; }
+        public string Equal { get; }
+        public string AndEqual { get; }
 
-        public string Part0 { get; private set; }
-        public string Part1 { get; private set; }
-        public string Part2 { get; private set; }
+        public string Table { get; }
 
-        public ConnectorQuery(DatabaseType dbType)
+        public ConnectorQuery(DatabaseType databaseType)
         {
-            switch (dbType)
+            var escapedField = databaseType switch
             {
-                case DatabaseType.MSSql:
-                {
-                    UpdateQuery    = "UPDATE [{0}] SET ";
-                    UpdateQueryEnd = "FROM [{0}] WHERE ";
-                    DeleteQuery    = "DELETE FROM [{0}] WHERE ";
-                    Equal          = "[{0}] = @{0}";
-                    AndEqual       = " AND [{0}] = @{0}";
+                DatabaseType.MySql      => "`{0}`",
+                DatabaseType.MSSql      => "[{0}]",
+                DatabaseType.SQLite     => "\"{0}\"",
+                DatabaseType.PostgreSql => "\"{0}\"",
+                _ => throw new NotImplementedException(),
+            };
 
-                    Part0 = "[{0}]";
-                    Part1 = "[{1}]";
-                    Part2 = "[{2}]";
-                    break;
-                }
-                case DatabaseType.MySql:
-                {
-                    UpdateQuery    = "UPDATE `{0}` SET ";
-                    UpdateQueryEnd = "WHERE ";
-                    DeleteQuery    = "DELETE FROM `{0}` WHERE ";
-                    Equal          = "`{0}` = @{0}";
-                    AndEqual       = " AND `{0}` = @{0}";
+            UpdateQuery    = $"UPDATE {escapedField} SET ";
+            UpdateQueryEnd = $"FROM {escapedField} WHERE ";
+            DeleteQuery    = $"DELETE FROM {escapedField} WHERE ";
+            Equal          = $"{escapedField} = @{{0}}";
+            AndEqual       = $" AND {escapedField} = @{{0}}";
 
-                    Part0 = "`{0}`";
-                    Part1 = "`{1}`";
-                    Part2 = "`{2}`";
-
-                    break;
-                }
-                case DatabaseType.SQLite:
-                {
-                    UpdateQuery    = "UPDATE \"{0}\" SET ";
-                    UpdateQueryEnd = "WHERE ";
-                    DeleteQuery    = "DELETE FROM \"{0}\" WHERE ";
-                    Equal          = "\"{0}\" = @{0}";
-                    AndEqual       = " AND \"{0}\" = @{0}";
-
-                    Part0 = "\"{0}\"";
-                    Part1 = "\"{1}\"";
-                    Part2 = "\"{2}\"";
-                    break;
-                }
-                case DatabaseType.Oracle:
-                    throw new NotSupportedException("Oracle is not supported.");
-                case DatabaseType.PostgreSql:
-                {
-                    UpdateQuery = "UPDATE \"{0}\" SET ";
-                    UpdateQueryEnd = "WHERE ";
-                    DeleteQuery = "DELETE FROM \"{0}\" WHERE ";
-                    Equal = "\"{0}\" = @{0}";
-                    AndEqual = " AND \"{0}\" = @{0}";
-
-                    Part0 = "\"{0}\"";
-                    Part1 = "\"{1}\"";
-                    Part2 = "\"{2}\"";
-
-                    break;
-                }
-                default:
-                    throw new NotSupportedException($"{dbType} is not supported.");
-            }
+            // Table & Column parts.
+            Table = escapedField;
         }
     }
 }

@@ -51,8 +51,6 @@ namespace Lappa.ORM
 
                     break;
                 }
-                case DatabaseType.Oracle:
-                    throw new NotSupportedException("Oracle is not supported.");
                 case DatabaseType.PostgreSql:
                 {
                     connectionType = typeof(NpgsqlConnection);

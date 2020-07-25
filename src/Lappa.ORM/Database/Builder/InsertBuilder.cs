@@ -12,10 +12,10 @@ namespace Lappa.ORM
     {
         internal void BuildInsert(Dictionary<string, object> values)
         {
-            SqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Part0 + " (", PluralizedEntityName);
+            SqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Table + " (", PluralizedEntityName);
 
             foreach (var name in values.Keys)
-                SqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ",", name);
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Table + ",", name);
 
             SqlQuery.Append(") VALUES (");
 
@@ -73,10 +73,10 @@ namespace Lappa.ORM
                     values.Add(properties[i].GetName(), null);
             }
 
-            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Part0 + " (", typeName);
+            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Table + " (", typeName);
 
             foreach (var name in values.Keys)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ",", name);
+                sqlQuery.AppendFormat(numberFormat, connectorQuery.Table + ",", name);
 
             sqlQuery.Append(") VALUES ");
 
@@ -94,10 +94,10 @@ namespace Lappa.ORM
 
                     sqlQuery = new StringBuilder();
 
-                    sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Part0 + " (", typeName);
+                    sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Table + " (", typeName);
 
                     foreach (var name in values.Keys)
-                        sqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + ",", name);
+                        sqlQuery.AppendFormat(numberFormat, connectorQuery.Table + ",", name);
 
                     sqlQuery.Append(") VALUES ");
                 }

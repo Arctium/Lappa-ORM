@@ -8,7 +8,6 @@ namespace Lappa.ORM.Constants
         MySql,
         MSSql,
         SQLite,
-        Oracle,
         PostgreSql
     }
 }

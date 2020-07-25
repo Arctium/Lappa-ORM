@@ -76,7 +76,7 @@ namespace Lappa.ORM
             var entityLock = new object();
             var query = new StringBuilder();
 
-            query.AppendFormat(numberFormat, "SELECT * FROM " + Connector.Query.Part0 + " WHERE ", name);
+            query.AppendFormat(numberFormat, "SELECT * FROM " + Connector.Query.Table + " WHERE ", name);
             query.AppendFormat(numberFormat, Connector.Query.Equal, fkName, value);
 
             var entities = entityType.CreateList();

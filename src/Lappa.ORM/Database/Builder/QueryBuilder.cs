@@ -116,7 +116,7 @@ namespace Lappa.ORM
                     count++;
                 }
 
-                SqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}'{2}'", memberExpression.Member.GetName(), " = ", count % 2 == 0 ? "1" : "0");
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Table + "{1}'{2}'", memberExpression.Member.GetName(), " = ", count % 2 == 0 ? "1" : "0");
             }
 
             return memberExpression;
@@ -188,7 +188,7 @@ namespace Lappa.ORM
                 var left = (binaryExpression.Left as MemberExpression)?.Member ?? ((binaryExpression.Left as UnaryExpression).Operand as MemberExpression).Member;
                 var name = left.GetName();
 
-                SqlQuery.AppendFormat(numberFormat, connectorQuery.Part0 + "{1}@{0}", name, condition, name);
+                SqlQuery.AppendFormat(numberFormat, connectorQuery.Table + "{1}@{0}", name, condition, name);
                 SqlParameters.Add($"@{name}", finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
             }
 

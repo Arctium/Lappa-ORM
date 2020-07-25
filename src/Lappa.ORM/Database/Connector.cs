@@ -6,7 +6,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using Lappa.ORM.Constants;
 using Microsoft.Data.Sqlite;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Npgsql;
 
 namespace Lappa.ORM

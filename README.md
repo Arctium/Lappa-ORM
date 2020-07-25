@@ -3,10 +3,10 @@
 [![Join Discord](https://img.shields.io/badge/discord-join-7289DA.svg)](https://discord.gg/3wcx5rK)
 
 ### What is Lappa ORM?
-Lappa ORM is a object relational mapper for .NET written in C# (.NET Standard) released under the MIT License.
+Lappa ORM is a object relational mapper for .NET written in C#.
 
 ### .NET compatibility:
-- .NET Standard 2.1
+- .NET 5.0
 
 ### Supported databases:
 - MySQL

@@ -1,44 +1,43 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <DebugType>Portable</DebugType>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <AssemblyName>Lappa.ORM</AssemblyName>
     <RootNamespace>Lappa.ORM</RootNamespace>
-    <Version>1.0.1-dev1-4</Version>
+    <Version>1.0.0</Version>
     <Company>Arctium</Company>
     <Product>Lappa ORM</Product>
-    <Description>Lappa ORM is a object relational mapper for .NET written in C# (.NET Standard) released under the MIT License.
+    <Description>Lappa ORM is a object relational mapper for .NET written in C#.
 Supported databases are MySQL/MSSQL/SQLite/PostgreSql.</Description>
-    <Copyright>Copyright 2015-2018 Arctium</Copyright>
-    <PackageProjectUrl>https://gitlab.com/Arctium/Lappa/ORM</PackageProjectUrl>
-    <RepositoryUrl>https://gitlab.com/Arctium/Lappa/ORM</RepositoryUrl>
+    <Copyright>Copyright Arctium</Copyright>
+    <RepositoryUrl>https://github.com/Arctium/Lappa-ORM</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageLicenseUrl>https://gitlab.com/Arctium/Lappa/ORM/blob/master/LICENSE</PackageLicenseUrl>
     <PackageTags>lappa-orm, orm, mysql, mssql, sqlite, postgre, sql</PackageTags>
-    <PackageReleaseNotes>Updated package references.
-Replace AssemblyLoader with Assembly.LoadFrom.
-Added first xunit test.
-Fixed https://github.com/Arctium-Software/LappaORM/issues/17
-Fixed array properties.
-Added basic transaction support.
-useTransactions &amp; loadConnectorFromFile are required parameters now.</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated required framework to .NET 5.0</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Platforms>x64</Platforms>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="3.1.0" />
-    <PackageReference Include="MySqlConnector" Version="0.61.0" />
-    <PackageReference Include="Npgsql" Version="4.1.2" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
-    <PackageReference Include="System.Text.Json" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="5.0.0-preview.7.20365.15" />
+    <PackageReference Include="MySqlConnector" Version="1.0.0" />
+    <PackageReference Include="Npgsql" Version="5.0.0-alpha1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
+    <PackageReference Include="System.Text.Json" Version="5.0.0-preview.7.20364.11" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\deps\src\Lappa.Pluralization\src\Lappa.Pluralization.csproj" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

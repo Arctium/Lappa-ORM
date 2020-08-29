@@ -109,6 +109,9 @@ namespace Lappa.ORM
                 sqlCommand.Parameters.Add(param);
             }
 
+            // Always prepare for now.
+            sqlCommand.Prepare();
+
             return sqlCommand;
         }
 
@@ -121,7 +124,6 @@ namespace Lappa.ORM
             sqlCommand.CommandTimeout = 2147483;
             sqlCommand.Transaction = transaction;
             sqlCommand.CommandType = CommandType.Text;
-            sqlCommand.Prepare();
 
             foreach (var p in apiRequest.SqlParameters)
             {
@@ -135,6 +137,9 @@ namespace Lappa.ORM
 
                 sqlCommand.Parameters.Add(param);
             }
+
+            // Always prepare for now.
+            sqlCommand.Prepare();
 
             return sqlCommand;
         }

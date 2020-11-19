@@ -22,11 +22,11 @@ Supported databases are MySQL/MSSQL/SQLite/PostgreSql.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="5.0.0-preview.8.20407.4" />
-    <PackageReference Include="MySqlConnector" Version="1.0.1" />
-    <PackageReference Include="Npgsql" Version="5.0.0-alpha1" />
-    <PackageReference Include="System.Data.SqlClient" Version="5.0.0-alpha1.19523.8" />
-    <PackageReference Include="System.Text.Json" Version="5.0.0-preview.8.20407.11" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="*" />
+    <PackageReference Include="MySqlConnector" Version="*" />
+    <PackageReference Include="Npgsql" Version="*" />
+    <PackageReference Include="System.Data.SqlClient" Version="*" />
+    <PackageReference Include="System.Text.Json" Version="*" />
   </ItemGroup>
 
   <ItemGroup>

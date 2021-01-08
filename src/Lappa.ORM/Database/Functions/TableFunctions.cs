@@ -83,13 +83,6 @@ namespace Lappa.ORM
 
                             i += groupCount - 1;
                         }
-                        else
-                        {
-                            var arr = (query.PropertyGetter[i](entity) as Array);
-
-                            for (var j = 1; j <= arr.Length; j++)
-                                fields.Add(properties[i].GetName() + j, properties[i]);
-                        }
                     }
                 }
 

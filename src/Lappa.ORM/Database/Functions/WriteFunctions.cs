@@ -26,22 +26,22 @@ namespace Lappa.ORM
         public ValueTask<bool> InsertAsync<TEntity>(TEntity entity) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
-            var values = new Dictionary<string, object>(properties.Length);
+            var values = new Dictionary<string, (object ColumnValue, bool IsArrayGroup)>(properties.Length);
             var builder = new QueryBuilder<TEntity>(Connector.Query, properties);
 
             for (var i = 0; i < properties.Length; i++)
             {
-                if (properties[i].PropertyType.IsArray)
+                if (properties[i].PropertyType.IsArray && properties[i].HasAttribute<GroupAttribute>())
                 {
                     var arr = (builder.PropertyGetter[i](entity) as Array);
                     var arrElementType = arr.GetType().GetElementType();
 
                     for (var j = 0; j < arr.Length; j++)
-                        values.Add(properties[i].GetName() + j, arr.GetValue(j).ChangeTypeGet(arrElementType));
+                        values.Add(properties[i].GetName() + j, (arr.GetValue(j).ChangeTypeGet(arrElementType), true));
                 }
                 else if (!properties[i].HasAttribute<AutoIncrementAttribute>())
                 {
-                    values.Add(properties[i].GetName(), builder.PropertyGetter[i](entity));
+                    values.Add(properties[i].GetName(), (builder.PropertyGetter[i](entity), false));
                 }
             }
 

@@ -85,6 +85,7 @@ namespace Lappa.ORM
                 Properties.Add((p, new TypeInfoCache
                 {
                     IsArray = p.PropertyType.IsArray,
+                    IsArrayGroup = p.PropertyType.GetCustomAttribute<GroupAttribute>() != null,
                     IsCustomClass = p.PropertyType.IsCustomClass(),
                     IsCustomStruct = p.PropertyType.IsCustomStruct()
                 }));

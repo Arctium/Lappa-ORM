@@ -10,7 +10,7 @@ namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T>
     {
-        internal void BuildInsert(Dictionary<string, object> values)
+        internal void BuildInsert(Dictionary<string, (object ColumnValue, bool IsArrayGroup)> values)
         {
             SqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Table + " (", PluralizedEntityName);
 
@@ -21,15 +21,15 @@ namespace Lappa.ORM
 
             foreach (var kp in values)
             {
-                if (kp.Value != null)
+                if (kp.Value.ColumnValue != null)
                 {
-                    Type valType;
+                    var valType = kp.Value.ColumnValue.GetType();
 
-                    if ((valType = kp.Value.GetType()).IsArray)
+                    if (kp.Value.IsArrayGroup && valType.IsArray)
                     {
                         valType = valType.GetElementType();
 
-                        var arr = kp.Value as Array;
+                        var arr = kp.Value.ColumnValue as Array;
 
                         for (var i = 0; i < arr.Length; i++)
                         {
@@ -40,7 +40,7 @@ namespace Lappa.ORM
                     else
                     {
                         SqlQuery.AppendFormat(numberFormat, $"@{kp.Key},");
-                        SqlParameters.Add($"@{kp.Key}", kp.Value.ChangeTypeSet(valType));
+                        SqlParameters.Add($"@{kp.Key}", kp.Value.ColumnValue.ChangeTypeSet(valType));
                     }
                 }
                 else

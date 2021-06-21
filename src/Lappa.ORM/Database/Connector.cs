@@ -3,8 +3,9 @@
 
 using System;
 using System.Data.Common;
-using System.Data.SqlClient;
 using Lappa.ORM.Constants;
+
+using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using MySqlConnector;
 using Npgsql;

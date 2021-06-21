@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <DebugType>Portable</DebugType>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <AssemblyName>Lappa.ORM</AssemblyName>
@@ -15,18 +15,17 @@ Supported databases are MySQL/MSSQL/SQLite/PostgreSql.</Description>
     <RepositoryUrl>https://github.com/Arctium/Lappa-ORM</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>lappa-orm, orm, mysql, mssql, sqlite, postgre, sql</PackageTags>
-    <PackageReleaseNotes>Updated required framework to .NET 5.0</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated required framework to .NET 6.0</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Platforms>x64</Platforms>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="*" />
-    <PackageReference Include="MySqlConnector" Version="*" />
-    <PackageReference Include="Npgsql" Version="*" />
-    <PackageReference Include="System.Data.SqlClient" Version="*" />
-    <PackageReference Include="System.Text.Json" Version="*" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.0-*" />
+    <PackageReference Include="MySqlConnector" Version="1.3.10" />
+    <PackageReference Include="Npgsql" Version="6.0.0-*" />
   </ItemGroup>
 
   <ItemGroup>

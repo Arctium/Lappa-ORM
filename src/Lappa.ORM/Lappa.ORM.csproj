@@ -22,14 +22,11 @@ Supported databases are MySQL/MSSQL/SQLite/PostgreSql.</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Lappa.Pluralization" Version="1.1.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="4.0.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.0" />
     <PackageReference Include="MySqlConnector" Version="2.1.0" />
     <PackageReference Include="Npgsql" Version="6.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\deps\src\Lappa.Pluralization\src\Lappa.Pluralization.csproj" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

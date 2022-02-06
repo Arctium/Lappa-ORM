@@ -1,3 +1,0 @@
-[submodule "deps/Lappa.Pluralization"]
-	path = deps/src/Lappa.Pluralization
-	url = https://github.com/Arctium/Lappa-Pluralization

@@ -1,12 +1,14 @@
 # Lappa ORM
-
-[![Join Discord](https://img.shields.io/badge/discord-join-7289DA.svg)](https://discord.gg/3wcx5rK)
-
-### What is Lappa ORM?
 Lappa ORM is a object relational mapper for .NET written in C#.
 
+[![Support](https://img.shields.io/badge/discord-join-7289DA.svg)](https://arctium.io/discord)
+
+### License, Copyright & Contributions
+
+Please see our Open Source project [Documentation Repo](https://github.com/Arctium/Documentation)
+
 ### .NET compatibility:
-- .NET 5.0
+* [.NET Core SDK 6.0.0 or later](https://dotnet.microsoft.com/download/dotnet/6.0)
 
 ### Supported databases:
 - MySQL
@@ -16,7 +18,6 @@ Lappa ORM is a object relational mapper for .NET written in C#.
 
 ### MySQL connectors (NuGet package or dll file):
 - https://github.com/mysql-net/MySqlConnector (A fresh, clean & fully async ADO.NET MySQL connector, **recommended**, MIT licensed)
-- http://dev.mysql.com/downloads/connector/net/8.0.html (The official ADO.NET MySQL connector, *supported*, GPL 2 licensed)
 
 ### MSSql support (NuGet package, included by default):
 - https://www.nuget.org/packages/System.Data.SqlClient (Supported version: Latest)

@@ -5,21 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Lappa.ORM.Logging;
+
 using Lappa.ORM.Misc;
-using static Lappa.ORM.Misc.Helper;
+
+using Microsoft.Extensions.Logging;
 
 namespace Lappa.ORM
 {
-    public partial class Database
+    public partial class Database<T>
     {
-        #region Select
-        public TEntity[] Select<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
-        {
-            return RunSync(() => SelectAsync(newExpression));
-        }
-
-        public async ValueTask<TEntity[]> SelectAsync<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
+        public async ValueTask<TEntity[]> Select<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
@@ -30,29 +25,17 @@ namespace Lappa.ORM
             else
                 builder.BuildSelectAll();
 
-            var rowData = await SelectAsync(builder);
+            var rowData = await Select(builder);
 
             return entityBuilder.CreateEntities(rowData, builder);
         }
 
-        public Dictionary<TKey, TEntity> Select<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
+        public async ValueTask<Dictionary<TKey, TEntity>> Select<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
-            return RunSync(() => SelectAsync(func, newExpression));
+            return (await Select(newExpression)).AsDictionary(func);
         }
 
-        public async ValueTask<Dictionary<TKey, TEntity>> SelectAsync<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
-        {
-            return (await SelectAsync(newExpression)).AsDictionary(func);
-        }
-        #endregion
-
-        #region SelectWhere
-        public TEntity[] Where<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
-        {
-            return RunSync(() => WhereAsync(condition, newExpression));
-        }
-
-        public async ValueTask<TEntity[]> WhereAsync<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
+        public async ValueTask<TEntity[]> Where<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
@@ -63,19 +46,12 @@ namespace Lappa.ORM
             else
                 builder.BuildWhereAll(condition.Body);
 
-            var rowData = await SelectAsync(builder);
+            var rowData = await Select(builder);
 
             return entityBuilder.CreateEntities(rowData, builder);
         }
-        #endregion
 
-        #region Single
-        public TEntity Single<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
-        {
-            return RunSync(() => SingleAsync(condition, newExpression));
-        }
-
-        public async ValueTask<TEntity> SingleAsync<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
+        public async ValueTask<TEntity> Single<TEntity>(Expression<Func<TEntity, object>> condition, Expression<Func<TEntity, object>> newExpression = null) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
@@ -86,40 +62,28 @@ namespace Lappa.ORM
             else
                 builder.BuildWhereAll(condition.Body);
 
-            var rowData = await SelectAsync(builder);
+            var rowData = await Select(builder);
             var objList = entityBuilder.CreateEntities(rowData, builder);
 
             if (objList.Length > 1)
-                Log.Message(LogTypes.Warning, "Result contains more than 1 element.");
+                logger.Log(LogLevel.Warning, "Result contains more than 1 element.");
 
             return objList.Length == 0 ? null : objList[0];
         }
-        #endregion
 
-        #region Other
-        public bool Any<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
-        {
-            return RunSync(() => AnyAsync(condition));
-        }
-
-        public async ValueTask<bool> AnyAsync<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
+        public async ValueTask<bool> Any<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var builder = new QueryBuilder<TEntity>(Connector.Query, properties);
 
             builder.BuildWhereAll(condition.Body);
 
-            var rowData = await SelectAsync(builder);
+            var rowData = await Select(builder);
 
             return rowData[0]?.Length > 0;
         }
 
-        public long Count<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
-        {
-            return RunSync(() => CountAsync(condition));
-        }
-
-        public async ValueTask<long> CountAsync<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
+        public async ValueTask<long> Count<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var builder = new QueryBuilder<TEntity>(Connector.Query, properties);
@@ -129,10 +93,9 @@ namespace Lappa.ORM
             else
                 builder.BuildSelectCount();
 
-            var rowData = await SelectAsync(builder);
+            var rowData = await Select(builder);
 
             return Convert.ToInt64(rowData[0]?[0] ?? -1);
         }
-        #endregion
     }
 }

@@ -8,17 +8,20 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Lappa.ORM.Constants;
-using Lappa.ORM.Logging;
 using Lappa.ORM.Misc;
+
+using Microsoft.Extensions.Logging;
 
 namespace Lappa.ORM
 {
-    internal class EntityBuilder
+    internal class EntityBuilder<T>
     {
-        Database database;
+        readonly ILogger<T> logger;
+        readonly Database<T> database;
 
-        public EntityBuilder(Database database)
+        public EntityBuilder(ILogger<T> logger, Database<T> database)
         {
+            this.logger = logger;
             this.database = database;
         }
 
@@ -65,7 +68,7 @@ namespace Lappa.ORM
 
                 if (dataReader.FieldCount != totalFieldCount)
                 {
-                    database.Log.Message(LogTypes.Error, $"Table '{builder.PluralizedEntityName}' (Column/Property count mismatch)\nColumns '{dataReader.FieldCount}'\nProperties '{totalFieldCount}'");
+                    logger.Log(LogLevel.Error, $"Table '{builder.PluralizedEntityName}' (Column/Property count mismatch)\nColumns '{dataReader.FieldCount}'\nProperties '{totalFieldCount}'");
 
                     return new object[1][];
                 }
@@ -90,8 +93,8 @@ namespace Lappa.ORM
                         {
                             var propertyType = builder.Properties[i].Info.PropertyType.GetTypeInfo().IsEnum ? builder.Properties[i].Info.PropertyType.GetTypeInfo().GetEnumUnderlyingType() : builder.Properties[i].Info.PropertyType;
 
-                            database.Log.Message(LogTypes.Error, $"Table '{builder.PluralizedEntityName}' (Column/Property type mismatch)");
-                            database.Log.Message(LogTypes.Error, $"{dataReader.GetName(i)}: {dataReader.GetFieldType(i)}/{propertyType}");
+                            logger.Log(LogLevel.Error, $"Table '{builder.PluralizedEntityName}' (Column/Property type mismatch)");
+                            logger.Log(LogLevel.Error, $"{dataReader.GetName(i)}: {dataReader.GetFieldType(i)}/{propertyType}");
 
                             hasMismatches = true;
                         }
@@ -100,7 +103,7 @@ namespace Lappa.ORM
                     // Return an empty list if any column/property type mismatches
                     if (hasMismatches)
                     {
-                        database.Log.Message(LogTypes.Warning, $"Returning no data for table {builder.PluralizedEntityName}.");
+                        logger.Log(LogLevel.Warning, $"Returning no data for table {builder.PluralizedEntityName}.");
 
                         return new object[1][];
                     }

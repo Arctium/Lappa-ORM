@@ -10,40 +10,34 @@ using Lappa.ORM.Constants;
 
 namespace Lappa.ORM
 {
-    public partial class Database
+    public partial class Database<T>
     {
-        public int GetAutoIncrementValue<TEntity>() where TEntity : Entity, new() => RunSync(() => GetAutoIncrementValueAsync<TEntity>());
-
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public async ValueTask<int> GetAutoIncrementValueAsync<TEntity>() where TEntity : Entity, new()
+        public async ValueTask<int> GetAutoIncrementValue<TEntity>() where TEntity : Entity, new()
         {
             if (Connector.Settings.DatabaseType != DatabaseType.MySql)
                 throw new NotImplementedException($"GetAutoIncrementValue not implemented for {Connector.Settings.DatabaseType}.");
 
             // TODO: Fix for api mode.
-            var tableInfo = await GetTableInfoAsync(t => t.TableSchema == Connector.Settings.DatabaseName && t.TableName == Pluralize<TEntity>());
+            var tableInfo = await GetTableInfo(t => t.TableSchema == Connector.Settings.DatabaseName && t.TableName == Pluralize<TEntity>());
 
             return tableInfo?.AutoIncrement ?? -1;
         }
 
-        public bool Exists<TEntity>() where TEntity : Entity, new() => RunSync(() => ExistsAsync<TEntity>());
-
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public async ValueTask<bool> ExistsAsync<TEntity>() where TEntity : Entity, new()
+        public async ValueTask<bool> Exists<TEntity>() where TEntity : Entity, new()
         {
             if (Connector.Settings.DatabaseType != DatabaseType.MySql)
                 throw new NotImplementedException($"Exists not implemented for {Connector.Settings.DatabaseType}.");
 
-            var tableInfo = await GetTableInfoAsync(t => t.TableSchema == Connector.Settings.DatabaseName && t.TableName == Pluralize<TEntity>());
+            var tableInfo = await GetTableInfo(t => t.TableSchema == Connector.Settings.DatabaseName && t.TableName == Pluralize<TEntity>());
 
             return tableInfo != null;
         }
 
-        public InformationSchemaTable GetTableInfo(Expression<Func<InformationSchemaTable, object>> condition) => RunSync(() => GetTableInfoAsync(condition));
-
-        async ValueTask<InformationSchemaTable> GetTableInfoAsync(Expression<Func<InformationSchemaTable, object>> condition)
+        async ValueTask<InformationSchemaTable> GetTableInfo(Expression<Func<InformationSchemaTable, object>> condition)
         {
             var properties = typeof(InformationSchemaTable).GetReadWriteProperties();
             var builder = new QueryBuilder<InformationSchemaTable>(Connector.Query, properties);
@@ -53,7 +47,7 @@ namespace Lappa.ORM
             // Add the database name for this query.
             builder.SqlQuery.Replace($"FROM `{builder.PluralizedEntityName}`", $"FROM `information_schema`.`tables`");
 
-            var rowData = await SelectAsync(builder);
+            var rowData = await Select(builder);
             var entityList = entityBuilder.CreateEntities(rowData, builder);
 
             return entityList.Length == 0 ? null : entityList[0];

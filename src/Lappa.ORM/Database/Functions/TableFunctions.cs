@@ -6,28 +6,23 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+
 using Lappa.ORM.Constants;
 using Lappa.ORM.Misc;
-using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
-    public partial class Database
+    public partial class Database<T>
     {
-        public bool Create<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
-        {
-            return RunSync(() => CreateAsync<TEntity>(dbEngine, replaceTable));
-        }
-
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public async ValueTask<bool> CreateAsync<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
+        public async ValueTask<bool> Create<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : Entity, new()
         {
             if (Connector.Settings.DatabaseType != DatabaseType.MySql)
                 return false;
 
             // Check if table exists or is allowed to be replaced.
-            if (!await ExistsAsync<TEntity>() || replaceTable)
+            if (!await Exists<TEntity>() || replaceTable)
             {
                 // Exclude foreign key and non db related properties.
                 var properties = typeof(TEntity).GetReadWriteProperties();
@@ -86,7 +81,7 @@ namespace Lappa.ORM
                     }
                 }
 
-                return await ExecuteAsync(null);// query.BuildTableCreate(fields, dbEngine));
+                return await Execute(null);// query.BuildTableCreate(fields, dbEngine));
             }
 
             return false;

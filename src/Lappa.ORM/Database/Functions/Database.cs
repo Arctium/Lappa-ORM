@@ -7,79 +7,71 @@ using System.Data.Common;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Lappa.ORM.Constants;
-using Lappa.ORM.Logging;
 using Lappa.ORM.Caching;
-using static Lappa.ORM.Misc.Helper;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Lappa.ORM
 {
-    public partial class Database
+    public abstract partial class Database<T> : IDatabase<T>
     {
         public bool ApiMode { get; private set; }
-        public ILog Log { get; private set; }
 
         internal Connector Connector { get; private set; }
 
-        EntityBuilder entityBuilder;
+        protected readonly ILogger<T> logger;
+        protected readonly ConnectionSettings connectionSettings;
+
+        EntityBuilder<T> entityBuilder;
         ApiClient apiClient;
 
-        public Database()
+        public Database(ILogger<T> logger, IOptions<ConnectionSettings> connectionSettings)
         {
-            // Initialize the cache manager on first database creation. 
-            CacheManager.Instance.Initialize();
+            this.logger = logger;
+            this.connectionSettings = connectionSettings.Value;
 
-            // Initialize dummy logger.
-            Log = new Log();
-        }
-
-        public async ValueTask<bool> InitializeAsync(ConnectorSettings connectorSettings)
-        {
-            Connector = new Connector { Settings = connectorSettings };
-            entityBuilder = new EntityBuilder(this);
-
-            try
+            // TODO: Logic should not be here.
             {
-                Connector.Load();
+                // Initialize the cache manager on first database creation. 
+                CacheManager.Instance.Initialize();
 
-                // Extended caching that requires connector info.
-                CacheManager.Instance.CacheQueryBuilders(Connector);
-
-                if (connectorSettings.ConnectionMode == ConnectionMode.Database)
+                Connector = new Connector
                 {
-                    using var connection = await CreateConnectionAsync();
+                    Settings = new()
+                    {
+                        ConnectionMode = this.connectionSettings.ConnectionMode,
+                        ApiHost = this.connectionSettings.ApiHost,
+                        ConnectionString = this.connectionSettings.ToString(),
+                        DatabaseType = this.connectionSettings.Type,
+                        UseTransactions = this.connectionSettings.UseTransactions,
+                        DatabaseName = this.connectionSettings.ConnectionMode == ConnectionMode.Database ? this.connectionSettings.Database : ""
+                    }
+                };
 
-                    // Set the database name.
-                    Connector.Settings.DatabaseName = connection.Database;
-
-                    return connection.State == ConnectionState.Open;
-                }
-                else
+                try
                 {
-                    apiClient = new ApiClient(connectorSettings.ApiHost);
-                    ApiMode = true;
+                    Connector.Load();
+
+                    // Extended caching that requires connector info.
+                    CacheManager.Instance.CacheQueryBuilders(Connector);
+
+                    if (this.connectionSettings.ConnectionMode == ConnectionMode.Api)
+                    {
+                        apiClient = new ApiClient(this.connectionSettings.ApiHost);
+                        ApiMode = true;
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.Message(LogTypes.Error, ex.ToString());
+                catch (Exception ex)
+                {
+                    logger.Log(LogLevel.Error, ex.ToString());
+                    throw;
+                }
 
-                return false;
+                entityBuilder = new EntityBuilder<T>(logger, this);
             }
-
-            // Always return true for ConnectionMode.Api
-            return true;
         }
 
-        public bool Initialize(ConnectorSettings connectorSettings)
-        {
-            return RunSync(() => InitializeAsync(connectorSettings));
-        }
-
-        // Overwrite dummy logger.
-        // Can be called at any time.
-        public void SetLogger(ILog logger) => Log = logger;
-
-        internal async Task<DbConnection> CreateConnectionAsync()
+        internal async Task<DbConnection> CreateConnection()
         {
             var connection = Connector.CreateConnectionObject();
 
@@ -90,7 +82,7 @@ namespace Lappa.ORM
             return connection;
         }
 
-        internal DbCommand CreateSqlCommand(DbConnection connection, DbTransaction transaction, IQueryBuilder queryBuilder)
+        internal async Task<DbCommand> CreateSqlCommand(DbConnection connection, DbTransaction transaction, IQueryBuilder queryBuilder)
         {
             var sqlCommand = Connector.CreateCommandObject();
 
@@ -110,12 +102,12 @@ namespace Lappa.ORM
             }
 
             // Always prepare for now.
-            sqlCommand.Prepare();
+            await sqlCommand.PrepareAsync();
 
             return sqlCommand;
         }
 
-        internal DbCommand CreateSqlCommand(DbConnection connection, DbTransaction transaction, ApiRequest apiRequest)
+        internal async Task<DbCommand> CreateSqlCommand(DbConnection connection, DbTransaction transaction, ApiRequest apiRequest)
         {
             var sqlCommand = Connector.CreateCommandObject();
 
@@ -139,14 +131,12 @@ namespace Lappa.ORM
             }
 
             // Always prepare for now.
-            sqlCommand.Prepare();
+            await sqlCommand.PrepareAsync();
 
             return sqlCommand;
         }
 
-        internal bool Execute(IQueryBuilder queryBuilder) => RunSync(() => ExecuteAsync(queryBuilder));
-
-        internal async ValueTask<bool> ExecuteAsync(IQueryBuilder queryBuilder)
+        internal async ValueTask<bool> Execute(IQueryBuilder queryBuilder)
         {
             DbTransaction transaction = null;
 
@@ -160,13 +150,13 @@ namespace Lappa.ORM
                 }
                 else
                 {
-                    using (var connection = await CreateConnectionAsync())
-                    using (transaction = Connector.Settings.UseTransactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null)
+                    using (var connection = await CreateConnection())
+                    using (transaction = Connector.Settings.UseTransactions ? await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted) : null)
                     {
-                        using var cmd = CreateSqlCommand(connection, transaction, queryBuilder);
+                        using var cmd = await CreateSqlCommand(connection, transaction, queryBuilder);
                         var affectedRows = await cmd.ExecuteNonQueryAsync();
 
-                        transaction?.Commit();
+                        await transaction?.CommitAsync();
 
                         return affectedRows > 0;
                     }
@@ -174,20 +164,15 @@ namespace Lappa.ORM
             }
             catch (Exception ex)
             {
-                Log.Message(LogTypes.Error, ex.ToString());
+                logger.Log(LogLevel.Error, ex.ToString());
 
-                transaction?.Rollback();
+                transaction?.RollbackAsync();
 
                 return false;
             }
         }
 
-        internal object[][] Select(IQueryBuilder queryBuilder)
-        {
-            return RunSync(() => SelectAsync(queryBuilder));
-        }
-
-        internal async ValueTask<object[][]> SelectAsync(IQueryBuilder queryBuilder)
+        internal async ValueTask<object[][]> Select(IQueryBuilder queryBuilder)
         {
             try
             {
@@ -199,8 +184,8 @@ namespace Lappa.ORM
                 }
                 else
                 {
-                    var connection = await CreateConnectionAsync();
-                    var sqlCommand = CreateSqlCommand(connection, null, queryBuilder);
+                    var connection = await CreateConnection();
+                    var sqlCommand = await CreateSqlCommand(connection, null, queryBuilder);
 
                     using var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection);
 
@@ -211,45 +196,45 @@ namespace Lappa.ORM
             }
             catch (Exception ex)
             {
-                Log.Message(LogTypes.Error, ex.ToString());
+                logger.Log(LogLevel.Error, ex.ToString());
 
                 return null;
             }
         }
 
-        async ValueTask<object[][]> ExecuteFromApiAsync(IQueryBuilder queryBuilder, ApiRequest apiRequest)
+        async ValueTask<object[][]> ExecuteFromApi(IQueryBuilder queryBuilder, ApiRequest apiRequest)
         {
             DbTransaction transaction = null;
 
             try
             {
-                using (var connection = await CreateConnectionAsync())
-                using (transaction = Connector.Settings.UseTransactions ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null)
+                using (var connection = await CreateConnection())
+                using (transaction = Connector.Settings.UseTransactions ? await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted) : null)
                 {
-                    using var cmd = CreateSqlCommand(connection, transaction, apiRequest);
+                    using var cmd = await CreateSqlCommand(connection, transaction, apiRequest);
                     var affectedRows = await cmd.ExecuteNonQueryAsync();
 
-                    transaction?.Commit();
+                    transaction?.CommitAsync();
 
                     return new object[1][] { new object[] { affectedRows } };
                 }
             }
             catch (Exception ex)
             {
-                Log.Message(LogTypes.Error, ex.ToString());
+                logger.Log(LogLevel.Error, ex.ToString());
 
-                transaction?.Rollback();
+                await transaction?.RollbackAsync();
 
                 return null;
             }
         }
 
-        async ValueTask<object[][]> SelectFromApiAsync(IQueryBuilder queryBuilder, ApiRequest apiRequest)
+        async ValueTask<object[][]> SelectFromApi(IQueryBuilder queryBuilder, ApiRequest apiRequest)
         {
             try
             {
-                var connection = await CreateConnectionAsync();
-                var sqlCommand = CreateSqlCommand(connection, null, apiRequest);
+                var connection = await CreateConnection();
+                var sqlCommand = await CreateSqlCommand(connection, null, apiRequest);
 
                 using var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection);
 
@@ -257,21 +242,19 @@ namespace Lappa.ORM
             }
             catch (Exception ex)
             {
-                Log.Message(LogTypes.Error, ex.ToString());
+                logger.Log(LogLevel.Error, ex.ToString());
 
                 return null;
             }
         }
 
         // Used for select queries from api clients only.
-        public object[][] ProcessApiRequest(ApiRequest apiRequest) => RunSync(() => ProcessApiRequestAsync(apiRequest));
-
-        public ValueTask<object[][]> ProcessApiRequestAsync(ApiRequest apiRequest)
+        public ValueTask<object[][]> ProcessApiRequest(ApiRequest apiRequest)
         {
             if (apiRequest.IsSelectQuery)
-                return SelectFromApiAsync(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
+                return SelectFromApi(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
             else
-                return ExecuteFromApiAsync(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
+                return ExecuteFromApi(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
         }
     }
 }

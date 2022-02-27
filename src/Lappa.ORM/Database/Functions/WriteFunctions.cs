@@ -7,23 +7,20 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+
 using Lappa.ORM.Misc;
-using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
-    public partial class Database
+    public partial class Database<T>
     {
-        #region Insert
         /// <summary>
         /// Inserts the given entity to the database.
         /// </summary>
         /// <typeparam name="TEntity">The entity type.</typeparam>
         /// <param name="entity">The TEntity object.</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public bool Insert<TEntity>(TEntity entity) where TEntity : Entity, new() => RunSync(() => InsertAsync(entity));
-
-        public ValueTask<bool> InsertAsync<TEntity>(TEntity entity) where TEntity : Entity, new()
+        public ValueTask<bool> Insert<TEntity>(TEntity entity) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var values = new Dictionary<string, (object ColumnValue, bool IsArrayGroup)>(properties.Length);
@@ -47,7 +44,7 @@ namespace Lappa.ORM
 
             builder.BuildInsert(values);
 
-            return ExecuteAsync(builder);
+            return Execute(builder);
         }
 
         /// <summary>
@@ -55,32 +52,26 @@ namespace Lappa.ORM
         /// </summary>
         /// <typeparam name="TEntity">The entity type.</typeparam>
         /// <param name="entities">A 'list' of TEntity objects.</param>
-        public void Insert<TEntity>(IReadOnlyList<TEntity> entities) where TEntity : Entity, new() => RunSync(() => InsertAsync(entities));
-
-        public async ValueTask<bool> InsertAsync<TEntity>(IReadOnlyList<TEntity> entities) where TEntity : Entity, new()
+        public async ValueTask<bool> Insert<TEntity>(IReadOnlyList<TEntity> entities) where TEntity : Entity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var builder = new QueryBuilder<TEntity>(Connector.Query, properties);
             var queries = builder.BuildBulkInsert(properties, entities);
 
             for (var i = 0; i < queries.Count; i++)
-                if (!await ExecuteAsync(builder))
+                if (!await Execute(builder))
                     return false;
 
             return true;
         }
-        #endregion
 
-        #region Update
         /// <summary>
         /// Updates the database with the given entity using it's primary keys as condition.
         /// </summary>
         /// <typeparam name="TEntity">The entity type</typeparam>
         /// <param name="entity">The updated object of type TEntity</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public bool Update<TEntity>(TEntity entity) where TEntity : Entity, new() => RunSync(() => UpdateAsync(entity));
-
-        public ValueTask<bool> UpdateAsync<TEntity>(TEntity entity) where TEntity : Entity, new()
+        public ValueTask<bool> Update<TEntity>(TEntity entity) where TEntity : Entity, new()
         {
             var type = typeof(TEntity);
             var properties = type.GetReadWriteProperties();
@@ -89,7 +80,7 @@ namespace Lappa.ORM
 
             builder.BuildUpdate(entity, properties, primaryKeys);
 
-            return ExecuteAsync(builder);
+            return Execute(builder);
         }
 
         /// <summary>
@@ -98,16 +89,14 @@ namespace Lappa.ORM
         /// <typeparam name="TEntity">The entity type</typeparam>
         /// <param name="setExpressions">The properties to be updated using the <see cref="PublicExtensions.Set{T}(T,T)"/> extension method.</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public bool UpdateAll<TEntity>(params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new() => RunSync(() => UpdateAllAsync(setExpressions));
-
-        public ValueTask<bool> UpdateAllAsync<TEntity>(params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new()
+        public ValueTask<bool> UpdateAll<TEntity>(params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new()
         {
             var builder = new QueryBuilder<TEntity>(Connector.Query);
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
 
             builder.BuildUpdate(expressions.ToArray(), null);
 
-            return ExecuteAsync(builder);
+            return Execute(builder);
         }
 
         /// <summary>
@@ -117,29 +106,23 @@ namespace Lappa.ORM
         /// <param name="condition">The used condition to identify the to be updated entity.</param>
         /// <param name="setExpressions">The properties to be updated using the <see cref="PublicExtensions.Set{T}(T,T)"/> extension method.</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public bool Update<TEntity>(Expression<Func<TEntity, bool>> condition, params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new() => RunSync(() => UpdateAsync(condition, setExpressions));
-
-        public ValueTask<bool> UpdateAsync<TEntity>(Expression<Func<TEntity, bool>> condition, params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new()
+        public ValueTask<bool> Update<TEntity>(Expression<Func<TEntity, bool>> condition, params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : Entity, new()
         {
             var builder = new QueryBuilder<TEntity>(Connector.Query);
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
 
             builder.BuildUpdate(expressions.ToArray(), condition);
 
-            return ExecuteAsync(builder);
+            return Execute(builder);
         }
-        #endregion
 
-        #region Delete
         /// <summary>
         /// Deletes an entity from the database using it's primary keys as condition.
         /// </summary>
         /// <typeparam name="TEntity">The entity type.</typeparam>
         /// <param name="entity">The to be deleted entity</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public bool Delete<TEntity>(TEntity entity) where TEntity : Entity, new() => RunSync(() => DeleteAsync(entity));
-
-        public ValueTask<bool> DeleteAsync<TEntity>(TEntity entity) where TEntity : Entity, new()
+        public ValueTask<bool> Delete<TEntity>(TEntity entity) where TEntity : Entity, new()
         {
             var type = typeof(TEntity);
             var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.GetName() == "Id" || p.GetName() == type.Name + "Id").ToArray();
@@ -147,7 +130,7 @@ namespace Lappa.ORM
 
             builder.BuildDelete(entity, primaryKeys);
 
-            return ExecuteAsync(builder);
+            return Execute(builder);
         }
 
         /// <summary>
@@ -156,16 +139,13 @@ namespace Lappa.ORM
         /// <typeparam name="TEntity">The entity type.</typeparam>
         /// <param name="condition">The used condition to identify the to be updated entity.</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public bool Delete<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new() => RunSync(() =>DeleteAsync(condition));
-
-        public ValueTask<bool> DeleteAsync<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
+        public ValueTask<bool> Delete<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : Entity, new()
         {
             var builder = new QueryBuilder<TEntity>(Connector.Query);
 
             builder.BuildDelete(condition.Body);
 
-            return ExecuteAsync(builder);
+            return Execute(builder);
         }
-        #endregion
     }
 }

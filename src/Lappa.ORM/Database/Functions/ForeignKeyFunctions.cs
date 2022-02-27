@@ -11,7 +11,7 @@ using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
 {
-    public partial class Database
+    public partial class Database<T>
     {
         // Use en-US as number format for all languages.
         IFormatProvider numberFormat = new CultureInfo("en-US").NumberFormat;
@@ -38,9 +38,9 @@ namespace Lappa.ORM
             }
         }
 
-        internal Tuple<string, string> GetForeignKeyName<T>(PropertyInfo prop)
+        internal Tuple<string, string> GetForeignKeyName<TEntity>(PropertyInfo prop)
         {
-            var type = typeof(T);
+            var type = typeof(TEntity);
             var typeName = type.Name;
             var fkNameByAttribute = prop.GetCustomAttribute<ForeignKeyAttribute>();
 

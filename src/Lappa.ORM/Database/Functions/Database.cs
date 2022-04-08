@@ -13,6 +13,13 @@ using Microsoft.Extensions.Options;
 
 namespace Lappa.ORM
 {
+    public sealed class Database : Database<Database>, IDatabase
+    {
+        public Database(ILogger<Database> logger, IOptions<ConnectionSettings> connectionSettings) : base(logger, connectionSettings)
+        {
+        }
+    }
+
     public abstract partial class Database<T> : IDatabase<T>
     {
         public bool ApiMode { get; private set; }

@@ -31,13 +31,19 @@ namespace Lappa.ORM
         // This field is used for options that are not provided through this class.
         public string ExtraOptions { get; set; }
 
+        // Overwrites the set field values with a hard coded connection string.
+        public string ConnectionStringOverride { get; set; }
+
         public override string ToString()
         {
+            if (!string.IsNullOrEmpty(ConnectionStringOverride))
+                return ConnectionStringOverride;
+
             return Type switch
             {
                 DatabaseType.MySql => $"Server={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.Enabled};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};CharSet={CharSet};{ExtraOptions}",
                 DatabaseType.MSSql => $"Data Source={Host}; Initial Catalog = {Database}; User ID = {User}; Password = {Password};Pooling={Pooling.Enabled};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};{ExtraOptions}",
-                DatabaseType.SQLite => $"Data Source={Host};Password={Password};Database={Database};Pooling={Pooling.Enabled};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};{ExtraOptions}",
+                DatabaseType.SQLite => $"Data Source={Host};Password={Password};Database={Database};Pooling={Pooling.Enabled};{ExtraOptions}",
                 DatabaseType.PostgreSql => $"Server={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.Enabled};Minimum Pool Size={Pooling?.Min};Maximum Pool Size={Pooling?.Max};{ExtraOptions}",
                 _ => throw new NotSupportedException($"{Type}")
             };

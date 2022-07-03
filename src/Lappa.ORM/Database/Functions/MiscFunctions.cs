@@ -2,11 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Threading.Tasks;
-using Lappa.ORM.Misc;
-using static Lappa.ORM.Misc.Helper;
 using System.Linq.Expressions;
-using Lappa.ORM.Constants;
+using System.Threading.Tasks;
+
+using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
 {

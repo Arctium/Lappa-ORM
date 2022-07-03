@@ -3,10 +3,11 @@
 
 using System;
 using System.Data.Common;
+
 using Lappa.ORM.Constants;
 
-using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
+
 using Npgsql;
 
 namespace Lappa.ORM

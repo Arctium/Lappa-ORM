@@ -1,14 +1,14 @@
 ﻿// Copyright (C) Arctium.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Lappa.ORM.Caching;
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+
+using Lappa.ORM.Caching;
 
 namespace Lappa.ORM.Misc
 {

@@ -7,7 +7,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Lappa.ORM.Constants;
+
 using Lappa.ORM.Misc;
 
 using Microsoft.Extensions.Logging;

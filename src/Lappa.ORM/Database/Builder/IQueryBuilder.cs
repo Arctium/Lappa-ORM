@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-
 using Lappa.ORM.Caching;
 
 namespace Lappa.ORM

@@ -3,11 +3,8 @@
 
 using System;
 using System.Data.Common;
-
 using Lappa.ORM.Constants;
-
 using Microsoft.Data.Sqlite;
-
 using Npgsql;
 
 namespace Lappa.ORM
@@ -28,21 +25,21 @@ namespace Lappa.ORM
             switch (Settings.DatabaseType)
             {
                 case DatabaseType.SQLite:
-                {
-                    connectionType = typeof(SqliteConnection);
-                    commandType = typeof(SqliteCommand);
-                    parameterType = typeof(SqliteParameter);
+                    {
+                        connectionType = typeof(SqliteConnection);
+                        commandType = typeof(SqliteCommand);
+                        parameterType = typeof(SqliteParameter);
 
-                    break;
-                }
+                        break;
+                    }
                 case DatabaseType.PostgreSql:
-                {
-                    connectionType = typeof(NpgsqlConnection);
-                    commandType = typeof(NpgsqlCommand);
-                    parameterType = typeof(NpgsqlParameter);
+                    {
+                        connectionType = typeof(NpgsqlConnection);
+                        commandType = typeof(NpgsqlCommand);
+                        parameterType = typeof(NpgsqlParameter);
 
-                    break;
-                }
+                        break;
+                    }
                 default:
                     break;
             }

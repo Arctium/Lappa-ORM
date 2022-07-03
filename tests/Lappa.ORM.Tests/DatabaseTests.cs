@@ -2,12 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Data;
-
 using Lappa.ORM.Constants;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using Xunit;
 
 namespace Lappa.ORM.Tests

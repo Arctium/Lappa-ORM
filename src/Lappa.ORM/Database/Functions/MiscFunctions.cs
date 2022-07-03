@@ -4,7 +4,6 @@
 using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-
 using Lappa.ORM.Misc;
 
 namespace Lappa.ORM

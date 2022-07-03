@@ -9,7 +9,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-
 using Lappa.ORM.Caching;
 using Lappa.ORM.Misc;
 

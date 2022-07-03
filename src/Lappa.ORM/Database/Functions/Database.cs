@@ -6,10 +6,8 @@ using System.Data;
 using System.Data.Common;
 using System.Text.Json;
 using System.Threading.Tasks;
-
 using Lappa.ORM.Caching;
 using Lappa.ORM.Constants;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

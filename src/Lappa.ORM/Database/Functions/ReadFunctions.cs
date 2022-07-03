@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-
 using Lappa.ORM.Misc;
-
 using Microsoft.Extensions.Logging;
 
 namespace Lappa.ORM

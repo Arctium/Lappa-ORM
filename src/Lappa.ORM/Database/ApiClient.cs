@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
-
 using Lappa.ORM.Misc;
 
 namespace Lappa.ORM

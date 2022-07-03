@@ -7,7 +7,6 @@ using Lappa.ORM.Constants;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
-using MySqlConnector;
 using Npgsql;
 
 namespace Lappa.ORM
@@ -27,23 +26,6 @@ namespace Lappa.ORM
 
             switch (Settings.DatabaseType)
             {
-                case DatabaseType.MSSql:
-                {
-
-                    connectionType = typeof(SqlConnection);
-                    commandType = typeof(SqlCommand);
-                    parameterType = typeof(SqlParameter);
-
-                    break;
-                }
-                case DatabaseType.MySql:
-                {
-                    connectionType = typeof(MySqlConnection);
-                    commandType = typeof(MySqlCommand);
-                    parameterType = typeof(MySqlParameter);
-
-                    break;
-                }
                 case DatabaseType.SQLite:
                 {
                     connectionType = typeof(SqliteConnection);

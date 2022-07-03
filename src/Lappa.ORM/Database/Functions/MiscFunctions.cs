@@ -12,29 +12,14 @@ namespace Lappa.ORM
 {
     public partial class Database<T>
     {
-        // MySql only.
-        // TODO: Fix for MSSql & SQLite
-        public async ValueTask<int> GetAutoIncrementValue<TEntity>() where TEntity : IEntity, new()
+        public ValueTask<int> GetAutoIncrementValue<TEntity>() where TEntity : IEntity, new()
         {
-            if (Connector.Settings.DatabaseType != DatabaseType.MySql)
-                throw new NotImplementedException($"GetAutoIncrementValue not implemented for {Connector.Settings.DatabaseType}.");
-
-            // TODO: Fix for api mode.
-            var tableInfo = await GetTableInfo(t => t.TableSchema == Connector.Settings.DatabaseName && t.TableName == Pluralize<TEntity>());
-
-            return tableInfo?.AutoIncrement ?? -1;
+            throw new NotImplementedException($"GetAutoIncrementValue not implemented for {Connector.Settings.DatabaseType}.");
         }
 
-        // MySql only.
-        // TODO: Fix for MSSql & SQLite
-        public async ValueTask<bool> Exists<TEntity>() where TEntity : IEntity, new()
+        public ValueTask<bool> Exists<TEntity>() where TEntity : IEntity, new()
         {
-            if (Connector.Settings.DatabaseType != DatabaseType.MySql)
-                throw new NotImplementedException($"Exists not implemented for {Connector.Settings.DatabaseType}.");
-
-            var tableInfo = await GetTableInfo(t => t.TableSchema == Connector.Settings.DatabaseName && t.TableName == Pluralize<TEntity>());
-
-            return tableInfo != null;
+            throw new NotImplementedException($"Exists not implemented for {Connector.Settings.DatabaseType}.");
         }
 
         async ValueTask<InformationSchemaTable> GetTableInfo(Expression<Func<InformationSchemaTable, object>> condition)

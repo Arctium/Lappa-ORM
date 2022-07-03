@@ -11,7 +11,7 @@
         <Product>Lappa ORM</Product>
         <Description>
             Lappa ORM is a object relational mapper for .NET written in C#.
-            Supported databases are MySQL/MSSQL/SQLite/PostgreSql.
+            Supported databases are PostgreSQL and SQLite.
         </Description>
         <Copyright>Copyright Arctium</Copyright>
         <RepositoryUrl>https://github.com/Arctium/Lappa-ORM.git</RepositoryUrl>
@@ -19,7 +19,7 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <IncludeSymbols>true</IncludeSymbols>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
-        <PackageTags>arctium, lappa, orm, mysql, mssql, sqlite, postgres, sql</PackageTags>
+        <PackageTags>arctium, lappa, orm, sqlite, postgres, sql, postgresql</PackageTags>
         <PackageReleaseNotes>Experimental DI support</PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <Platforms>x64</Platforms>
@@ -45,7 +45,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="MySqlConnector" Version="2.1.10" />
         <PackageReference Include="Npgsql" Version="7.0.0-preview.2" />
     </ItemGroup>
 

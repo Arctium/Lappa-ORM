@@ -41,8 +41,6 @@ namespace Lappa.ORM
 
             return Type switch
             {
-                DatabaseType.MySql => $"Server={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.Enabled};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};CharSet={CharSet};{ExtraOptions}",
-                DatabaseType.MSSql => $"Data Source={Host}; Initial Catalog = {Database}; User ID = {User}; Password = {Password};Pooling={Pooling.Enabled};Min Pool Size={Pooling?.Min};Max Pool Size={Pooling?.Max};{ExtraOptions}",
                 DatabaseType.SQLite => $"Data Source={Host};Password={Password};Database={Database};Pooling={Pooling.Enabled};{ExtraOptions}",
                 DatabaseType.PostgreSql => $"Server={Host};User Id={User};Port={Port};Password={Password};Database={Database};Pooling={Pooling.Enabled};Minimum Pool Size={Pooling?.Min};Maximum Pool Size={Pooling?.Max};{ExtraOptions}",
                 _ => throw new NotSupportedException($"{Type}")

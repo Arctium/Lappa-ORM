@@ -5,9 +5,7 @@ namespace Lappa.ORM.Constants
 {
     public enum DatabaseType
     {
-        MySql,
-        MSSql,
-        SQLite,
-        PostgreSql
+        PostgreSql = 1,
+        SQLite     = 2
     }
 }

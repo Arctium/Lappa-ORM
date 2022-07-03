@@ -19,7 +19,7 @@ namespace Lappa.ORM
     {
         ValueTask<bool> Any<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : IEntity, new();
         ValueTask<long> Count<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : IEntity, new();
-        ValueTask<bool> Create<TEntity>(MySqlEngine dbEngine = MySqlEngine.MyISAM, bool replaceTable = false) where TEntity : IEntity, new();
+        ValueTask<bool> Create<TEntity>(bool replaceTable = false) where TEntity : IEntity, new();
         ValueTask<bool> Delete<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : IEntity, new();
         ValueTask<bool> Delete<TEntity>(TEntity entity) where TEntity : IEntity, new();
         ValueTask<bool> Exists<TEntity>() where TEntity : IEntity, new();

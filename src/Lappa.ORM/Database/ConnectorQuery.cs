@@ -22,8 +22,6 @@ namespace Lappa.ORM
         {
             var escapedField = databaseType switch
             {
-                DatabaseType.MySql      => "`{0}`",
-                DatabaseType.MSSql      => "[{0}]",
                 DatabaseType.SQLite     => "\"{0}\"",
                 DatabaseType.PostgreSql => "\"{0}\"",
                 _ => throw new NotImplementedException(),

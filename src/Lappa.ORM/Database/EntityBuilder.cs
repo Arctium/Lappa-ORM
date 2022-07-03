@@ -73,12 +73,8 @@ namespace Lappa.ORM
                     return new object[1][];
                 }
 
-                // TODO:
-                // - Move this check to a new Manager class, so it's done one time on initialization.
-                // - Fix array field type checks.
-                // - Optimize?!
-                // Strict types (signed/unsigned) only used in MySql databases.
-                if (database.Connector.Settings.DatabaseType == DatabaseType.MySql)
+                // TODO Type mapping check for PostgreSql.
+                /*if (database.Connector.Settings.DatabaseType == DatabaseType.PostgreSql)
                 {
                     var hasMismatches = false;
 
@@ -107,7 +103,7 @@ namespace Lappa.ORM
 
                         return new object[1][];
                     }
-                }
+                }*/
             }
 
             var entities = new ConcurrentBag<object[]>();

@@ -14,7 +14,7 @@ namespace Lappa.ORM
     {
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public async ValueTask<int> GetAutoIncrementValue<TEntity>() where TEntity : Entity, new()
+        public async ValueTask<int> GetAutoIncrementValue<TEntity>() where TEntity : IEntity, new()
         {
             if (Connector.Settings.DatabaseType != DatabaseType.MySql)
                 throw new NotImplementedException($"GetAutoIncrementValue not implemented for {Connector.Settings.DatabaseType}.");
@@ -27,7 +27,7 @@ namespace Lappa.ORM
 
         // MySql only.
         // TODO: Fix for MSSql & SQLite
-        public async ValueTask<bool> Exists<TEntity>() where TEntity : Entity, new()
+        public async ValueTask<bool> Exists<TEntity>() where TEntity : IEntity, new()
         {
             if (Connector.Settings.DatabaseType != DatabaseType.MySql)
                 throw new NotImplementedException($"Exists not implemented for {Connector.Settings.DatabaseType}.");

@@ -6,7 +6,7 @@ using System;
 namespace Lappa.ORM
 {
     [DBTable(Name = "Table")]
-    public class InformationSchemaTable : Entity
+    public class InformationSchemaTable : IEntity
     {
         [DBField(Name = "TABLE_CATALOG")]
         public string TableCatalog { get; set; }

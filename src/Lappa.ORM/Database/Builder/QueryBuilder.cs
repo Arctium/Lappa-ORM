@@ -15,7 +15,7 @@ using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
-    internal partial class QueryBuilder<T> : ExpressionVisitor, IQueryBuilder where T : Entity, new()
+    internal partial class QueryBuilder<T> : ExpressionVisitor, IQueryBuilder where T : IEntity, new()
     {
         public bool IsSelectQuery { get; set; }
 

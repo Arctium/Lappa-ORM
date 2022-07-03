@@ -28,7 +28,7 @@ namespace Lappa.ORM.Caching
         {
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
-                var entityTypes = asm.GetValidTypes().Where(t => t.IsSubclassOf(typeof(Entity)));
+                var entityTypes = asm.GetValidTypes().Where(t => t.IsSubclassOf(typeof(IEntity)));
 
                 foreach (var t in entityTypes)
                 {
@@ -58,7 +58,7 @@ namespace Lappa.ORM.Caching
         {
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
-                var entityTypes = asm.GetValidTypes().Where(t => t.IsSubclassOf(typeof(Entity)));
+                var entityTypes = asm.GetValidTypes().Where(t => t.IsSubclassOf(typeof(IEntity)));
 
                 foreach (var t in entityTypes)
                 {

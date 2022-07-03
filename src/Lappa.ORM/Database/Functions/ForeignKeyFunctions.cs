@@ -17,7 +17,7 @@ namespace Lappa.ORM
         IFormatProvider numberFormat = new CultureInfo("en-US").NumberFormat;
 
         // TODO Rewrite...
-        internal void AssignForeignKeyData<TEntity>(TEntity entity, PropertyInfo[] foreignKeys, ConcurrentDictionary<int, int> groups) where TEntity : Entity, new()
+        internal void AssignForeignKeyData<TEntity>(TEntity entity, PropertyInfo[] foreignKeys, ConcurrentDictionary<int, int> groups) where TEntity : IEntity, new()
         {
             for (var i = 0; i < foreignKeys.Length; i++)
             {

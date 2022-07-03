@@ -3,12 +3,10 @@
 
 namespace Lappa.ORM
 {
-    public abstract class Entity
+    public interface IEntity
     {
-        public bool LoadForeignKeys { get; } = false;
+        bool LoadForeignKeys => false;
 
-        public virtual void InitializeNonTableProperties()
-        {
-        }
+        void InitializeNonTableProperties() { }
     }
 }

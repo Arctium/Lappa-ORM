@@ -10,7 +10,7 @@ namespace Lappa.ORM.Misc
 {
     public static class ServiceExtensions
     {
-        public static IServiceCollection AddDatabase<TDatabase>(this IServiceCollection services!!, IConfiguration namedConfigurationSection!!) where TDatabase : Database<TDatabase>
+        public static IServiceCollection AddDatabase<TDatabase>(this IServiceCollection services, IConfiguration namedConfigurationSection) where TDatabase : Database<TDatabase>
         {
             services.Configure<ConnectionSettings>(namedConfigurationSection);
             services.AddSingleton<IDatabase<TDatabase>, TDatabase>();
@@ -18,7 +18,7 @@ namespace Lappa.ORM.Misc
             return services;
         }
 
-        public static IServiceCollection AddDatabase<TDatabase>(this IServiceCollection services!!, IConfigurationSection childConfigurationSection!!) where TDatabase : Database<TDatabase>
+        public static IServiceCollection AddDatabase<TDatabase>(this IServiceCollection services, IConfigurationSection childConfigurationSection) where TDatabase : Database<TDatabase>
         {
             services.Configure<ConnectionSettings>(childConfigurationSection.GetSection(typeof(TDatabase).Name));
             services.AddSingleton<IDatabase<TDatabase>, TDatabase>();
@@ -26,7 +26,7 @@ namespace Lappa.ORM.Misc
             return services;
         }
 
-        public static IServiceCollection AddDatabase<TDatabase>(this IServiceCollection services!!, Action<ConnectionSettings> configureOptions) where TDatabase : Database<TDatabase>
+        public static IServiceCollection AddDatabase<TDatabase>(this IServiceCollection services, Action<ConnectionSettings> configureOptions) where TDatabase : Database<TDatabase>
         {
             services.Configure(configureOptions);
             services.AddSingleton<IDatabase<TDatabase>, TDatabase>();

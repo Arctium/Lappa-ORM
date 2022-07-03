@@ -125,7 +125,7 @@ namespace Lappa.ORM
             return entities.ToArray();
         }
 
-        public TEntity[] CreateEntities<TEntity>(object[][] data, QueryBuilder<TEntity> builder) where TEntity : Entity, new()
+        public TEntity[] CreateEntities<TEntity>(object[][] data, QueryBuilder<TEntity> builder) where TEntity : IEntity, new()
         {
             if (data[0] == null)
                 return new TEntity[0];

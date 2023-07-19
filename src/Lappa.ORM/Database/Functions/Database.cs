@@ -15,7 +15,7 @@ namespace Lappa.ORM
 {
     public sealed class Database : Database<Database>, IDatabase
     {
-        public Database(ILogger<Database> logger, IOptions<ConnectionSettings> connectionSettings) : base(logger, connectionSettings)
+        public Database(ILogger<Database> logger, IOptionsMonitor<ConnectionSettings> connectionSettings) : base(logger, connectionSettings)
         {
         }
     }
@@ -32,10 +32,10 @@ namespace Lappa.ORM
         EntityBuilder<T> entityBuilder;
         ApiClient apiClient;
 
-        public Database(ILogger<T> logger, IOptions<ConnectionSettings> connectionSettings)
+        public Database(ILogger<T> logger, IOptionsMonitor<ConnectionSettings> connectionSettings)
         {
             this.logger = logger;
-            this.connectionSettings = connectionSettings.Value;
+            this.connectionSettings = connectionSettings.Get(typeof(T).Name);
 
             // TODO: Logic should not be here.
             {

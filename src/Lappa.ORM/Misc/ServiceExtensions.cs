@@ -11,7 +11,7 @@ namespace Lappa.ORM.Misc
     {
         public static IServiceCollection AddDatabase<TDatabase>(this IServiceCollection services, IConfiguration namedConfigurationSection) where TDatabase : Database<TDatabase>
         {
-            services.Configure<ConnectionSettings>(namedConfigurationSection);
+            services.Configure<ConnectionSettings>(typeof(TDatabase).Name, namedConfigurationSection);
             services.AddSingleton<IDatabase<TDatabase>, TDatabase>();
 
             return services;
@@ -19,7 +19,7 @@ namespace Lappa.ORM.Misc
 
         public static IServiceCollection AddDatabase<TDatabase>(this IServiceCollection services, IConfigurationSection childConfigurationSection) where TDatabase : Database<TDatabase>
         {
-            services.Configure<ConnectionSettings>(childConfigurationSection.GetSection(typeof(TDatabase).Name));
+            services.Configure<ConnectionSettings>(typeof(TDatabase).Name, childConfigurationSection.GetSection(typeof(TDatabase).Name));
             services.AddSingleton<IDatabase<TDatabase>, TDatabase>();
 
             return services;
@@ -27,7 +27,7 @@ namespace Lappa.ORM.Misc
 
         public static IServiceCollection AddDatabase<TDatabase>(this IServiceCollection services, Action<ConnectionSettings> configureOptions) where TDatabase : Database<TDatabase>
         {
-            services.Configure(configureOptions);
+            services.Configure(typeof(TDatabase).Name, configureOptions);
             services.AddSingleton<IDatabase<TDatabase>, TDatabase>();
 
             return services;

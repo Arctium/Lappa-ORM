@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
@@ -28,7 +29,7 @@ namespace Lappa.ORM
                 {
                     var value = typeof(TEntity).GetTypeInfo().GetProperty(fkName.Item1).GetValue(entity);
                     var pType = fk.PropertyType.GetTypeInfo().IsGenericType ? fk.PropertyType.GetTypeInfo().GetGenericArguments()[0] : fk.PropertyType;
-                    var foreignKeyData = WhereForeignKey(pType, Helper.Pluralize(pType), fkName.Item2, value, groups);
+                    var foreignKeyData = WhereForeignKey<TEntity>(pType, Helper.Pluralize(pType), fkName.Item2, value, groups).GetAwaiter().GetResult();
 
                     if (foreignKeyData == null || foreignKeyData.Count == 0)
                         continue;
@@ -63,51 +64,52 @@ namespace Lappa.ORM
                 fkNameByPk = primaryKeys.Length > 0 ? primaryKeys[0]?.GetName() : null;
             }
 
-            return fkNameByPk == null ? null : Tuple.Create(fkNameByPk, typeName + fkNameByPk);
+            // One to many relations.
+            if (prop.PropertyType.IsGenericType)
+                return fkNameByPk == null ? null : Tuple.Create(fkNameByPk, typeName + fkNameByPk);
+
+            // All other relations.
+            return fkNameByPk == null ? null : Tuple.Create(prop.Name + fkNameByPk, fkNameByPk);
         }
 
         // TODO Rewrite.
-        // This function is disabled until it's rewritten. absolutly not compatible with the api connection mode.
-        internal IList WhereForeignKey(Type entityType, string name, string fkName, object value, ConcurrentDictionary<int, int> groups)
+        // Absolutly not compatible with the api connection mode.
+        internal async Task<IList> WhereForeignKey<TEntity>(Type entityType, string name, string fkName, object value, ConcurrentDictionary<int, int> groups) where TEntity : IEntity, new()
         {
-            return null;
+            var builder = new QueryBuilder<TEntity>(Connector.Query);
 
-            /*
+            builder.BuildWhereForeignKey(entityType, name, fkName, value);
+
             var entityLock = new object();
-            var query = new StringBuilder();
-
-            query.AppendFormat(numberFormat, "SELECT * FROM " + Connector.Query.Table + " WHERE ", name);
-            query.AppendFormat(numberFormat, Connector.Query.Equal, fkName, value);
-
             var entities = entityType.CreateList();
 
-            using (var dataReader = Select(query.ToString()))
+            var dataReader = await Select(builder);
             {
-                if (dataReader?.Read() == true)
+                if (dataReader?.Length != 0)
                 {
                     var properties = entityType.GetReadWriteProperties();
 
                     // TODO: Replace with error log?
-                    if (dataReader.FieldCount != properties.Length)
+                    if (dataReader[0].Length != properties.Length)
                         throw new NotSupportedException("Columns doesn't match the entity fields.");
 
-                    do
+                    for (var i = 0; i < dataReader.Length; i++)
                     {
-                        var entity = Activator.CreateInstance(entityType) as Entity;
+                        var entity = Activator.CreateInstance(entityType) as IEntity;
 
                         for (var j = 0; j < properties.Length; j++)
-                            properties[j].SetValue(entity, dataReader[properties[j].GetName()].ChangeTypeGet(properties[j].PropertyType));
+                            properties[j].SetValue(entity, dataReader[i][j].ChangeTypeGet(properties[j].PropertyType));
 
                         entity.InitializeNonTableProperties();
 
                         // IList isn't thread safe...
                         lock (entityLock)
                             entities.Add(entity);
-                    } while (dataReader.Read());
+                    }
                 }
             }
 
-            return entities;*/
+            return entities;
         }
     }
 }

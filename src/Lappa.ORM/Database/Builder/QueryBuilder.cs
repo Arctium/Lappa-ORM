@@ -27,9 +27,9 @@ namespace Lappa.ORM
         public string EntityName { get; }
         public string PluralizedEntityName { get; }
 
-        public List<(PropertyInfo Info, TypeInfoCache InfoCache)> Properties { get; }
-        public Func<T, object>[] PropertyGetter { get; }
-        public Action<T, object>[] PropertySetter { get; }
+        public List<(PropertyInfo Info, TypeInfoCache InfoCache)> Properties { get; private set; }
+        public Func<T, object>[] PropertyGetter { get; private set; }
+        public Action<T, object>[] PropertySetter { get; private set; }
 
         ConnectorQuery connectorQuery;
 

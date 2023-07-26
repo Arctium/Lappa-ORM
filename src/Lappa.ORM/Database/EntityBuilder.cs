@@ -32,7 +32,7 @@ namespace Lappa.ORM
                 if (dataReader?.RecordsAffected > 0)
                     return new object[1][] { new object[] { dataReader.RecordsAffected } };
                 else
-                    return new object[1][];
+                    return new object[0][];
             }
 
             // Some custom queries do not use a query builder.
@@ -121,14 +121,14 @@ namespace Lappa.ORM
 
         public TEntity[] CreateEntities<TEntity>(object[][] data, QueryBuilder<TEntity> builder) where TEntity : IEntity, new()
         {
-            if (data[0] == null)
+            if (data.Length == 0)
                 return new TEntity[0];
 
             var fieldCount = builder.PropertySetter.Length;
             var entities = new ConcurrentBag<TEntity>();
 
             // Create one test object for foreign key assignment check
-            var foreignKeys = typeof(TEntity).GetTypeInfo().DeclaredProperties.Where(p => p.GetMethod.IsVirtual).ToArray();
+            var foreignKeys = typeof(TEntity).GetTypeInfo().DeclaredProperties.Where(p => p.GetMethod.IsVirtual && p.CanWrite).ToArray();
 
             // Key: GroupStartIndex, Value: GroupCount
             var groups = new ConcurrentDictionary<int, int>();
@@ -154,8 +154,8 @@ namespace Lappa.ORM
                 }
             }
 
-            // Disabled until the rewrite is finished.
-            //var assignForeignKeys = new TEntity().LoadForeignKeys && foreignKeys.Length > 0 && groups.Count == 0;
+            // Disallow in api mode.
+            var assignForeignKeys = database.ApiMode ? false : new TEntity().LoadForeignKeys && foreignKeys.Length > 0 && groups.Count == 0;
 
             Parallel.For(0, data.Length, i =>
             {
@@ -231,8 +231,8 @@ namespace Lappa.ORM
 
                 // TODO Fix group assignment in foreign keys.
                 // Disabled until the rewrite is finished.
-                //if (assignForeignKeys)
-                //    database.AssignForeignKeyData(entity, foreignKeys, groups);
+                if (assignForeignKeys)
+                    database.AssignForeignKeyData(entity, foreignKeys, groups);
 
                 entity.InitializeNonTableProperties();
 

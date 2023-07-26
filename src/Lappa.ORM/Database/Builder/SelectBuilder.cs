@@ -1,9 +1,11 @@
 ﻿// Copyright (C) Arctium.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using Lappa.ORM.Caching;
 using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
@@ -60,6 +62,34 @@ namespace Lappa.ORM
             SqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Table + " WHERE ", PluralizedEntityName);
 
             Visit(expression);
+        }
+
+        internal void BuildWhereForeignKey(Type foreignKeyType, string foreignKeyTable, string foreignKeyName, object foreignKeyValue)
+        {
+            // Clear the base query.
+            SqlQuery.Clear();
+            SqlParameters.Clear();
+
+            var properties = foreignKeyType.GetReadWriteProperties();
+
+            // Re-assign properties for our foreign key entity.
+            Properties = new List<(PropertyInfo Info, TypeInfoCache InfoCache)>(properties.Length);
+
+            foreach (var p in properties)
+            {
+                Properties.Add((p, new TypeInfoCache
+                {
+                    IsArray = p.PropertyType.IsArray,
+                    IsArrayGroup = p.PropertyType.GetCustomAttribute<GroupAttribute>() != null,
+                    IsCustomClass = p.PropertyType.IsCustomClass(),
+                    IsCustomStruct = p.PropertyType.IsCustomStruct()
+                }));
+            }
+
+            SqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Table + " WHERE ", foreignKeyTable);
+            SqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, foreignKeyName, foreignKeyValue);
+
+            SqlParameters.Add($"@{foreignKeyName}", foreignKeyValue is bool ? Convert.ToByte(foreignKeyValue) : foreignKeyValue);
         }
     }
 }

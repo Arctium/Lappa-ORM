@@ -163,7 +163,8 @@ namespace Lappa.ORM
                         using var cmd = await CreateSqlCommand(connection, transaction, queryBuilder);
                         var affectedRows = await cmd.ExecuteNonQueryAsync();
 
-                        await transaction?.CommitAsync();
+                        if (transaction != null)
+                            await transaction.CommitAsync();
 
                         return affectedRows > 0;
                     }
@@ -173,7 +174,8 @@ namespace Lappa.ORM
             {
                 logger.Log(LogLevel.Error, ex.ToString());
 
-                transaction?.RollbackAsync();
+                if (transaction != null)
+                    await transaction.RollbackAsync();
 
                 return false;
             }
@@ -221,7 +223,8 @@ namespace Lappa.ORM
                     using var cmd = await CreateSqlCommand(connection, transaction, apiRequest);
                     var affectedRows = await cmd.ExecuteNonQueryAsync();
 
-                    transaction?.CommitAsync();
+                    if (transaction != null)
+                        await transaction.CommitAsync();
 
                     return new object[1][] { new object[] { affectedRows } };
                 }
@@ -230,7 +233,8 @@ namespace Lappa.ORM
             {
                 logger.Log(LogLevel.Error, ex.ToString());
 
-                await transaction?.RollbackAsync();
+                if (transaction != null)
+                    await transaction.RollbackAsync();
 
                 return null;
             }

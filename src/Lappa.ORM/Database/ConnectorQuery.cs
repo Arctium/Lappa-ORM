@@ -27,7 +27,7 @@ namespace Lappa.ORM
             };
 
             UpdateQuery    = $"UPDATE {escapedField} SET ";
-            UpdateQueryEnd = $"FROM {escapedField} WHERE ";
+            UpdateQueryEnd = $"WHERE ";
             DeleteQuery    = $"DELETE FROM {escapedField} WHERE ";
             Equal          = $"{escapedField} = @{{0}}";
             AndEqual       = $" AND {escapedField} = @{{0}}";

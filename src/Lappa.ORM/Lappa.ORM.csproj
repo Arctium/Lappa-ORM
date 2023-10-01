@@ -1,17 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <DebugType>Portable</DebugType>
         <LangVersion>preview</LangVersion>
-        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
         <AssemblyName>Lappa.ORM</AssemblyName>
         <RootNamespace>Lappa.ORM</RootNamespace>
-        <Version>1.1.1-preview1.1</Version>
+        <Version>1.1.2-preview1</Version>
         <Company>Arctium</Company>
         <Product>Lappa ORM</Product>
-        <Description>
-            Lappa ORM is a object relational mapper for .NET written in C#.
-            Supported databases are PostgreSQL and SQLite.
+        <Description> Lappa ORM is a object relational mapper for .NET written in C#.
+ Supported databases are PostgreSQL and SQLite.
         </Description>
         <Copyright>Copyright Arctium</Copyright>
         <RepositoryUrl>https://github.com/Arctium/Lappa-ORM.git</RepositoryUrl>
@@ -20,27 +19,25 @@
         <IncludeSymbols>true</IncludeSymbols>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <PackageTags>arctium, lappa, orm, sqlite, postgres, sql, postgresql</PackageTags>
-        <PackageReleaseNotes>Experimental DI support</PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <Platforms>x64</Platforms>
+        <Platforms>AnyCPU</Platforms>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
         <PlatformTarget>AnyCPU</PlatformTarget>
-        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Authors></Authors>
         <PackageProjectUrl>https://arctium.io</PackageProjectUrl>
+        <Title>Lappa ORM</Title>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Lappa.Pluralization" Version="1.1.1">
-            <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-            <IncludeAssets>all</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.0.0-preview2.22096.2" />
-        <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.0-preview.2.22153.1" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0-preview.2.22152.2" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0-preview.2.22152.2" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0-preview.2.22152.2" />
+        <PackageReference Include="Lappa.Pluralization" Version="1.2.0" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0-preview3.23201.1" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0-rc.1.23419.6" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-rc.1.23419.4" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0-rc.1.23419.4" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0-rc.1.23419.4" />
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

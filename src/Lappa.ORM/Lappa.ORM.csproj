@@ -9,8 +9,9 @@
         <Version>1.1.2-preview1</Version>
         <Company>Arctium</Company>
         <Product>Lappa ORM</Product>
-        <Description> Lappa ORM is a object relational mapper for .NET written in C#.
- Supported databases are PostgreSQL and SQLite.
+        <Description>
+            Lappa ORM is a object relational mapper for .NET written in C#.
+            Supported databases are PostgreSQL and SQLite.
         </Description>
         <Copyright>Copyright Arctium</Copyright>
         <RepositoryUrl>https://github.com/Arctium/Lappa-ORM.git</RepositoryUrl>
@@ -32,7 +33,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Lappa.Pluralization" Version="1.2.0" />
+        <PackageReference Include="Lappa.Pluralization" Version="1.2.0" >
+            <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+            <IncludeAssets>all</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0-preview3.23201.1" />
         <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0-rc.1.23419.6" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-rc.1.23419.4" />

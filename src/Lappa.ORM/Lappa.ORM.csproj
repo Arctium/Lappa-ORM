@@ -21,10 +21,8 @@
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <PackageTags>arctium, lappa, orm, sqlite, postgres, sql, postgresql</PackageTags>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <Platforms>AnyCPU</Platforms>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-        <PlatformTarget>AnyCPU</PlatformTarget>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <Authors></Authors>
         <PackageProjectUrl>https://arctium.io</PackageProjectUrl>

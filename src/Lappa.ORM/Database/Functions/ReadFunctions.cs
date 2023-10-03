@@ -92,8 +92,11 @@ namespace Lappa.ORM
                 builder.BuildSelectCount();
 
             var rowData = await Select(builder);
+            
+            if (rowData[0].Length == 1)
+                return Convert.ToInt64(rowData[0]?[0] ?? -0);
 
-            return Convert.ToInt64(rowData[0]?[0] ?? -1);
+            return 0;
         }
     }
 }

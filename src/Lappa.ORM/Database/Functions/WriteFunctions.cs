@@ -19,7 +19,7 @@ namespace Lappa.ORM
         /// <typeparam name="TEntity">The entity type.</typeparam>
         /// <param name="entity">The TEntity object.</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public ValueTask<bool> Insert<TEntity>(TEntity entity) where TEntity : IEntity, new()
+        public async ValueTask<bool> Insert<TEntity>(TEntity entity) where TEntity : IEntity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var values = new Dictionary<string, (object ColumnValue, bool IsArrayGroup)>(properties.Length);
@@ -43,7 +43,7 @@ namespace Lappa.ORM
 
             builder.BuildInsert(values);
 
-            return Execute(builder);
+            return (await Execute(builder)) > 0;
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Lappa.ORM
             var queries = builder.BuildBulkInsert(properties, entities);
 
             for (var i = 0; i < queries.Count; i++)
-                if (!await Execute(builder))
+                if (await Execute(builder) == -1)
                     return false;
 
             return true;
@@ -70,7 +70,7 @@ namespace Lappa.ORM
         /// <typeparam name="TEntity">The entity type</typeparam>
         /// <param name="entity">The updated object of type TEntity</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public ValueTask<bool> Update<TEntity>(TEntity entity) where TEntity : IEntity, new()
+        public ValueTask<int> Update<TEntity>(TEntity entity) where TEntity : IEntity, new()
         {
             var type = typeof(TEntity);
             var properties = type.GetReadWriteProperties();
@@ -88,7 +88,7 @@ namespace Lappa.ORM
         /// <typeparam name="TEntity">The entity type</typeparam>
         /// <param name="setExpressions">The properties to be updated using the <see cref="PublicExtensions.Set{T}(T,T)"/> extension method.</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public ValueTask<bool> UpdateAll<TEntity>(params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : IEntity, new()
+        public ValueTask<int> UpdateAll<TEntity>(params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : IEntity, new()
         {
             var builder = new QueryBuilder<TEntity>(Connector.Query);
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
@@ -105,7 +105,7 @@ namespace Lappa.ORM
         /// <param name="condition">The used condition to identify the to be updated entity.</param>
         /// <param name="setExpressions">The properties to be updated using the <see cref="PublicExtensions.Set{T}(T,T)"/> extension method.</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public ValueTask<bool> Update<TEntity>(Expression<Func<TEntity, bool>> condition, params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : IEntity, new()
+        public ValueTask<int> Update<TEntity>(Expression<Func<TEntity, bool>> condition, params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : IEntity, new()
         {
             var builder = new QueryBuilder<TEntity>(Connector.Query);
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
@@ -121,7 +121,7 @@ namespace Lappa.ORM
         /// <typeparam name="TEntity">The entity type.</typeparam>
         /// <param name="entity">The to be deleted entity</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public ValueTask<bool> Delete<TEntity>(TEntity entity) where TEntity : IEntity, new()
+        public ValueTask<int> Delete<TEntity>(TEntity entity) where TEntity : IEntity, new()
         {
             var type = typeof(TEntity);
             var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.GetName() == "Id" || p.GetName() == type.Name + "Id").ToArray();
@@ -138,7 +138,7 @@ namespace Lappa.ORM
         /// <typeparam name="TEntity">The entity type.</typeparam>
         /// <param name="condition">The used condition to identify the to be updated entity.</param>
         /// <returns>True if the SQL query execution is successful.</returns>
-        public ValueTask<bool> Delete<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : IEntity, new()
+        public ValueTask<int> Delete<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : IEntity, new()
         {
             var builder = new QueryBuilder<TEntity>(Connector.Query);
 

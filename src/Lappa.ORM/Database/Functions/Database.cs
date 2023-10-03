@@ -143,7 +143,7 @@ namespace Lappa.ORM
             return sqlCommand;
         }
 
-        internal async ValueTask<bool> Execute(IQueryBuilder queryBuilder)
+        internal async ValueTask<int> Execute(IQueryBuilder queryBuilder)
         {
             DbTransaction transaction = null;
 
@@ -153,7 +153,7 @@ namespace Lappa.ORM
                 {
                     var affectedRows = await apiClient.GetResponse(queryBuilder);
 
-                    return Convert.ToInt32(affectedRows[0]?[0]) > 0;
+                    return Convert.ToInt32(affectedRows[0]?[0]);
                 }
                 else
                 {
@@ -166,7 +166,7 @@ namespace Lappa.ORM
                         if (transaction != null)
                             await transaction.CommitAsync();
 
-                        return affectedRows > 0;
+                        return affectedRows;
                     }
                 }
             }
@@ -177,7 +177,7 @@ namespace Lappa.ORM
                 if (transaction != null)
                     await transaction.RollbackAsync();
 
-                return false;
+                return -1;
             }
         }
 
@@ -200,14 +200,25 @@ namespace Lappa.ORM
 
                     queryBuilder.IsSelectQuery = true;
 
-                    return entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
+                    var verified = entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
+
+                    if (!verified)
+                    {
+                        // Send affected rows for non select queries.
+                        if (dataReader?.RecordsAffected > 0)
+                            return [[dataReader.RecordsAffected]];
+                            
+                        return [[]];
+                    }
+
+                    return entityBuilder.ReadData(dataReader);
                 }
             }
             catch (Exception ex)
             {
                 logger.Log(LogLevel.Error, ex.ToString());
 
-                return null;
+                return [[]];
             }
         }
 
@@ -226,7 +237,7 @@ namespace Lappa.ORM
                     if (transaction != null)
                         await transaction.CommitAsync();
 
-                    return new object[1][] { new object[] { affectedRows } };
+                    return [[affectedRows]];
                 }
             }
             catch (Exception ex)
@@ -236,7 +247,7 @@ namespace Lappa.ORM
                 if (transaction != null)
                     await transaction.RollbackAsync();
 
-                return null;
+                return [[]];
             }
         }
 
@@ -249,13 +260,24 @@ namespace Lappa.ORM
 
                 using var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection);
 
-                return entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
+                var verified = entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
+
+                if (!verified)
+                {
+                    // Send affected rows for non select queries.
+                    if (dataReader?.RecordsAffected > 0)
+                        return [[dataReader.RecordsAffected]];
+                        
+                    return [[]];
+                }
+
+                return entityBuilder.ReadData(dataReader);
             }
             catch (Exception ex)
             {
                 logger.Log(LogLevel.Error, ex.ToString());
 
-                return null;
+                return [[]];
             }
         }
 
@@ -264,8 +286,8 @@ namespace Lappa.ORM
         {
             if (apiRequest.IsSelectQuery)
                 return SelectFromApi(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
-            else
-                return ExecuteFromApi(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
+                
+            return ExecuteFromApi(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);
         }
     }
 }

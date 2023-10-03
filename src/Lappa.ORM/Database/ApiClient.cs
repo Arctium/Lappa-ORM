@@ -30,7 +30,6 @@ namespace Lappa.ORM
             };
 
             jsonDeserializerOptions = new JsonSerializerOptions();
-
             jsonDeserializerOptions.Converters.Add(new JsonObjectConverter());
         }
 

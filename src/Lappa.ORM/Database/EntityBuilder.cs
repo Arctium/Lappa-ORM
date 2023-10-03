@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Reflection;
@@ -23,17 +24,10 @@ namespace Lappa.ORM
             this.database = database;
         }
 
-        public object[][] VerifyDatabaseSchema(DbDataReader dataReader, IQueryBuilder builder)
+        public bool VerifyDatabaseSchema(DbDataReader dataReader, IQueryBuilder builder)
         {
-            // Return a null row if the used DbDataReader is null or doesn't contain any rows.
             if (dataReader?.Read() == false)
-            {
-                // Send affected rows for non select queries.
-                if (dataReader?.RecordsAffected > 0)
-                    return new object[1][] { new object[] { dataReader.RecordsAffected } };
-                else
-                    return new object[0][];
-            }
+                return false;
 
             // Some custom queries do not use a query builder.
             // This results in no column/property verification.
@@ -68,7 +62,7 @@ namespace Lappa.ORM
                 {
                     logger.Log(LogLevel.Error, $"Table '{builder.PluralizedEntityName}' (Column/Property count mismatch)\nColumns '{dataReader.FieldCount}'\nProperties '{totalFieldCount}'");
 
-                    return new object[1][];
+                    return false;
                 }
 
                 // TODO Type mapping check for PostgreSql.
@@ -104,28 +98,31 @@ namespace Lappa.ORM
                 }*/
             }
 
-            var entities = new ConcurrentBag<object[]>();
+            return true;
+        }
 
-            // Create the row array
-            do
+        public object[][] ReadData(DbDataReader dataReader)
+        {
+            var entities = new object[dataReader.RecordsAffected][];
+
+            for (var i = 0; dataReader.Read(); i++)
             {
                 var row = new object[dataReader.FieldCount];
 
                 dataReader.GetValues(row);
 
-                entities.Add(row);
-            } while (dataReader.Read());
+                entities[i] = row;
+            }
 
-            return entities.ToArray();
+            return entities;
         }
 
         public TEntity[] CreateEntities<TEntity>(object[][] data, QueryBuilder<TEntity> builder) where TEntity : IEntity, new()
         {
             if (data.Length == 0)
-                return new TEntity[0];
-
-            var fieldCount = builder.PropertySetter.Length;
-            var entities = new ConcurrentBag<TEntity>();
+                return [];
+                
+            var entities = new TEntity[data.Length];
 
             // Create one test object for foreign key assignment check
             var foreignKeys = typeof(TEntity).GetTypeInfo().DeclaredProperties.Where(p => p.GetMethod.IsVirtual && p.CanWrite).ToArray();
@@ -134,6 +131,7 @@ namespace Lappa.ORM
             var groups = new ConcurrentDictionary<int, int>();
             var lastGroupName = "";
             var lastGroupStartIndex = 0;
+            var fieldCount = builder.PropertySetter.Length;
 
             // Get Groups
             for (var i = 0; i < fieldCount; i++)
@@ -155,12 +153,15 @@ namespace Lappa.ORM
             }
 
             // Disallow in api mode.
-            var assignForeignKeys = database.ApiMode ? false : new TEntity().LoadForeignKeys && foreignKeys.Length > 0 && groups.Count == 0;
-
+            var assignForeignKeys = !database.ApiMode && new TEntity().LoadForeignKeys && foreignKeys.Length > 0 && groups.IsEmpty;
+            
             Parallel.For(0, data.Length, i =>
             {
+                entities[i] = new TEntity();
+
+                ref var entity = ref entities[i];
+
                 var row = data[i];
-                var entity = new TEntity();
 
                 for (int j = 0, a = 0; j < row.Length; j++)
                 {
@@ -235,11 +236,9 @@ namespace Lappa.ORM
                     database.AssignForeignKeyData(entity, foreignKeys, groups);
 
                 entity.InitializeNonTableProperties();
-
-                entities.Add(entity);
             });
 
-            return entities.ToArray();
+            return entities;
         }
     }
 }

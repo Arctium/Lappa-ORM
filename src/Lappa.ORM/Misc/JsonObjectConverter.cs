@@ -35,7 +35,7 @@ namespace Lappa.ORM.Misc
                     break;
             }
 
-            using JsonDocument document = JsonDocument.ParseValue(ref reader);
+            using var document = JsonDocument.ParseValue(ref reader);
 
             return document.RootElement.Clone();
         }

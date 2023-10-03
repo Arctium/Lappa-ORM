@@ -8,7 +8,6 @@ namespace Lappa.ORM
 {
     public class ConnectionSettings
     {
-
         // Lappa ORM specific.
         public DatabaseType Type { get; set; }
         public ConnectionMode ConnectionMode { get; set; } = default;

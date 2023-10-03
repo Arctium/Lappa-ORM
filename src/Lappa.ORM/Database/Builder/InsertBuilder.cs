@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
@@ -52,112 +51,6 @@ namespace Lappa.ORM
 
             SqlQuery.Append(")");
             SqlQuery.Replace(",)", ")");
-        }
-
-        internal List<string> BuildBulkInsert(PropertyInfo[] properties, IReadOnlyList<T> entities)
-        {
-            /*var queries = new List<string>();
-            var values = new Dictionary<string, object>(properties.Length);
-            var typeName = Pluralize<T>();
-
-            for (var i = 0; i < properties.Length; i++)
-            {
-                if (properties[i].PropertyType.IsArray)
-                {
-                    var arr = PropertyGetter[i](new T()) as Array;
-
-                    for (var j = 1; j <= arr.Length; j++)
-                        values.Add(properties[i].GetName() + j, null);
-                }
-                else
-                    values.Add(properties[i].GetName(), null);
-            }
-
-            sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Table + " (", typeName);
-
-            foreach (var name in values.Keys)
-                sqlQuery.AppendFormat(numberFormat, connectorQuery.Table + ",", name);
-
-            sqlQuery.Append(") VALUES ");
-
-            foreach (var entity in entities)
-            {
-                if (sqlQuery.Length >= 15000)
-                {
-                    sqlQuery.Append(";");
-
-                    sqlQuery.Replace(",)", ")");
-                    sqlQuery.Replace("),;", ");");
-                    sqlQuery.Remove(sqlQuery.Length - 1, 1);
-
-                    queries.Add(sqlQuery.ToString());
-
-                    sqlQuery = new StringBuilder();
-
-                    sqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Table + " (", typeName);
-
-                    foreach (var name in values.Keys)
-                        sqlQuery.AppendFormat(numberFormat, connectorQuery.Table + ",", name);
-
-                    sqlQuery.Append(") VALUES ");
-                }
-
-                sqlQuery.Append("(");
-
-                for (var i = 0; i < properties.Length; i++)
-                {
-                    if (properties[i].PropertyType.IsArray)
-                    {
-                        var arr = (PropertyGetter[i](entity) as Array);
-                        var arrElementType = arr.GetType().GetElementType();
-
-                        for (var j = 1; j <= arr.Length; j++)
-                            values[properties[i].GetName() + j] = arr.GetValue(j - 1).ChangeTypeGet(arrElementType);
-                    }
-                    else if (!properties[i].HasAttribute<AutoIncrementAttribute>())
-                    {
-                        var val = PropertyGetter[i](entity);
-
-                        if (val is string)
-                            val = ((string)val).Replace("\"", "\"\"").Replace("'", @"\'");
-
-                        values[properties[i].GetName()] = val;
-                    }
-                }
-
-                foreach (var val in values.Values)
-                {
-                    if (val != null)
-                    {
-                        var valType = val.GetType();
-
-                        if (valType.IsArray)
-                        {
-                            valType = valType.GetElementType();
-
-                            var arr = val as Array;
-
-                            for (var i = 0; i < arr.Length; i++)
-                                sqlQuery.AppendFormat(numberFormat, "'{0}',", arr.GetValue(i).ChangeTypeSet(valType));
-                        }
-                        else
-                            sqlQuery.AppendFormat(numberFormat, "'{0}',", val.ChangeTypeSet(valType));
-                    }
-                    else
-                        sqlQuery.AppendFormat("'',");
-                }
-
-                sqlQuery.Append("),");
-            }
-
-            sqlQuery.Replace(",)", ")");
-            sqlQuery.Replace("),;", ");");
-            sqlQuery.Remove(sqlQuery.Length - 1, 1);
-
-            queries.Add(sqlQuery.ToString());
-
-            return queries;*/
-            return null;
         }
     }
 }

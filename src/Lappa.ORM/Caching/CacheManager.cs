@@ -19,7 +19,7 @@ namespace Lappa.ORM.Caching
         CacheManager()
         {
             dbFieldCache = new ConcurrentDictionary<MemberInfo, DBFieldAttribute>();
-            queryBuilderCache = new Dictionary<string, IQueryBuilder>();
+            queryBuilderCache = [];
 
             CacheDBFieldAttributes();
         }

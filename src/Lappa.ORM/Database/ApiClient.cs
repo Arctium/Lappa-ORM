@@ -35,14 +35,7 @@ namespace Lappa.ORM
 
         Task<HttpResponseMessage> SendRequest(IQueryBuilder queryBuilder)
         {
-            var serializedRequest = JsonSerializer.Serialize(new ApiRequest
-            {
-                // Pluralized entity name.
-                EntityName = queryBuilder.EntityName,
-                IsSelectQuery = queryBuilder.IsSelectQuery,
-                SqlQuery = queryBuilder.SqlQuery.ToString(),
-                SqlParameters = queryBuilder.SqlParameters
-            }, jsonSerializerOptions);
+            var serializedRequest = JsonSerializer.Serialize(new ApiRequest(queryBuilder.EntityName, queryBuilder.IsSelectQuery, queryBuilder.SqlQuery.ToString(), queryBuilder.SqlParameters), jsonSerializerOptions);
 
             var stringContent = new StringContent(serializedRequest, Encoding.UTF8, "application/json");
 

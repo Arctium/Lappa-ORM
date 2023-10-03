@@ -6,13 +6,8 @@ using System;
 namespace Lappa.ORM
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class GroupAttribute : Attribute
+    public class GroupAttribute(string name) : Attribute
     {
-        public string Name { get; set; }
-
-        public GroupAttribute(string name)
-        {
-            Name = name;
-        }
+        public string Name { get; set; } = name;
     }
 }

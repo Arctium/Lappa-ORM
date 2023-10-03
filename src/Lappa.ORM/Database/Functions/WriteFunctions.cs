@@ -47,24 +47,6 @@ namespace Lappa.ORM
         }
 
         /// <summary>
-        /// Inserts a 'list' of given entities to the database.
-        /// </summary>
-        /// <typeparam name="TEntity">The entity type.</typeparam>
-        /// <param name="entities">A 'list' of TEntity objects.</param>
-        public async ValueTask<bool> Insert<TEntity>(IReadOnlyList<TEntity> entities) where TEntity : IEntity, new()
-        {
-            var properties = typeof(TEntity).GetReadWriteProperties();
-            var builder = new QueryBuilder<TEntity>(Connector.Query, properties);
-            var queries = builder.BuildBulkInsert(properties, entities);
-
-            for (var i = 0; i < queries.Count; i++)
-                if (await Execute(builder) == -1)
-                    return false;
-
-            return true;
-        }
-
-        /// <summary>
         /// Updates the database with the given entity using it's primary keys as condition.
         /// </summary>
         /// <typeparam name="TEntity">The entity type</typeparam>

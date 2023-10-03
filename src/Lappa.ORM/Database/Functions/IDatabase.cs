@@ -10,7 +10,6 @@ namespace Lappa.ORM
 {
     public interface IDatabase<T> : IDatabase
     {
-
     }
 
     public interface IDatabase
@@ -22,7 +21,6 @@ namespace Lappa.ORM
         ValueTask<int> Delete<TEntity>(TEntity entity) where TEntity : IEntity, new();
         ValueTask<bool> Exists<TEntity>() where TEntity : IEntity, new();
         ValueTask<int> GetAutoIncrementValue<TEntity>() where TEntity : IEntity, new();
-        ValueTask<bool> Insert<TEntity>(IReadOnlyList<TEntity> entities) where TEntity : IEntity, new();
         ValueTask<bool> Insert<TEntity>(TEntity entity) where TEntity : IEntity, new();
         ValueTask<TEntity[]> Select<TEntity>(Expression<Func<TEntity, object>> newExpression = null) where TEntity : IEntity, new();
         ValueTask<Dictionary<TKey, TEntity>> Select<TKey, TEntity>(Func<TEntity, TKey> func, Expression<Func<TEntity, object>> newExpression = null) where TEntity : IEntity, new();

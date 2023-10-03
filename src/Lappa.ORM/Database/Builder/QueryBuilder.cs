@@ -41,7 +41,7 @@ namespace Lappa.ORM
             this.connectorQuery = connectorQuery;
 
             SqlQuery = new StringBuilder();
-            SqlParameters = new Dictionary<string, object>();
+            SqlParameters = [];
 
             EntityDummy = new T();
             EntityName = typeof(T).Name;
@@ -83,13 +83,7 @@ namespace Lappa.ORM
 
             foreach (var p in properties)
             {
-                Properties.Add((p, new TypeInfoCache
-                {
-                    IsArray = p.PropertyType.IsArray,
-                    IsArrayGroup = p.PropertyType.GetCustomAttribute<GroupAttribute>() != null,
-                    IsCustomClass = p.PropertyType.IsCustomClass(),
-                    IsCustomStruct = p.PropertyType.IsCustomStruct()
-                }));
+                Properties.Add((p, new TypeInfoCache(p.PropertyType.IsArray, p.PropertyType.GetCustomAttribute<GroupAttribute>() != null, p.PropertyType.IsCustomClass(), p.PropertyType.IsCustomStruct())));
             }
 
             PropertyGetter = new Func<T, object>[properties.Length];
@@ -126,41 +120,22 @@ namespace Lappa.ORM
 
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
         {
-            SqlQuery.Append("(");
-
-            string condition;
-
-            switch (binaryExpression.NodeType)
+            SqlQuery.Append('(');
+            
+            string condition = binaryExpression.NodeType switch
             {
-                case ExpressionType.Equal:
-                    condition = " = ";
-                    break;
-                case ExpressionType.NotEqual:
-                    condition = " <> ";
-                    break;
-                case ExpressionType.GreaterThan:
-                    condition = " > ";
-                    break;
-                case ExpressionType.GreaterThanOrEqual:
-                    condition = " >= ";
-                    break;
-                case ExpressionType.LessThan:
-                    condition = " < ";
-                    break;
-                case ExpressionType.LessThanOrEqual:
-                    condition = " <= ";
-                    break;
-                case ExpressionType.AndAlso:
-                    condition = " AND ";
-                    break;
-                case ExpressionType.OrElse:
-                    condition = " OR ";
-                    break;
-                default:
-                    throw new NotSupportedException($"{binaryExpression.NodeType} is not supported.");
-            }
-
-            if (condition == " AND " || condition == " OR ")
+                ExpressionType.Equal => " = ",
+                ExpressionType.NotEqual => " <> ",
+                ExpressionType.GreaterThan => " > ",
+                ExpressionType.GreaterThanOrEqual => " >= ",
+                ExpressionType.LessThan => " < ",
+                ExpressionType.LessThanOrEqual => " <= ",
+                ExpressionType.AndAlso => " AND ",
+                ExpressionType.OrElse => " OR ",
+                _ => throw new NotSupportedException($"{binaryExpression.NodeType} is not supported."),
+            };
+            
+            if (condition is " AND " or " OR ")
             {
                 Visit(binaryExpression.Left);
 
@@ -184,7 +159,7 @@ namespace Lappa.ORM
                     exVal = Expression.Lambda<Func<object>>(methodMember).Compile()();
                 }
 
-                exVal = exVal ?? GetExpressionValue(memberExp);
+                exVal ??= GetExpressionValue(memberExp);
 
                 var finalVal = exVal ?? Regex.Replace(Regex.Replace(binaryExpression.Right.ToString(), "^\"|\"$", ""), @"^Convert\(|\)$", "");
                 var left = (binaryExpression.Left as MemberExpression)?.Member ?? ((binaryExpression.Left as UnaryExpression).Operand as MemberExpression).Member;
@@ -196,7 +171,7 @@ namespace Lappa.ORM
 
             Visit(binaryExpression.Right);
 
-            SqlQuery.Append(")");
+            SqlQuery.Append(')');
 
             return binaryExpression;
         }
@@ -232,10 +207,13 @@ namespace Lappa.ORM
                 }
             }
 
-            if (val == null && (binaryExpression == null || (!(binaryExpression.Right is MemberExpression) || objReference.GetType() == (binaryExpression.Left as MemberExpression)?.Type)))
-                return objReference;
-
-            return val;
+            return val switch
+            {
+                null when binaryExpression == null 
+                          || binaryExpression.Right is not MemberExpression 
+                          || objReference.GetType() == (binaryExpression.Left as MemberExpression)?.Type => objReference,
+                _ => val
+            };
         }
 
         protected internal object GetExpressionValue(MemberExpression memberExpression, BinaryExpression binaryExpression = null)
@@ -249,23 +227,22 @@ namespace Lappa.ORM
 
                 var memberExpressionStore = new List<MemberExpression>();
 
-                while (memberExp.Expression is MemberExpression)
+                while (memberExp.Expression is MemberExpression expression)
                 {
                     memberExpressionStore.Add(memberExp);
 
-                    memberExp = (MemberExpression)memberExp.Expression;
+                    memberExp = expression;
                 }
-
-                var constExpression = (memberExp.Expression as ConstantExpression);
 
                 object objReference = null;
 
-                if (constExpression == null)
+                if (memberExp.Expression is not ConstantExpression constExpression)
                     // TODO: Fix if memberExp.Member comes from an object.
                     objReference = (memberExp.Member as FieldInfo)?.GetValue(null) ?? (memberExp.Member as PropertyInfo)?.GetValue(null);
                 else
                 {
                     var memberName = memberExp.Member.GetName();
+
                     MemberInfo memberInfo;
 
                     if ((memberInfo = constExpression.Value.GetType().GetRuntimeFields().SingleOrDefault(p => p.Name == memberName)) != null)

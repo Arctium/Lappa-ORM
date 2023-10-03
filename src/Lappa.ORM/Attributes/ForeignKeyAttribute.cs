@@ -6,13 +6,8 @@ using System;
 namespace Lappa.ORM
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class ForeignKeyAttribute : Attribute
+    public class ForeignKeyAttribute(string name) : Attribute
     {
-        public string Name { get; set; }
-
-        public ForeignKeyAttribute(string name)
-        {
-            Name = name;
-        }
+        public string Name { get; set; } = name;
     }
 }

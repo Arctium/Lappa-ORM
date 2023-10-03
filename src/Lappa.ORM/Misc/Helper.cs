@@ -11,7 +11,7 @@ namespace Lappa.ORM.Misc
     internal class Helper
     {
         // Create only one service. Only enUS supported.
-        static readonly PluralizationService pluralService = new PluralizationService();
+        static readonly PluralizationService pluralService = new();
 
         public static string Pluralize<T>() => Pluralize(typeof(T));
         public static string Pluralize(Type t)
@@ -31,33 +31,20 @@ namespace Lappa.ORM.Misc
 
         internal static int GetDefaultFieldSize(Type type)
         {
-            switch (type.Name)
+            return type.Name switch
             {
-                case "Boolean":
-                    return 1;
-                case "SByte":
-                case "Byte":
-                    return 4;
-                case "Int16":
-                case "UInt16":
-                    return 6;
-                case "Int32":
-                case "UInt32":
-                    return 11;
-                case "Int64":
-                case "UInt64":
-                    return 20;
-                case "Single":
-                case "Double":
-                    return 0;
-                case "String":
-                    return 255;
-                default:
-                    return 0;
-            }
+                "Boolean" => 1,
+                "SByte" or "Byte" => 4,
+                "Int16" or "UInt16" => 6,
+                "Int32" or "UInt32" => 11,
+                "Int64" or "UInt64" => 20,
+                "Single" or "Double" => 0,
+                "String" => 255,
+                _ => 0,
+            };
         }
 
-        private static T GetDefault<T>() => default(T);
+        private static T GetDefault<T>() => default;
 
         internal static object GetDefault(Type t)
         {

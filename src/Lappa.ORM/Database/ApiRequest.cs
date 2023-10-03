@@ -5,11 +5,5 @@ using System.Collections.Generic;
 
 namespace Lappa.ORM
 {
-    public struct ApiRequest
-    {
-        public string EntityName { get; set; }
-        public bool IsSelectQuery { get; set; }
-        public string SqlQuery { get; set; }
-        public Dictionary<string, object> SqlParameters { get; set; }
-    }
+    public record struct ApiRequest(string EntityName, bool IsSelectQuery, string SqlQuery, Dictionary<string, object> SqlParameters);
 }

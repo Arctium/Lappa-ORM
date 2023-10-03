@@ -77,13 +77,7 @@ namespace Lappa.ORM
 
             foreach (var p in properties)
             {
-                Properties.Add((p, new TypeInfoCache
-                {
-                    IsArray = p.PropertyType.IsArray,
-                    IsArrayGroup = p.PropertyType.GetCustomAttribute<GroupAttribute>() != null,
-                    IsCustomClass = p.PropertyType.IsCustomClass(),
-                    IsCustomStruct = p.PropertyType.IsCustomStruct()
-                }));
+                Properties.Add((p, new TypeInfoCache(p.PropertyType.IsArray, p.PropertyType.GetCustomAttribute<GroupAttribute>() != null, p.PropertyType.IsCustomClass(), p.PropertyType.IsCustomStruct())));
             }
 
             SqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Table + " WHERE ", foreignKeyTable);

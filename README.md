@@ -8,7 +8,7 @@ Lappa ORM is a object relational mapper for .NET written in C#.
 Please see our Open Source project [Documentation Repo](https://github.com/Arctium/Documentation)
 
 ### .NET compatibility:
-* [.NET Core SDK 6.0.0 or later](https://dotnet.microsoft.com/download/dotnet/6.0)
+* [.NET Core SDK 9.0.0 or later](https://dotnet.microsoft.com/download/dotnet/9.0)
 
 ### Supported databases (Work in Progress):
 - PostgreSql (Basic functionality)

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Text;
 using System.Threading.Tasks;
 using Lappa.ORM.Misc;
 using Microsoft.Extensions.Logging;
@@ -16,14 +17,15 @@ namespace Lappa.ORM
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
-            var builder = new QueryBuilder<TEntity>(Connector.Query, properties, members);
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, properties, members);
+            StringBuilder sqlQuery;
 
             if (members != null)
-                builder.BuildSelect(members);
+                sqlQuery = builder.BuildSelect(members);
             else
-                builder.BuildSelectAll();
+                sqlQuery = builder.BuildSelectAll();
 
-            var rowData = await Select(builder);
+            var rowData = await Select(builder, (sqlQuery, []));
 
             return entityBuilder.CreateEntities(rowData, builder);
         }
@@ -37,14 +39,15 @@ namespace Lappa.ORM
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
-            var builder = new QueryBuilder<TEntity>(Connector.Query, properties, members);
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, properties, members);
+            (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) query;
 
             if (members != null)
-                builder.BuildWhere(condition.Body, members);
+                query = builder.BuildWhere(condition.Body, members);
             else
-                builder.BuildWhereAll(condition.Body);
+                query = builder.BuildWhereAll(condition.Body);
 
-            var rowData = await Select(builder);
+            var rowData = await Select(builder, query);
 
             return entityBuilder.CreateEntities(rowData, builder);
         }
@@ -53,14 +56,15 @@ namespace Lappa.ORM
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var members = (newExpression?.Body as NewExpression)?.Members;
-            var builder = new QueryBuilder<TEntity>(Connector.Query, properties, members);
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, properties, members);
+            (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) query;
 
             if (members != null)
-                builder.BuildWhere(condition.Body, members);
+                query = builder.BuildWhere(condition.Body, members);
             else
-                builder.BuildWhereAll(condition.Body);
+                query = builder.BuildWhereAll(condition.Body);
 
-            var rowData = await Select(builder);
+            var rowData = await Select(builder, query);
             var objList = entityBuilder.CreateEntities(rowData, builder);
 
             if (objList.Length > 1)
@@ -72,11 +76,10 @@ namespace Lappa.ORM
         public async ValueTask<bool> Any<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : IEntity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
-            var builder = new QueryBuilder<TEntity>(Connector.Query, properties);
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, properties, []);
 
-            builder.BuildWhereAll(condition.Body);
-
-            var rowData = await Select(builder);
+            var query = builder.BuildWhereAll(condition.Body);
+            var rowData = await Select(builder, query);
 
             return rowData[0]?.Length > 0;
         }
@@ -84,14 +87,15 @@ namespace Lappa.ORM
         public async ValueTask<long> Count<TEntity>(Expression<Func<TEntity, object>> condition = null) where TEntity : IEntity, new()
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
-            var builder = new QueryBuilder<TEntity>(Connector.Query, properties);
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, properties, []);
+            (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) query;
 
             if (condition != null)
-                builder.BuildWhereCount(condition.Body);
+                query = builder.BuildWhereCount(condition.Body);
             else
-                builder.BuildSelectCount();
+                query = (builder.BuildSelectCount(), []);
 
-            var rowData = await Select(builder);
+            var rowData = await Select(builder, query);
             
             if (rowData[0].Length == 1)
                 return Convert.ToInt64(rowData[0]?[0] ?? -0);

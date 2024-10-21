@@ -7,6 +7,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+
+using Lappa.ORM.Caching;
 using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
@@ -23,7 +25,7 @@ namespace Lappa.ORM
         {
             var properties = typeof(TEntity).GetReadWriteProperties();
             var values = new Dictionary<string, (object ColumnValue, bool IsArrayGroup)>(properties.Length);
-            var builder = new QueryBuilder<TEntity>(Connector.Query, properties);
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, properties, []);
 
             for (var i = 0; i < properties.Length; i++)
             {
@@ -41,9 +43,9 @@ namespace Lappa.ORM
                 }
             }
 
-            builder.BuildInsert(values);
+            var query = builder.BuildInsert(values);
 
-            return (await Execute(builder)) > 0;
+            return (await Execute(builder, query)) > 0;
         }
 
         /// <summary>
@@ -57,11 +59,10 @@ namespace Lappa.ORM
             var type = typeof(TEntity);
             var properties = type.GetReadWriteProperties();
             var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.GetName() == "Id" || p.GetName() == type.Name + "Id").ToArray();
-            var builder = new QueryBuilder<TEntity>(Connector.Query);
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, properties, []);
+            var query = builder.BuildUpdate(entity, properties, primaryKeys);
 
-            builder.BuildUpdate(entity, properties, primaryKeys);
-
-            return Execute(builder);
+            return Execute(builder, query);
         }
 
         /// <summary>
@@ -72,12 +73,11 @@ namespace Lappa.ORM
         /// <returns>True if the SQL query execution is successful.</returns>
         public ValueTask<int> UpdateAll<TEntity>(params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : IEntity, new()
         {
-            var builder = new QueryBuilder<TEntity>(Connector.Query);
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, [], []);
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
+            var query = builder.BuildUpdate(expressions.ToArray(), null);
 
-            builder.BuildUpdate(expressions.ToArray(), null);
-
-            return Execute(builder);
+            return Execute(builder, query);
         }
 
         /// <summary>
@@ -89,12 +89,11 @@ namespace Lappa.ORM
         /// <returns>True if the SQL query execution is successful.</returns>
         public ValueTask<int> Update<TEntity>(Expression<Func<TEntity, bool>> condition, params Expression<Func<TEntity, object>>[] setExpressions) where TEntity : IEntity, new()
         {
-            var builder = new QueryBuilder<TEntity>(Connector.Query);
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, [], []);
             var expressions = from c in setExpressions select ((c.Body as UnaryExpression)?.Operand as MethodCallExpression) ?? c.Body as MethodCallExpression;
+            var query = builder.BuildUpdate(expressions.ToArray(), condition);
 
-            builder.BuildUpdate(expressions.ToArray(), condition);
-
-            return Execute(builder);
+            return Execute(builder, query);
         }
 
         /// <summary>
@@ -107,11 +106,10 @@ namespace Lappa.ORM
         {
             var type = typeof(TEntity);
             var primaryKeys = type.GetTypeInfo().DeclaredProperties.Where(p => p.HasAttribute<PrimaryKeyAttribute>() || p.GetName() == "Id" || p.GetName() == type.Name + "Id").ToArray();
-            var builder = new QueryBuilder<TEntity>(Connector.Query);
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, [], []);
+            var query = builder.BuildDelete(entity, primaryKeys);
 
-            builder.BuildDelete(entity, primaryKeys);
-
-            return Execute(builder);
+            return Execute(builder, query);
         }
 
         /// <summary>
@@ -122,11 +120,10 @@ namespace Lappa.ORM
         /// <returns>True if the SQL query execution is successful.</returns>
         public ValueTask<int> Delete<TEntity>(Expression<Func<TEntity, object>> condition) where TEntity : IEntity, new()
         {
-            var builder = new QueryBuilder<TEntity>(Connector.Query);
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, [], []);
+            var query = builder.BuildDelete(condition.Body);
 
-            builder.BuildDelete(condition.Body);
-
-            return Execute(builder);
+            return Execute(builder, query);
         }
     }
 }

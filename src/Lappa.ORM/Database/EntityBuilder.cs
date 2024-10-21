@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
@@ -101,9 +102,9 @@ namespace Lappa.ORM
             return true;
         }
 
-        public object[][] ReadData(DbDataReader dataReader)
+        public IList<object[]> ReadData(DbDataReader dataReader)
         {
-            var entities = new object[dataReader.RecordsAffected][];
+            var entities = new List<object[]>();
 
             for (var i = 0; dataReader.Read(); i++)
             {
@@ -111,18 +112,18 @@ namespace Lappa.ORM
 
                 dataReader.GetValues(row);
 
-                entities[i] = row;
+                entities.Add(row);
             }
 
             return entities;
         }
 
-        public TEntity[] CreateEntities<TEntity>(object[][] data, QueryBuilder<TEntity> builder) where TEntity : IEntity, new()
+        public TEntity[] CreateEntities<TEntity>(IList<object[]> data, QueryBuilder<TEntity> builder) where TEntity : IEntity, new()
         {
-            if (data.Length == 0)
+            if (data.Count == 0)
                 return [];
                 
-            var entities = new TEntity[data.Length];
+            var entities = new TEntity[data.Count];
 
             // Create one test object for foreign key assignment check
             var foreignKeys = typeof(TEntity).GetTypeInfo().DeclaredProperties.Where(p => p.GetMethod.IsVirtual && p.CanWrite).ToArray();
@@ -155,7 +156,7 @@ namespace Lappa.ORM
             // Disallow in api mode.
             var assignForeignKeys = !database.ApiMode && new TEntity().LoadForeignKeys && foreignKeys.Length > 0 && groups.IsEmpty;
             
-            Parallel.For(0, data.Length, i =>
+            Parallel.For(0, data.Count, i =>
             {
                 entities[i] = new TEntity();
 

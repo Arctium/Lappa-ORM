@@ -76,16 +76,14 @@ namespace Lappa.ORM
         // Absolutly not compatible with the api connection mode.
         internal async Task<IList> WhereForeignKey<TEntity>(Type entityType, string name, string fkName, object value, ConcurrentDictionary<int, int> groups) where TEntity : IEntity, new()
         {
-            var builder = new QueryBuilder<TEntity>(Connector.Query);
-
-            builder.BuildWhereForeignKey(entityType, name, fkName, value);
-
+            var builder = QueryBuilder<TEntity>.GetOrCreate(Connector.Query, [], []);
+            var query =  builder.BuildWhereForeignKey(entityType, name, fkName, value);
             var entityLock = new object();
             var entities = entityType.CreateList();
 
-            var dataReader = await Select(builder);
+            var dataReader = await Select(builder, query);
             {
-                if (dataReader?.Length != 0)
+                if (dataReader?.Count != 0)
                 {
                     var properties = entityType.GetReadWriteProperties();
 
@@ -93,7 +91,7 @@ namespace Lappa.ORM
                     if (dataReader[0].Length != properties.Length)
                         throw new NotSupportedException("Columns doesn't match the entity fields.");
 
-                    for (var i = 0; i < dataReader.Length; i++)
+                    for (var i = 0; i < dataReader.Count; i++)
                     {
                         var entity = Activator.CreateInstance(entityType) as IEntity;
 

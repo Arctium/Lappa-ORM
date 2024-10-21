@@ -1,6 +1,7 @@
 ﻿// Copyright (C) Arctium.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -33,18 +34,18 @@ namespace Lappa.ORM
             jsonDeserializerOptions.Converters.Add(new JsonObjectConverter());
         }
 
-        Task<HttpResponseMessage> SendRequest(IQueryBuilder queryBuilder)
+        Task<HttpResponseMessage> SendRequest(IQueryBuilder queryBuilder, bool isSelectQuery, (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) query)
         {
-            var serializedRequest = JsonSerializer.Serialize(new ApiRequest(queryBuilder.EntityName, queryBuilder.IsSelectQuery, queryBuilder.SqlQuery.ToString(), queryBuilder.SqlParameters), jsonSerializerOptions);
+            var serializedRequest = JsonSerializer.Serialize(new ApiRequest(queryBuilder.EntityName, isSelectQuery, query.SqlQuery.ToString(), query.SqlParameters), jsonSerializerOptions);
 
             var stringContent = new StringContent(serializedRequest, Encoding.UTF8, "application/json");
 
             return client.PostAsync(Host, stringContent);
         }
 
-        public async ValueTask<object[][]> GetResponse(IQueryBuilder queryBuilder)
+        public async ValueTask<object[][]> GetResponse(IQueryBuilder queryBuilder, bool isSelectQuery, (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) query)
         {
-            using var response = await SendRequest(queryBuilder);
+            using var response = await SendRequest(queryBuilder, isSelectQuery, query);
             using var jsonStream = await response.Content.ReadAsStreamAsync();
 
             return await JsonSerializer.DeserializeAsync<object[][]>(jsonStream, jsonDeserializerOptions);

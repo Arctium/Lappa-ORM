@@ -23,14 +23,13 @@ namespace Lappa.ORM
         async ValueTask<InformationSchemaTable> GetTableInfo(Expression<Func<InformationSchemaTable, object>> condition)
         {
             var properties = typeof(InformationSchemaTable).GetReadWriteProperties();
-            var builder = new QueryBuilder<InformationSchemaTable>(Connector.Query, properties);
-
-            builder.BuildWhereAll(condition.Body);
+            var builder = QueryBuilder<InformationSchemaTable>.GetOrCreate(Connector.Query, properties, []);
+            var query = builder.BuildWhereAll(condition.Body);
 
             // Add the database name for this query.
-            builder.SqlQuery.Replace($"FROM `{builder.PluralizedEntityName}`", $"FROM `information_schema`.`tables`");
+            query.SqlQuery.Replace($"FROM `{builder.PluralizedEntityName}`", $"FROM `information_schema`.`tables`");
 
-            var rowData = await Select(builder);
+            var rowData = await Select(builder, query);
             var entityList = entityBuilder.CreateEntities(rowData, builder);
 
             return entityList.Length == 0 ? null : entityList[0];

@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
+
 using Lappa.ORM.Caching;
 using Lappa.ORM.Misc;
 
@@ -12,64 +14,86 @@ namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T>
     {
-        internal void BuildSelectAll()
+        internal StringBuilder BuildSelectAll()
         {
-            SqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Table, PluralizedEntityName);
+            return new StringBuilder().AppendFormat(NumberFormat, "SELECT * FROM " + connectorQuery.Table, PluralizedEntityName);
         }
 
-        internal void BuildSelect(IReadOnlyList<MemberInfo> members)
+        internal StringBuilder BuildSelect(IReadOnlyList<MemberInfo> members)
         {
-            SqlQuery.Append("SELECT ");
+            var sqlQuery = new StringBuilder();
+
+            sqlQuery.Append("SELECT ");
 
             for (var i = 0; i < members.Count; i++)
-                SqlQuery.AppendFormat(numberFormat, connectorQuery.Table + ", ", members[i].GetName());
+                sqlQuery.AppendFormat(NumberFormat, connectorQuery.Table + ", ", members[i].GetName());
 
-            SqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Table, PluralizedEntityName);
+            sqlQuery.AppendFormat(NumberFormat, "FROM " + connectorQuery.Table, PluralizedEntityName);
+            sqlQuery.Replace(", FROM", " FROM");
 
-            SqlQuery.Replace(", FROM", " FROM");
+            return sqlQuery;
         }
 
-        internal void BuildSelectCount()
+        internal StringBuilder BuildSelectCount()
         {
-            SqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Table, PluralizedEntityName);
+            return new StringBuilder().AppendFormat(NumberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Table, PluralizedEntityName);
         }
 
-        internal void BuildWhereAll(Expression expression)
+        internal (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) BuildWhereAll(Expression expression)
         {
+            var sqlQuery = new StringBuilder();
+            var sqlParameters = new Dictionary<string, object>();
+
             // ToDo: Add support for query more than 1 table
-            SqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Table + " WHERE ", PluralizedEntityName);
+            sqlQuery.AppendFormat(NumberFormat, "SELECT * FROM " + connectorQuery.Table + " WHERE ", PluralizedEntityName);
 
-            Visit(expression);
+            var queryExpression = new QueryExpression<T>(connectorQuery, sqlQuery, sqlParameters);
+
+            queryExpression.Visit(expression);
+
+            return (sqlQuery, sqlParameters);
         }
 
-        internal void BuildWhere(Expression expression, IReadOnlyList<MemberInfo> members)
+        internal (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) BuildWhere(Expression expression, IReadOnlyList<MemberInfo> members)
         {
-            SqlQuery.Append("SELECT ");
+            var sqlQuery = new StringBuilder();
+            var sqlParameters = new Dictionary<string, object>();
+
+            sqlQuery.Append("SELECT ");
 
             for (var i = 0; i < members.Count; i++)
-                SqlQuery.AppendFormat(numberFormat, connectorQuery.Table + ", ", members[i].GetName());
+                sqlQuery.AppendFormat(NumberFormat, connectorQuery.Table + ", ", members[i].GetName());
 
-            SqlQuery.AppendFormat(numberFormat, "FROM " + connectorQuery.Table + " WHERE ", PluralizedEntityName);
+            sqlQuery.AppendFormat(NumberFormat, "FROM " + connectorQuery.Table + " WHERE ", PluralizedEntityName);
 
             // Fix query
-            SqlQuery.Replace(", FROM", " FROM");
+            sqlQuery.Replace(", FROM", " FROM");
 
-            Visit(expression);
+            var queryExpression = new QueryExpression<T>(connectorQuery, sqlQuery, sqlParameters);
+
+            queryExpression.Visit(expression);
+
+            return (sqlQuery, sqlParameters);
         }
 
-        internal void BuildWhereCount(Expression expression)
+        internal (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) BuildWhereCount(Expression expression)
         {
-            SqlQuery.AppendFormat(numberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Table + " WHERE ", PluralizedEntityName);
+            var sqlQuery = new StringBuilder();
+            var sqlParameters = new Dictionary<string, object>();
 
-            Visit(expression);
+            sqlQuery.AppendFormat(NumberFormat, "SELECT COUNT(*) FROM " + connectorQuery.Table + " WHERE ", PluralizedEntityName);
+
+            var queryExpression = new QueryExpression<T>(connectorQuery, sqlQuery, sqlParameters);
+
+            queryExpression.Visit(expression);
+
+            return (sqlQuery, sqlParameters);
         }
 
-        internal void BuildWhereForeignKey(Type foreignKeyType, string foreignKeyTable, string foreignKeyName, object foreignKeyValue)
+        internal (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) BuildWhereForeignKey(Type foreignKeyType, string foreignKeyTable, string foreignKeyName, object foreignKeyValue)
         {
-            // Clear the base query.
-            SqlQuery.Clear();
-            SqlParameters.Clear();
-
+            var sqlQuery = new StringBuilder();
+            var sqlParameters = new Dictionary<string, object>();
             var properties = foreignKeyType.GetReadWriteProperties();
 
             // Re-assign properties for our foreign key entity.
@@ -80,10 +104,12 @@ namespace Lappa.ORM
                 Properties.Add((p, new TypeInfoCache(p.PropertyType.IsArray, p.PropertyType.GetCustomAttribute<GroupAttribute>() != null, p.PropertyType.IsCustomClass(), p.PropertyType.IsCustomStruct())));
             }
 
-            SqlQuery.AppendFormat(numberFormat, "SELECT * FROM " + connectorQuery.Table + " WHERE ", foreignKeyTable);
-            SqlQuery.AppendFormat(numberFormat, connectorQuery.Equal, foreignKeyName, foreignKeyValue);
+            sqlQuery.AppendFormat(NumberFormat, "SELECT * FROM " + connectorQuery.Table + " WHERE ", foreignKeyTable);
+            sqlQuery.AppendFormat(NumberFormat, connectorQuery.Equal, foreignKeyName, foreignKeyValue);
 
-            SqlParameters.Add($"@{foreignKeyName}", foreignKeyValue is bool ? Convert.ToByte(foreignKeyValue) : foreignKeyValue);
+            sqlParameters.Add($"@{foreignKeyName}", foreignKeyValue is bool ? Convert.ToByte(foreignKeyValue) : foreignKeyValue);
+
+            return (sqlQuery, sqlParameters);
         }
     }
 }

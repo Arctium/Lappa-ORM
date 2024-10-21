@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Lappa.ORM.Caching;
@@ -89,16 +91,17 @@ namespace Lappa.ORM
             return connection;
         }
 
-        internal async Task<DbCommand> CreateSqlCommand(DbConnection connection, DbTransaction transaction, IQueryBuilder queryBuilder)
+        internal async Task<DbCommand> CreateSqlCommand(DbConnection connection, DbTransaction transaction, IQueryBuilder queryBuilder,
+            (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) query)
         {
             var sqlCommand = Connector.CreateCommandObject();
 
             sqlCommand.Connection = connection;
-            sqlCommand.CommandText = queryBuilder.SqlQuery.ToString();
+            sqlCommand.CommandText = query.SqlQuery.ToString();
             sqlCommand.CommandTimeout = 2147483;
             sqlCommand.Transaction = transaction;
 
-            foreach (var p in queryBuilder.SqlParameters)
+            foreach (var p in query.SqlParameters)
             {
                 var param = sqlCommand.CreateParameter();
 
@@ -143,7 +146,7 @@ namespace Lappa.ORM
             return sqlCommand;
         }
 
-        internal async ValueTask<int> Execute(IQueryBuilder queryBuilder)
+        internal async ValueTask<int> Execute(IQueryBuilder queryBuilder, (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) query)
         {
             DbTransaction transaction = null;
 
@@ -151,7 +154,7 @@ namespace Lappa.ORM
             {
                 if (ApiMode)
                 {
-                    var affectedRows = await apiClient.GetResponse(queryBuilder);
+                    var affectedRows = await apiClient.GetResponse(queryBuilder, false, query);
 
                     return Convert.ToInt32(affectedRows[0]?[0]);
                 }
@@ -160,7 +163,8 @@ namespace Lappa.ORM
                     using (var connection = await CreateConnection())
                     using (transaction = Connector.Settings.UseTransactions ? await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted) : null)
                     {
-                        using var cmd = await CreateSqlCommand(connection, transaction, queryBuilder);
+                        using var cmd = await CreateSqlCommand(connection, transaction, queryBuilder, query);
+
                         var affectedRows = await cmd.ExecuteNonQueryAsync();
 
                         if (transaction != null)
@@ -181,24 +185,20 @@ namespace Lappa.ORM
             }
         }
 
-        internal async ValueTask<object[][]> Select(IQueryBuilder queryBuilder)
+        internal async ValueTask<IList<object[]>> Select(IQueryBuilder queryBuilder, (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) query)
         {
             try
             {
                 if (ApiMode)
                 {
-                    queryBuilder.IsSelectQuery = true;
-
-                    return await apiClient.GetResponse(queryBuilder);
+                    return await apiClient.GetResponse(queryBuilder, true, query);
                 }
                 else
                 {
                     var connection = await CreateConnection();
-                    var sqlCommand = await CreateSqlCommand(connection, null, queryBuilder);
+                    var sqlCommand = await CreateSqlCommand(connection, null, queryBuilder, query);
 
                     using var dataReader = await sqlCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection);
-
-                    queryBuilder.IsSelectQuery = true;
 
                     var verified = entityBuilder.VerifyDatabaseSchema(dataReader, queryBuilder);
 
@@ -222,7 +222,7 @@ namespace Lappa.ORM
             }
         }
 
-        async ValueTask<object[][]> ExecuteFromApi(IQueryBuilder queryBuilder, ApiRequest apiRequest)
+        async ValueTask<IList<object[]>> ExecuteFromApi(IQueryBuilder queryBuilder, ApiRequest apiRequest)
         {
             DbTransaction transaction = null;
 
@@ -251,7 +251,7 @@ namespace Lappa.ORM
             }
         }
 
-        async ValueTask<object[][]> SelectFromApi(IQueryBuilder queryBuilder, ApiRequest apiRequest)
+        async ValueTask<IList<object[]>> SelectFromApi(IQueryBuilder queryBuilder, ApiRequest apiRequest)
         {
             try
             {
@@ -282,7 +282,7 @@ namespace Lappa.ORM
         }
 
         // Used for select queries from api clients only.
-        public ValueTask<object[][]> ProcessApiRequest(ApiRequest apiRequest)
+        public ValueTask<IList<object[]>> ProcessApiRequest(ApiRequest apiRequest)
         {
             if (apiRequest.IsSelectQuery)
                 return SelectFromApi(CacheManager.Instance.GetQueryBuilder(apiRequest.EntityName), apiRequest);

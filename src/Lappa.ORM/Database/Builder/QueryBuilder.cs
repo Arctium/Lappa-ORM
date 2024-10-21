@@ -16,86 +16,9 @@ using static Lappa.ORM.Misc.Helper;
 
 namespace Lappa.ORM
 {
-    internal partial class QueryBuilder<T> : ExpressionVisitor, IQueryBuilder where T : IEntity, new()
+    internal sealed class QueryExpression<T>(ConnectorQuery ConnectorQuery, StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) 
+        : ExpressionVisitor where T : IEntity, new()
     {
-        public bool IsSelectQuery { get; set; }
-
-        public StringBuilder SqlQuery { get; }
-        public Dictionary<string, object> SqlParameters { get; }
-
-        public object EntityDummy { get; }
-        public string EntityName { get; }
-        public string PluralizedEntityName { get; }
-
-        public List<(PropertyInfo Info, TypeInfoCache InfoCache)> Properties { get; private set; }
-        public Func<T, object>[] PropertyGetter { get; private set; }
-        public Action<T, object>[] PropertySetter { get; private set; }
-
-        ConnectorQuery connectorQuery;
-
-        // Use en-US as number format for all languages.
-        IFormatProvider numberFormat = new CultureInfo("en-US").NumberFormat;
-
-        internal QueryBuilder(ConnectorQuery connectorQuery)
-        {
-            this.connectorQuery = connectorQuery;
-
-            SqlQuery = new StringBuilder();
-            SqlParameters = [];
-
-            EntityDummy = new T();
-            EntityName = typeof(T).Name;
-            PluralizedEntityName = Pluralize<T>();
-        }
-
-        internal QueryBuilder(ConnectorQuery connectorQuery, PropertyInfo[] properties, IReadOnlyList<MemberInfo> members = null)
-        {
-            this.connectorQuery = connectorQuery;
-
-            SqlQuery = new StringBuilder();
-            SqlParameters = new Dictionary<string, object>();
-
-            EntityDummy = new T();
-            EntityName = typeof(T).Name;
-            PluralizedEntityName = Pluralize<T>();
-
-            if (members != null)
-            {
-                var props = new PropertyInfo[members.Count];
-
-                for (var i = 0; i < members.Count; i++)
-                {
-                    for (var j = 0; j < properties.Length; j++)
-                    {
-                        if (properties[j].GetName() == members[i].GetName())
-                        {
-                            props[i] = properties[j];
-                            break;
-                        }
-                    }
-                }
-
-                properties = props;
-            }
-
-            // Cache the most used type info.
-            Properties = new List<(PropertyInfo Info, TypeInfoCache InfoCache)>(properties.Length);
-
-            foreach (var p in properties)
-            {
-                Properties.Add((p, new TypeInfoCache(p.PropertyType.IsArray, p.PropertyType.GetCustomAttribute<GroupAttribute>() != null, p.PropertyType.IsCustomClass(), p.PropertyType.IsCustomStruct())));
-            }
-
-            PropertyGetter = new Func<T, object>[properties.Length];
-            PropertySetter = new Action<T, object>[properties.Length];
-
-            for (var i = 0; i < properties.Length; i++)
-            {
-                PropertyGetter[i] = properties[i].GetGetter<T>();
-                PropertySetter[i] = properties[i].GetSetter<T>();
-            }
-        }
-
         protected override Expression VisitMember(MemberExpression memberExpression)
         {
             // TODO: Find a better way...
@@ -112,7 +35,7 @@ namespace Lappa.ORM
                     count++;
                 }
 
-                SqlQuery.AppendFormat(numberFormat, connectorQuery.Table + "{1}'{2}'", memberExpression.Member.GetName(), " = ", count % 2 == 0 ? "1" : "0");
+                SqlQuery.AppendFormat(QueryBuilder<T>.NumberFormat, ConnectorQuery.Table + "{1}'{2}'", memberExpression.Member.GetName(), " = ", count % 2 == 0 ? "1" : "0");
             }
 
             return memberExpression;
@@ -121,7 +44,7 @@ namespace Lappa.ORM
         protected override Expression VisitBinary(BinaryExpression binaryExpression)
         {
             SqlQuery.Append('(');
-            
+
             string condition = binaryExpression.NodeType switch
             {
                 ExpressionType.Equal => " = ",
@@ -134,7 +57,7 @@ namespace Lappa.ORM
                 ExpressionType.OrElse => " OR ",
                 _ => throw new NotSupportedException($"{binaryExpression.NodeType} is not supported."),
             };
-            
+
             if (condition is " AND " or " OR ")
             {
                 Visit(binaryExpression.Left);
@@ -165,7 +88,7 @@ namespace Lappa.ORM
                 var left = (binaryExpression.Left as MemberExpression)?.Member ?? ((binaryExpression.Left as UnaryExpression).Operand as MemberExpression).Member;
                 var name = left.GetName();
 
-                SqlQuery.AppendFormat(numberFormat, connectorQuery.Table + "{1}@{0}", name, condition, name);
+                SqlQuery.AppendFormat(QueryBuilder<T>.NumberFormat, ConnectorQuery.Table + "{1}@{0}", name, condition, name);
                 SqlParameters.Add($"@{name}", finalVal is bool ? Convert.ToByte(finalVal) : finalVal);
             }
 
@@ -176,7 +99,7 @@ namespace Lappa.ORM
             return binaryExpression;
         }
 
-        object GetValue(object objReference, MemberExpression memberExpression, BinaryExpression binaryExpression)
+        static object GetValue(object objReference, MemberExpression memberExpression, BinaryExpression binaryExpression)
         {
             object val = null;
 
@@ -209,14 +132,14 @@ namespace Lappa.ORM
 
             return val switch
             {
-                null when binaryExpression == null 
-                          || binaryExpression.Right is not MemberExpression 
+                null when binaryExpression == null
+                          || binaryExpression.Right is not MemberExpression
                           || objReference.GetType() == (binaryExpression.Left as MemberExpression)?.Type => objReference,
                 _ => val
             };
         }
 
-        protected internal object GetExpressionValue(MemberExpression memberExpression, BinaryExpression binaryExpression = null)
+        internal static object GetExpressionValue(MemberExpression memberExpression, BinaryExpression binaryExpression = null)
         {
             var memberExp = memberExpression;
 
@@ -271,6 +194,89 @@ namespace Lappa.ORM
             }
 
             return null;
+        }
+    }
+
+    internal partial class QueryBuilder<T> : IQueryBuilder where T : IEntity, new()
+    {
+        public object EntityDummy { get; }
+        public string EntityName { get; }
+        public string PluralizedEntityName { get; }
+
+        public List<(PropertyInfo Info, TypeInfoCache InfoCache)> Properties { get; private set; }
+        public Func<T, object>[] PropertyGetter { get; private set; }
+        public Action<T, object>[] PropertySetter { get; private set; }
+
+        ConnectorQuery connectorQuery;
+
+        // Use en-US as number format for all languages.
+        internal static IFormatProvider NumberFormat = new CultureInfo("en-US").NumberFormat;
+
+        internal QueryBuilder(ConnectorQuery connectorQuery, PropertyInfo[] properties, IReadOnlyList<MemberInfo> members)
+        {
+            this.connectorQuery = connectorQuery;
+
+            EntityDummy = new T();
+            EntityName = typeof(T).Name;
+            PluralizedEntityName = Pluralize<T>();
+
+            // Cache the most used type info.
+            Properties = new List<(PropertyInfo Info, TypeInfoCache InfoCache)>(properties.Length);
+
+            foreach (var p in properties)
+            {
+                Properties.Add((p, new TypeInfoCache(p.PropertyType.IsArray, p.PropertyType.GetCustomAttribute<GroupAttribute>() != null, p.PropertyType.IsCustomClass(), p.PropertyType.IsCustomStruct())));
+            }
+
+            PropertyGetter = new Func<T, object>[properties.Length];
+            PropertySetter = new Action<T, object>[properties.Length];
+
+            for (var i = 0; i < properties.Length; i++)
+            {
+                PropertyGetter[i] = properties[i].GetGetter<T>();
+                PropertySetter[i] = properties[i].GetSetter<T>();
+            }
+        }
+
+        internal static QueryBuilder<T> GetOrCreate(ConnectorQuery connectorQuery, PropertyInfo[] properties, IReadOnlyList<MemberInfo> members)
+        {
+            if (properties.Length == 0)
+                properties = typeof(T).GetReadWriteProperties();
+            else
+                properties = CreateProperties(properties, members);
+
+            if (!CacheManager.Instance.GetQueryBuilder<T>(properties, out var queryBuilder))
+            {
+                queryBuilder = new QueryBuilder<T>(connectorQuery, properties, members);
+
+                CacheManager.Instance.AddQueryBuilder(queryBuilder, properties);
+            }
+
+            return (QueryBuilder<T>)queryBuilder;
+        }
+
+        static PropertyInfo[] CreateProperties(PropertyInfo[] properties, IReadOnlyList<MemberInfo> members)
+        {
+            if (members?.Count > 0)
+            {
+                var props = new PropertyInfo[members.Count];
+
+                for (var i = 0; i < members.Count; i++)
+                {
+                    for (var j = 0; j < properties.Length; j++)
+                    {
+                        if (properties[j].GetName() == members[i].GetName())
+                        {
+                            props[i] = properties[j];
+                            break;
+                        }
+                    }
+                }
+
+                properties = props;
+            }
+
+            return properties;
         }
     }
 }

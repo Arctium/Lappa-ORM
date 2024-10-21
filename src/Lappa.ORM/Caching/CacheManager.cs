@@ -15,11 +15,13 @@ namespace Lappa.ORM.Caching
     {
         readonly ConcurrentDictionary<MemberInfo, DBFieldAttribute> dbFieldCache;
         readonly Dictionary<string, IQueryBuilder> queryBuilderCache;
+        readonly Dictionary<int, IQueryBuilder> queryBuilderHashCache;
 
         CacheManager()
         {
             dbFieldCache = new ConcurrentDictionary<MemberInfo, DBFieldAttribute>();
             queryBuilderCache = [];
+            queryBuilderHashCache = [];
 
             CacheDBFieldAttributes();
         }
@@ -58,10 +60,11 @@ namespace Lappa.ORM.Caching
         {
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
-                var entityTypes = asm.GetValidTypes().Where(t => t.IsSubclassOf(typeof(IEntity)));
+                var entityTypes = asm.GetValidTypes().Where(t => t != typeof(IEntity) && t.IsAssignableTo(typeof(IEntity)));
 
                 foreach (var t in entityTypes)
                 {
+
                     var builderType = typeof(QueryBuilder<>).MakeGenericType(t);
                     var parameters = new object[] { connector.Query, t.GetReadWriteProperties(), null };
                     var builderInstance = Activator.CreateInstance(builderType, BindingFlags.NonPublic | BindingFlags.Instance, null, parameters, CultureInfo.InvariantCulture);
@@ -70,6 +73,8 @@ namespace Lappa.ORM.Caching
                 }
             }
         }
+
+        public void AddQueryBuilder(IQueryBuilder queryBuilder, PropertyInfo[] properties) => queryBuilderHashCache[properties.GetNameHashCode()] = queryBuilder;
 
         public DBFieldAttribute GetDBField(MemberInfo memberInfo)
         {
@@ -84,6 +89,11 @@ namespace Lappa.ORM.Caching
             queryBuilderCache.TryGetValue(entityName, out var queryBuilder);
 
             return queryBuilder;
+        }
+
+        public bool GetQueryBuilder<TEntity>(PropertyInfo[] properties, out IQueryBuilder queryBuilder) where TEntity : IEntity
+        {
+            return queryBuilderHashCache.TryGetValue(properties.GetNameHashCode(), out queryBuilder);
         }
     }
 }

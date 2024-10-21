@@ -133,5 +133,17 @@ namespace Lappa.ORM.Misc
                 return ex.Types.Where(t => t != null).ToArray();
             }
         }
+
+        public static int GetNameHashCode(this PropertyInfo[] properties)
+        {
+            ArgumentNullException.ThrowIfNull(properties);
+
+            int hash = 17;
+
+            foreach (var property in properties)
+                hash = hash * 31 + (property.Name?.GetHashCode() ?? 0);
+
+            return hash;
+        }
     }
 }

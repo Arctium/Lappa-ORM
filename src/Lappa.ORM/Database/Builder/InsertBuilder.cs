@@ -3,20 +3,25 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
+
 using Lappa.ORM.Misc;
 
 namespace Lappa.ORM
 {
     internal partial class QueryBuilder<T>
     {
-        internal void BuildInsert(Dictionary<string, (object ColumnValue, bool IsArrayGroup)> values)
+        internal (StringBuilder SqlQuery, Dictionary<string, object> SqlParameters) BuildInsert(Dictionary<string, (object ColumnValue, bool IsArrayGroup)> values)
         {
-            SqlQuery.AppendFormat(numberFormat, "INSERT INTO " + connectorQuery.Table + " (", PluralizedEntityName);
+            var sqlQuery = new StringBuilder();
+            var sqlParameters = new Dictionary<string, object>();
+
+            sqlQuery.AppendFormat(NumberFormat, "INSERT INTO " + connectorQuery.Table + " (", PluralizedEntityName);
 
             foreach (var name in values.Keys)
-                SqlQuery.AppendFormat(numberFormat, connectorQuery.Table + ",", name);
+                sqlQuery.AppendFormat(NumberFormat, connectorQuery.Table + ",", name);
 
-            SqlQuery.Append(") VALUES (");
+            sqlQuery.Append(") VALUES (");
 
             foreach (var kp in values)
             {
@@ -32,25 +37,27 @@ namespace Lappa.ORM
 
                         for (var i = 0; i < arr.Length; i++)
                         {
-                            SqlQuery.AppendFormat(numberFormat, $"@{kp.Key},");
-                            SqlParameters.Add($"@{kp.Key}", arr.GetValue(i).ChangeTypeSet(valType));
+                            sqlQuery.AppendFormat(NumberFormat, $"@{kp.Key},");
+                            sqlParameters.Add($"@{kp.Key}", arr.GetValue(i).ChangeTypeSet(valType));
                         }
                     }
                     else
                     {
-                        SqlQuery.AppendFormat(numberFormat, $"@{kp.Key},");
-                        SqlParameters.Add($"@{kp.Key}", kp.Value.ColumnValue.ChangeTypeSet(valType));
+                        sqlQuery.AppendFormat(NumberFormat, $"@{kp.Key},");
+                        sqlParameters.Add($"@{kp.Key}", kp.Value.ColumnValue.ChangeTypeSet(valType));
                     }
                 }
                 else
                 {
-                    SqlQuery.AppendFormat(numberFormat, $"@{kp.Key},");
-                    SqlParameters.Add($"@{kp.Key}", "");
+                    sqlQuery.AppendFormat(NumberFormat, $"@{kp.Key},");
+                    sqlParameters.Add($"@{kp.Key}", "");
                 }
             }
 
-            SqlQuery.Append(")");
-            SqlQuery.Replace(",)", ")");
+            sqlQuery.Append(")");
+            sqlQuery.Replace(",)", ")");
+
+            return (sqlQuery, sqlParameters);
         }
     }
 }

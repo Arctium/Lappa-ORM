@@ -10,11 +10,6 @@ namespace Lappa.ORM
 {
     interface IQueryBuilder
     {
-        bool IsSelectQuery { get; set; }
-
-        StringBuilder SqlQuery { get; }
-        Dictionary<string, object> SqlParameters { get; }
-
         object EntityDummy { get; }
         string EntityName { get; }
         string PluralizedEntityName { get; }
